@@ -10,9 +10,7 @@ import hashlib
 
 from Book import EReader
 
-path_ = (
-    r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\epubs\Old Man's War - John Scalzi.epub"
-)
+path_ = r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\epubs\the_blade_itself.epub"
 temp = r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\temp"
 
 with open(path_, "rb") as current_book:
@@ -51,8 +49,9 @@ class MyTitleBar(StandardTitleBar):
         self.q_img = QPixmap.fromImage(img)
 
         # RESIZE TO COVER IMAGE SIZE
-        size = self.q_img.size().toTuple()
-        self.parent().resize(size[0], size[1] + self.height() + 5)
+        # size = self.q_img.size().toTuple()
+
+        # self.parent().resize(size[0], size[1] + self.height() + 5)
 
         self.button_icon = QIcon(self.q_img)
 
@@ -89,6 +88,12 @@ class EWindow(FramelessWindow):
         self.titleBar.raise_()
         self.content_view.setFocus()
 
+        self.setStyleSheet("background-color: #0a0b0c; color: #a29b90")
+        self.content_view.setStyleSheet("border: 0px")
+        self.content_view.document().setDefaultStyleSheet(
+            "p { text-indent: 27px; font-family: Helvetica, Arial; font-size: 20px} "
+        )
+
     def next_chapter(self):
         self.content_view.change_chapter(1)
 
@@ -100,10 +105,9 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     mainwindow = EWindow(path_, temp, file_md5)
-    # mainwindow.setStyleSheet("background-color: black")
 
-    # mainwindow.setFont(QFont("Times", 20))
     mainwindow.show()
     mainwindow.setMinimumSize(600, 300)
+    mainwindow.resize(500, 900)
 
     app.exec()
