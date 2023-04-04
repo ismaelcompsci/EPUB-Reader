@@ -1,21 +1,27 @@
-import hashlib
 import os
 
-import PySide6
-from bs4 import BeautifulSoup
+
 from epub_tools.epub import ParseEPUB
 from PySide6.QtCore import *
 from PySide6.QtGui import *
+from PySide6.QtWebEngineWidgets import *
+from PySide6.QtWebEngineCore import *
+
 from PySide6.QtWidgets import *
 from qframelesswindow import *
 
+
+from components.web_view import WebView
 from utils.utils import resize_image, add_css_to_html
 
-
 # DISPLAYS HTML FROM BOOK
-class EReader(QTextBrowser):
-    def __init__(self, path, temp, file_md5):
-        super().__init__()
+class EReader(WebView):
+    """
+    Web View for Html
+    """
+
+    def __init__(self, parent, path, temp, file_md5):
+        super().__init__(parent)
 
         self.filepath = path
         self.temppath = temp
@@ -23,13 +29,13 @@ class EReader(QTextBrowser):
         self.file_md5 = file_md5
 
         self.setMouseTracking(True)
-        self.setReadOnly(True)
-        self.setOpenLinks(False)
-        self.verticalScrollBar().setSingleStep(3)
 
         # self.verticalScrollBar().sliderMoved.connect(self.record_position)
 
-    def load_book(self) -> None:
+    def load_book(self):
+        """
+        Initialize epub file
+        """
 
         book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
         # TODO
@@ -64,7 +70,10 @@ class EReader(QTextBrowser):
         self.this_book[self.file_md5]["isbn"] = metadata[3]
         self.this_book[self.file_md5]["tags"] = metadata[4]
 
-    def set_content(self, position) -> None:
+    def set_content(self, position):
+        """
+        Sets html in webengine
+        """
 
         try:
 
@@ -77,18 +86,19 @@ class EReader(QTextBrowser):
         self.this_book[self.file_md5]["position"]["current_chapter"] = position
         self.this_book[self.file_md5]["position"]["is_read"] = False
 
-        self.setHtml(content)
-
-        self.setSearchPaths(
-            [
-                os.path.join(self.temppath, self.file_md5),
-                os.path.join(self.temppath, self.file_md5, "OEBPS", "images"),
-                os.path.join(self.temppath, self.file_md5, "OEBPS"),
-            ]
+        self.setHtml(
+            content,
+            baseUrl=QUrl.fromLocalFile(
+                os.path.join(self.temppath, self.file_md5, "OEBPS", "images")
+            ),
         )
+
         self.setFocus()
 
-    def change_chapter(self, direction) -> None:
+    def change_chapter(self, direction):
+        """
+        Changes chapter forward or backwords
+        """
         current_position = self.this_book[self.file_md5]["position"]["current_chapter"]
         final_position = len(self.this_book[self.file_md5]["content"])
 
@@ -102,7 +112,37 @@ class EReader(QTextBrowser):
 
         self.set_content(current_position + direction)
 
-    def keyPressEvent(self, ev):
+    def set_font_size(self, size):
+        """
+        Changes Font size
+        """
+        self.settings().setFontSize(QWebEngineSettings.FontSize.MinimumFontSize, size)
+
+    def bg_buttons_toggled(self, button):
+        """
+        Checks which radiobutton is toggled
+        """
+        if button.text() == "Dark" and button.isChecked():
+            print("wh")
+            self.set_background_color("#18181b")
+
+        if button.text() == "Light" and button.isChecked():
+            self.set_background_color("white")
+
+    def set_background_color(self, color):
+        """
+        Queues change background-color change to run when page is done loading
+        """
+        self.queue_func(
+            lambda: self.page().runJavaScript(
+                f"document.body.style.backgroundColor = '{color}';"
+            )
+        )
+
+    def keyPressEvent(self, ev) -> None:
+        """
+        Keyboard arrows to change page
+        """
         key = ev.key()
 
         if key == Qt.Key.Key_Right:

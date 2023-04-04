@@ -1,9 +1,8 @@
 import io
 
-from PySide6.QtCore import QBuffer, QByteArray, QIODevice, Qt
-from PySide6.QtGui import QImage
-
 from bs4 import BeautifulSoup
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice
+from PySide6.QtGui import QImage, Qt
 
 
 def resize_image(cover_image_raw):
@@ -33,5 +32,4 @@ def add_css_to_html(css, html) -> str:
     style_tag = soup.new_tag("style")
     style_tag.string = css
     soup.head.append(style_tag)
-
     return str(soup)
