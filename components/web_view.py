@@ -13,6 +13,7 @@ class WebView(QWebEngineView):
         super().__init__(parent)
         self.queue = Queue()
         self.loadFinished.connect(self.on_load_finished)
+        self.loadStarted.connect(self.load_started)
 
         self.loading = False
 
@@ -23,15 +24,23 @@ class WebView(QWebEngineView):
         """
         Runs function after view is done loading.
         """
+        self.loading = False
 
         while not self.queue.empty():
             self.queue.get()()
+
+    def load_started(self):
+        self.loading = True
 
     def queue_func(self, function):
         """
         Queue function to run when view is done loading
         """
         self.queue.put(function)
+
+    def run_func(self, function):
+        if not self.loading:
+            function()
 
     def eventFilter(self, source, event):
         """

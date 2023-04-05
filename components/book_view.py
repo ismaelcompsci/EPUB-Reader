@@ -1,3 +1,6 @@
+import base64
+import copy
+import json
 import os
 
 
@@ -27,8 +30,10 @@ class EReader(WebView):
         self.temppath = temp
 
         self.file_md5 = file_md5
+        self.settings_ = {}
 
         self.setMouseTracking(True)
+        self.page().scrollPositionChanged.connect(self.scroll_position_changed)
 
         # self.verticalScrollBar().sliderMoved.connect(self.record_position)
 
@@ -37,7 +42,6 @@ class EReader(WebView):
         Initialize epub file
         """
 
-        book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
         # TODO
         # CHECK IF BOOK ALREADY EXISTS
         # GET DATA FROM DATABASE
@@ -45,6 +49,9 @@ class EReader(WebView):
         # TODO
         # IF NEW BOOK
         # ADD TO DATABASE
+
+        # NEW BOOK
+        book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
 
         book.read_book()  # INITIALIZE BOOK
         metadata = book.generate_metadata()  # FOR ADDING TO DB
@@ -70,6 +77,19 @@ class EReader(WebView):
         self.this_book[self.file_md5]["isbn"] = metadata[3]
         self.this_book[self.file_md5]["tags"] = metadata[4]
 
+        # self.metadata = {}
+        # self.metadata[self.file_md5] = {
+        #     "hash": self.file_md5,
+        #     "path": self.filepath,
+        # }
+        # self.metadata[self.file_md5]["position"] = {}
+        # self.metadata[self.file_md5]["bookmarks"] = None
+        # self.metadata[self.file_md5]["cover"] = cover_image  # path
+        # self.metadata[self.file_md5]["title"] = metadata.title
+        # self.metadata[self.file_md5]["author"] = metadata[1]
+        # self.metadata[self.file_md5]["year"] = metadata[2]
+        # self.metadata[self.file_md5]["isbn"] = metadata[3]
+
     def set_content(self, position):
         """
         Sets html in webengine
@@ -92,6 +112,7 @@ class EReader(WebView):
                 os.path.join(self.temppath, self.file_md5, "OEBPS", "images")
             ),
         )
+        self.save_book_data()
 
         self.setFocus()
 
@@ -133,11 +154,11 @@ class EReader(WebView):
         """
         Queues change background-color change to run when page is done loading
         """
-        self.queue_func(
-            lambda: self.page().runJavaScript(
-                f"document.body.style.backgroundColor = '{color}';"
-            )
-        )
+        self.settings_["color"] = color
+        self.page().setBackgroundColor(self.settings_["color"])
+
+    def scroll_position_changed(self):
+        ...
 
     def keyPressEvent(self, ev) -> None:
         """
@@ -151,3 +172,21 @@ class EReader(WebView):
             self.change_chapter(-1)
 
         return super().keyPressEvent(ev)
+
+    def save_book_data(self):
+        new_metadata = copy.deepcopy(self.this_book)
+        new_metadata[self.file_md5].pop("content")
+
+        # ENCODED IMAGE
+        image = base64.b64encode(new_metadata[self.file_md5]["cover"]).decode("utf-8")
+        # DECODE -> base64.b64decode(encoded_image)
+
+        new_metadata[self.file_md5]["cover"] = image
+
+        database_path = os.path.join(self.temppath, "db")
+
+        if not os.path.exists(database_path):
+            os.makedirs(database_path)
+
+        with open(os.path.join(database_path, f"{self.file_md5}.json"), "w") as f:
+            json.dump(new_metadata, f)
