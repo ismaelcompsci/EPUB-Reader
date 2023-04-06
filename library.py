@@ -8,7 +8,10 @@ from PySide6.QtGui import *
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import *
 from PySide6.QtWidgets import *
+from main_reader_view import EWindow
 from qframelesswindow import *
+
+
 from static import rc_resources
 
 basedir = os.path.dirname(__file__)
@@ -84,6 +87,59 @@ class CustomWidget(QWidget):
         self._text = value
         self.initUi()
 
+    # def mouseDoubleClickEvent(self, event: PySide6.QtGui.QMouseEvent) -> None:
+
+    #     return super().mouseDoubleClickEvent(event)
+
+
+class Library(QTableWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.horizontalHeader().setStretchLastSection(True)
+        self.setShowGrid(False)
+        self.horizontalHeader().hide()
+        self.verticalHeader().hide()
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self.cellDoubleClicked.connect(self.book_selected)
+
+        self.create_library()
+
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
+
+    def create_library(self):
+
+        images = get_image_from_database(os.path.join(temp, "db"))
+
+        self.setRowCount(len(images))
+        self.setColumnCount(5)
+
+        # pass images into table
+        try:
+            for i in range(self.rowCount()):
+                for j in range(self.columnCount()):
+
+                    lb = CustomWidget(
+                        images[i][j],
+                    )
+                    self.setCellWidget(i, j, lb)
+        except IndexError:
+            pass
+
+    def book_selected(self, row, column):
+        book = self.cellWidget(row, column)
+
+        filepath = book.metadata["path"]
+        file_md5 = book.file_md5
+        temp_ = temp
+
+        print(filepath, file_md5)
+        ewindow = EWindow(filepath, temp_, file_md5)
+        ewindow.show()
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -95,39 +151,12 @@ class MainWindow(QMainWindow):
         self.create_actions()
         self.create_tool_bar()
 
-        self.table = QTableWidget()
-        self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setShowGrid(False)
-        self.table.horizontalHeader().hide()
-        self.table.verticalHeader().hide()
+        self.table = Library(self)
 
-        # self.table.horizontalHeader().setSectionResizeMode(
-        #     QHeaderView.ResizeMode.Stretch
-        # )
-
-        self.create_library()
+        # self.create_library()
 
         self.setLayout(self.H_layout)
         self.setCentralWidget(self.table)
-
-    def create_library(self):
-
-        images = get_image_from_database(os.path.join(temp, "db"))
-
-        self.table.setRowCount(len(images))
-        self.table.setColumnCount(5)
-
-        # pass images into table
-        try:
-            for i in range(self.table.rowCount()):
-                for j in range(self.table.columnCount()):
-
-                    lb = CustomWidget(
-                        images[i][j],
-                    )
-                    self.table.setCellWidget(i, j, lb)
-        except IndexError:
-            pass
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()

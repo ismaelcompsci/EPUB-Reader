@@ -168,7 +168,8 @@ class EReader(WebView):
         self.page().scripts().insert(script_)
 
     def scroll_position_changed(self, height):
-        print(height)
+        # print(height)
+        pass
 
     def keyPressEvent(self, ev) -> None:
         """
