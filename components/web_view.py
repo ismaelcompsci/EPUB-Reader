@@ -2,6 +2,23 @@ from queue import Queue
 from PySide6.QtCore import QEvent
 from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWebEngineCore import *
+import PySide6
+
+
+class Page(QWebEnginePage):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def javaScriptConsoleMessage(
+        self,
+        level: PySide6.QtWebEngineCore.QWebEnginePage.JavaScriptConsoleMessageLevel,
+        message: str,
+        lineNumber: int,
+        sourceID: str,
+    ) -> None:
+        print(message)
+        return super().javaScriptConsoleMessage(level, message, lineNumber, sourceID)
 
 
 class WebView(QWebEngineView):
@@ -11,6 +28,8 @@ class WebView(QWebEngineView):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self._page = Page(self)
+        self.setPage(self._page)
         self.queue = Queue()
         self.loadFinished.connect(self.on_load_finished)
         self.loadStarted.connect(self.load_started)
@@ -19,6 +38,8 @@ class WebView(QWebEngineView):
 
         self._childWidget = None
         self.installEventFilter(self)
+
+        self.page()
 
     def on_load_finished(self):
         """

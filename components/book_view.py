@@ -17,6 +17,11 @@ from qframelesswindow import *
 from components.web_view import WebView
 from utils.utils import resize_image, add_css_to_html
 
+# EPUB IS p tag is a block
+# count blocks
+# check which block we are in
+# set that block to the top
+
 # DISPLAYS HTML FROM BOOK
 class EReader(WebView):
     """
@@ -77,19 +82,6 @@ class EReader(WebView):
         self.this_book[self.file_md5]["isbn"] = metadata[3]
         self.this_book[self.file_md5]["tags"] = metadata[4]
 
-        # self.metadata = {}
-        # self.metadata[self.file_md5] = {
-        #     "hash": self.file_md5,
-        #     "path": self.filepath,
-        # }
-        # self.metadata[self.file_md5]["position"] = {}
-        # self.metadata[self.file_md5]["bookmarks"] = None
-        # self.metadata[self.file_md5]["cover"] = cover_image  # path
-        # self.metadata[self.file_md5]["title"] = metadata.title
-        # self.metadata[self.file_md5]["author"] = metadata[1]
-        # self.metadata[self.file_md5]["year"] = metadata[2]
-        # self.metadata[self.file_md5]["isbn"] = metadata[3]
-
     def set_content(self, position):
         """
         Sets html in webengine
@@ -144,7 +136,7 @@ class EReader(WebView):
         Checks which radiobutton is toggled
         """
         if button.text() == "Dark" and button.isChecked():
-            print("wh")
+            self.web_view_css("html {color: white;}")
             self.set_background_color("#18181b")
 
         if button.text() == "Light" and button.isChecked():
@@ -157,8 +149,26 @@ class EReader(WebView):
         self.settings_["color"] = color
         self.page().setBackgroundColor(self.settings_["color"])
 
-    def scroll_position_changed(self):
-        ...
+    def web_view_css(self, css):
+        """
+        Runs javascript code on
+        """
+
+        script = f'(function() {{ css = document.createElement("style"); css.type = "text/css"; document.head.appendChild(css); css.innerText = "{css}";}})()'
+        script_ = QWebEngineScript()
+
+        self.page().runJavaScript(
+            script, QWebEngineScript.ScriptWorldId.ApplicationWorld
+        )
+        script_.setName("style")
+        script_.setSourceCode(script)
+        script_.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
+        script_.setRunsOnSubFrames(True)
+        script_.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
+        self.page().scripts().insert(script_)
+
+    def scroll_position_changed(self, height):
+        print(height)
 
     def keyPressEvent(self, ev) -> None:
         """
@@ -190,3 +200,9 @@ class EReader(WebView):
 
         with open(os.path.join(database_path, f"{self.file_md5}.json"), "w") as f:
             json.dump(new_metadata, f)
+
+    # def test(self):
+    #     script = "console.log(window.pageXOffset, window.pageYOffset)"
+    #     self.page().runJavaScript(
+    #         script, QWebEngineScript.ScriptWorldId.ApplicationWorld
+    #     )

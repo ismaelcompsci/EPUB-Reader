@@ -1,16 +1,15 @@
+import base64
 import json
+import os
+
 import PySide6
 from PySide6.QtCore import *
 from PySide6.QtGui import *
-from PySide6.QtWebEngineWidgets import *
 from PySide6.QtWebEngineCore import *
-
+from PySide6.QtWebEngineWidgets import *
 from PySide6.QtWidgets import *
 from qframelesswindow import *
-
 from static import rc_resources
-
-import os
 
 basedir = os.path.dirname(__file__)
 
@@ -24,20 +23,33 @@ def get_image_from_database(db_path):
         filepath = os.path.join(db_path, file)
         with open(filepath, "r") as f:
             book = json.loads(f.read())
-            books.append(book)
+            filehash = os.path.splitext(file)[0]
+            books.append({"hash": filehash, "book": book})
+
+    return to_matrix(books, 5)
+
+
+def to_matrix(l, n):
+    return [l[i : i + n] for i in range(0, len(l), n)]
 
 
 class CustomWidget(QWidget):
-    def __init__(self, text, img, parent=None):
+    def __init__(self, metadata, parent=None):
         QWidget.__init__(self, parent)
 
-        self._text = text
-        self._img = img
+        self.file_md5 = metadata["hash"]
+        self.metadata = metadata["book"][self.file_md5]
+
+        self._text = self.metadata["title"]
+
+        self.cover = base64.b64decode(self.metadata["cover"])
+        self.pixmap = QPixmap()
+        self.pixmap.loadFromData(self.cover)
 
         self.setLayout(QVBoxLayout())
         self.lbPixmap = QLabel(self)
         self.lbText = QLabel(self)
-        self.lbText.setAlignment(Qt.AlignCenter)
+        self.lbText.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         self.layout().addWidget(self.lbPixmap)
         self.layout().addWidget(self.lbText)
@@ -45,11 +57,13 @@ class CustomWidget(QWidget):
         self.initUi()
 
     def initUi(self):
-        self.lbPixmap.setPixmap(
-            QPixmap(self._img).scaled(
-                self.lbPixmap.size(), Qt.AspectRatioMode.KeepAspectRatioByExpanding
-            )
+
+        pix = self.pixmap.scaled(
+            100, 200, Qt.AspectRatioMode.KeepAspectRatioByExpanding
         )
+
+        self.lbPixmap.setPixmap(pix)
+
         self.lbText.setText(self._text)
 
     def img(self):
@@ -74,33 +88,46 @@ class CustomWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.resize(800, 600)
+
+        self.H_layout = QVBoxLayout()
+
         self.create_actions()
         self.create_tool_bar()
 
-        layout = QVBoxLayout()
-
         self.table = QTableWidget()
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setShowGrid(False)
+        self.table.horizontalHeader().hide()
+        self.table.verticalHeader().hide()
+
+        # self.table.horizontalHeader().setSectionResizeMode(
+        #     QHeaderView.ResizeMode.Stretch
+        # )
 
         self.create_library()
 
-        self.setLayout(layout)
+        self.setLayout(self.H_layout)
         self.setCentralWidget(self.table)
 
     def create_library(self):
 
         images = get_image_from_database(os.path.join(temp, "db"))
 
-        self.table.setRowCount(5)
+        self.table.setRowCount(len(images))
         self.table.setColumnCount(5)
 
         # pass images into table
-        for i in range(self.table.columnCount()):
-            for j in range(self.table.rowCount()):
-                lb = CustomWidget(
-                    "imgae",
-                    r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\temp\Old Man's War - John Scalzi.epub - cover",
-                )
-                self.table.setCellWidget(i, j, lb)
+        try:
+            for i in range(self.table.rowCount()):
+                for j in range(self.table.columnCount()):
+
+                    lb = CustomWidget(
+                        images[i][j],
+                    )
+                    self.table.setCellWidget(i, j, lb)
+        except IndexError:
+            pass
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
@@ -119,5 +146,6 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     mainwindow = MainWindow()
+    # mainwindow.setStyleSheet("")
     mainwindow.show()
     app.exec()
