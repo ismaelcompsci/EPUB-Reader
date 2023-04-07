@@ -18,8 +18,7 @@ basedir = os.path.dirname(__file__)
 
 temp = r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\temp"
 
-# TODO
-# return qpixmap form book[file_md5]["cover"] -> decode from bs64
+
 def get_image_from_database(db_path):
     books = []
     for file in os.listdir(db_path):
@@ -41,11 +40,11 @@ class CustomWidget(QWidget):
         QWidget.__init__(self, parent)
 
         self.file_md5 = metadata["hash"]
-        self.metadata = metadata["book"][self.file_md5]
+        self.full_metadata = metadata["book"]
 
-        self._text = self.metadata["title"]
+        self._text = self.full_metadata[self.file_md5]["title"]
 
-        self.cover = base64.b64decode(self.metadata["cover"])
+        self.cover = base64.b64decode(self.full_metadata[self.file_md5]["cover"])
         self.pixmap = QPixmap()
         self.pixmap.loadFromData(self.cover)
 
@@ -110,6 +109,8 @@ class Library(QTableWidget):
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
 
+        self.setStyleSheet("border-width: 0px; border-style: solid")
+
     def create_library(self):
 
         images = get_image_from_database(os.path.join(temp, "db"))
@@ -132,49 +133,47 @@ class Library(QTableWidget):
     def book_selected(self, row, column):
         book = self.cellWidget(row, column)
 
-        filepath = book.metadata["path"]
         file_md5 = book.file_md5
+        filepath = book.full_metadata[file_md5]["path"]
+
         temp_ = temp
 
-        print(filepath, file_md5)
-        ewindow = EWindow(filepath, temp_, file_md5)
+        ewindow = EWindow(filepath, temp_, file_md5, book.full_metadata)
         ewindow.show()
 
 
-class MainWindow(QMainWindow):
+class MainWindow(FramelessWindow):
     def __init__(self):
         super().__init__()
+
         self.resize(800, 600)
 
-        self.H_layout = QVBoxLayout()
-
-        self.create_actions()
-        self.create_tool_bar()
+        self.v_layout = QVBoxLayout()
 
         self.table = Library(self)
 
-        # self.create_library()
+        self.v_layout.addWidget(self.table)
 
-        self.setLayout(self.H_layout)
-        self.setCentralWidget(self.table)
+        self.add_book = QPushButton("Add Book")
+        self.v_layout.addWidget(
+            self.add_book, stretch=0, alignment=Qt.AlignmentFlag.AlignHCenter
+        )
+
+        self.v_layout.setContentsMargins(0, 10, 0, 0)
+        self.setLayout(self.v_layout)
+        # self.setCentralWidget(self.table)
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
 
-    def create_actions(self):
-        self.new_action = QAction(self)
-        self.new_action.setText("Add Book")
-        self.new_action.setIcon(QIcon(":add.png"))
-
-    def create_tool_bar(self):
-        add_book_bar = self.addToolBar("Add Book")
-        add_book_bar.addAction(self.new_action)
-        add_book_bar.setMovable(False)
+        self.titleBar.raise_()
+        self.titleBar.setWindowTitle("EPUB Reader")
+        self.setContentsMargins(0, 22, 0, 0)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     mainwindow = MainWindow()
-    # mainwindow.setStyleSheet("")
+    mainwindow.setStyleSheet("background-color: white")
     mainwindow.show()
     app.exec()

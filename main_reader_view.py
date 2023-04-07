@@ -10,20 +10,6 @@ from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 from qframelesswindow import FramelessWindow
 
-# path_ = r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\epubs\the_blade_itself.epub"
-# path_2 = r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\epubs\Assassin's quest - Robin Hobb - Copy.epub"
-# path_3 = (
-#     r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\epubs\Old Man's War - John Scalzi.epub"
-# )
-
-
-# temp = r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\temp"
-
-# with open(path_, "rb") as current_book:
-#     first_bytes = current_book.read(1024 * 32)
-
-# file_md5 = hashlib.md5(first_bytes).hexdigest()
-
 
 class EWindow(FramelessWindow):
     def __init__(self, filepath, temp, file_md5):

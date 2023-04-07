@@ -72,6 +72,7 @@ class EReader(WebView):
         cover_image = resize_image(metadata.cover)
 
         self.this_book[self.file_md5]["position"] = {}
+
         self.this_book[self.file_md5]["bookmarks"] = None
         self.this_book[self.file_md5]["toc"] = toc
         self.this_book[self.file_md5]["content"] = content
@@ -81,6 +82,8 @@ class EReader(WebView):
         self.this_book[self.file_md5]["year"] = metadata[2]
         self.this_book[self.file_md5]["isbn"] = metadata[3]
         self.this_book[self.file_md5]["tags"] = metadata[4]
+        # self.this_book[self.file_md5]["window_size"]["width"] = str(self.width())
+        # self.this_book[self.file_md5]["window_size"]["height"] = str(self.height())
 
     def set_content(self, position):
         """
