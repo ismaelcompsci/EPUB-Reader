@@ -1,3 +1,4 @@
+import hashlib
 import io
 
 from bs4 import BeautifulSoup
@@ -33,3 +34,11 @@ def add_css_to_html(css, html) -> str:
     style_tag.string = css
     soup.head.append(style_tag)
     return str(soup)
+
+
+def file_md5_(file):
+    with open(file, "rb") as f:
+        first_bytes = f.read(1024 * 32)
+        file_md5_ = hashlib.md5(first_bytes).hexdigest()
+
+    return file_md5_

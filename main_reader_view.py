@@ -4,7 +4,7 @@ import os
 import sys
 
 from components.book_view import EReader
-from components.title_bar import MyTitleBar, SettingsWidget
+from components.custom_widgets import MyTitleBar, SettingsWidget
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
@@ -12,7 +12,7 @@ from qframelesswindow import FramelessWindow
 
 
 class EWindow(FramelessWindow):
-    def __init__(self, filepath, temp, file_md5):
+    def __init__(self, filepath, temp, file_md5, full_metadata):
         super().__init__()
 
         self.filePath = filepath

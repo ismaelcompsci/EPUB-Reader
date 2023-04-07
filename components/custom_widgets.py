@@ -1,4 +1,4 @@
-from json import tool
+import base64
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QSpinBox,
     QFrame,
+    QWidget,
     QRadioButton,
 )
 
@@ -104,3 +105,55 @@ class MyTitleBar(StandardTitleBar):
 
         self.toc_b.setIcon(self.button_icon)
         self.toc_b.setIconSize(QSize(24, 24))
+
+
+class CustomWidget(QWidget):
+    def __init__(self, metadata, parent=None):
+        QWidget.__init__(self, parent)
+
+        self.file_md5 = metadata["hash"]
+        self.full_metadata = metadata["book"]
+
+        self._text = self.full_metadata[self.file_md5]["title"]
+
+        self.cover = base64.b64decode(self.full_metadata[self.file_md5]["cover"])
+        self.pixmap = QPixmap()
+        self.pixmap.loadFromData(self.cover)
+
+        self.setLayout(QVBoxLayout())
+        self.lbPixmap = QLabel(self)
+        self.lbText = QLabel(self)
+        self.lbText.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.layout().addWidget(self.lbPixmap)
+        self.layout().addWidget(self.lbText)
+
+        self.initUi()
+
+    def initUi(self):
+
+        pix = self.pixmap.scaled(
+            100, 200, Qt.AspectRatioMode.KeepAspectRatioByExpanding
+        )
+
+        self.lbPixmap.setPixmap(pix)
+
+        self.lbText.setText(self._text)
+
+    def img(self):
+        return self._img
+
+    def total(self, value):
+        if self._img == value:
+            return
+        self._img = value
+        self.initUi()
+
+    def text(self):
+        return self._text
+
+    def text(self, value):
+        if self._text == value:
+            return
+        self._text = value
+        self.initUi()

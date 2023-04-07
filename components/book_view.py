@@ -15,7 +15,7 @@ from qframelesswindow import *
 
 
 from components.web_view import WebView
-from utils.utils import resize_image, add_css_to_html
+from utils.utils import resize_image, add_css_to_html, file_md5_
 
 # EPUB IS p tag is a block
 # count blocks
@@ -23,6 +23,88 @@ from utils.utils import resize_image, add_css_to_html
 # set that block to the top
 
 # DISPLAYS HTML FROM BOOK
+class BookHandler:
+    def __init__(self, file, db_path=None, settings=None, temp_dir=None) -> None:
+        self.file = file
+        self.database_path = db_path
+        self.settings = settings
+        self.temp_dir = temp_dir
+
+        self.md5_ = self.hash_book()
+
+        # BOOK DATA
+        self.parsed_book = ParseEPUB(self.file, self.temp_dir, self.md5_)
+        # NEW BOOK
+        self.parsed_book.read_book()  # INITIALIZE BOOK
+        metadata = self.parsed_book.generate_metadata()  # FOR ADDING TO DB
+        toc, content, images_only = self.parsed_book.generate_content()  # FOR READING
+
+        self.this_book = {}
+
+        self.this_book[self.md5_] = {
+            "hash": self.md5_,
+            "path": self.file,
+        }
+
+        cover_image = resize_image(metadata.cover)
+
+        self.this_book[self.md5_]["position"] = {}
+        self.this_book[self.md5_]["bookmarks"] = None
+        self.this_book[self.md5_]["toc"] = toc
+        self.this_book[self.md5_]["content"] = content
+        self.this_book[self.md5_]["cover"] = cover_image
+        self.this_book[self.md5_]["title"] = metadata.title
+        self.this_book[self.md5_]["author"] = metadata[1]
+        self.this_book[self.md5_]["year"] = metadata[2]
+        self.this_book[self.md5_]["isbn"] = metadata[3]
+        self.this_book[self.md5_]["tags"] = metadata[4]
+
+    def hash_book(self):
+        md5_ = file_md5_(self.file)
+        print("hash: ", md5_)
+        return md5_
+
+    def use_book(self):
+        ...
+
+    def save_book(self):
+        """
+        Initialize epub file
+        """
+        print("MAKING BOOK")
+
+        # TODO
+        # CHECK IF BOOK ALREADY EXISTS
+        # GET DATA FROM DATABASE
+
+        # TODO
+        # IF NEW BOOK
+        # ADD TO DATABASE
+
+        print("SAVING BOOK")
+        self.save_new_book()
+
+    def save_new_book(self):
+        new_metadata = copy.deepcopy(self.this_book)
+        new_metadata[self.md5_].pop("content")
+
+        # ENCODED IMAGE
+        image = base64.b64encode(new_metadata[self.md5_]["cover"]).decode("utf-8")
+        # DECODE -> base64.b64decode(encoded_image)
+
+        new_metadata[self.md5_]["cover"] = image
+
+        database_path = os.path.join(self.temp_dir, "db")
+
+        if not os.path.exists(database_path):
+            os.makedirs(database_path)
+
+        with open(os.path.join(database_path, f"{self.md5_}.json"), "w") as f:
+            json.dump(new_metadata, f)
+
+        print("DONE SAVEING")
+
+
 class EReader(WebView):
     """
     Web View for Html

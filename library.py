@@ -1,4 +1,5 @@
 import base64
+from fileinput import filename
 import json
 import os
 
@@ -8,8 +9,11 @@ from PySide6.QtGui import *
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import *
 from PySide6.QtWidgets import *
+
+from components.book_view import BookHandler
 from main_reader_view import EWindow
 from qframelesswindow import *
+from components.custom_widgets import CustomWidget
 
 
 from static import rc_resources
@@ -18,8 +22,18 @@ basedir = os.path.dirname(__file__)
 
 temp = r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\temp"
 
+# TODO
+# PUT NEW CLASSES IN SEPERATE FILES
+# IMPLEMENT ADD BOOK BUTTON
+# ON BOOK CLICK OPEN WINDOW AT LAST LOCATION AND SIZE
+#     - 1ST OPEN AT LAST CHAPTER
+#     - 2ND SCROLL TO LAST POSITION
+
 
 def get_image_from_database(db_path):
+    if not os.path.exists(db_path):
+        os.makedirs(db_path)
+
     books = []
     for file in os.listdir(db_path):
         filepath = os.path.join(db_path, file)
@@ -33,62 +47,6 @@ def get_image_from_database(db_path):
 
 def to_matrix(l, n):
     return [l[i : i + n] for i in range(0, len(l), n)]
-
-
-class CustomWidget(QWidget):
-    def __init__(self, metadata, parent=None):
-        QWidget.__init__(self, parent)
-
-        self.file_md5 = metadata["hash"]
-        self.full_metadata = metadata["book"]
-
-        self._text = self.full_metadata[self.file_md5]["title"]
-
-        self.cover = base64.b64decode(self.full_metadata[self.file_md5]["cover"])
-        self.pixmap = QPixmap()
-        self.pixmap.loadFromData(self.cover)
-
-        self.setLayout(QVBoxLayout())
-        self.lbPixmap = QLabel(self)
-        self.lbText = QLabel(self)
-        self.lbText.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        self.layout().addWidget(self.lbPixmap)
-        self.layout().addWidget(self.lbText)
-
-        self.initUi()
-
-    def initUi(self):
-
-        pix = self.pixmap.scaled(
-            100, 200, Qt.AspectRatioMode.KeepAspectRatioByExpanding
-        )
-
-        self.lbPixmap.setPixmap(pix)
-
-        self.lbText.setText(self._text)
-
-    def img(self):
-        return self._img
-
-    def total(self, value):
-        if self._img == value:
-            return
-        self._img = value
-        self.initUi()
-
-    def text(self):
-        return self._text
-
-    def text(self, value):
-        if self._text == value:
-            return
-        self._text = value
-        self.initUi()
-
-    # def mouseDoubleClickEvent(self, event: PySide6.QtGui.QMouseEvent) -> None:
-
-    #     return super().mouseDoubleClickEvent(event)
 
 
 class Library(QTableWidget):
@@ -130,6 +88,9 @@ class Library(QTableWidget):
         except IndexError:
             pass
 
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
+
     def book_selected(self, row, column):
         book = self.cellWidget(row, column)
 
@@ -140,6 +101,12 @@ class Library(QTableWidget):
 
         ewindow = EWindow(filepath, temp_, file_md5, book.full_metadata)
         ewindow.show()
+
+    def book_added(self, file):
+        handle = BookHandler(file, temp_dir=temp)
+        handle.save_book()
+
+        self.create_library()
 
 
 class MainWindow(FramelessWindow):
@@ -155,6 +122,7 @@ class MainWindow(FramelessWindow):
         self.v_layout.addWidget(self.table)
 
         self.add_book = QPushButton("Add Book")
+        self.add_book.clicked.connect(self.add_book_clicked)
         self.v_layout.addWidget(
             self.add_book, stretch=0, alignment=Qt.AlignmentFlag.AlignHCenter
         )
@@ -169,6 +137,16 @@ class MainWindow(FramelessWindow):
         self.titleBar.raise_()
         self.titleBar.setWindowTitle("EPUB Reader")
         self.setContentsMargins(0, 22, 0, 0)
+
+    def add_book_clicked(self):
+        file_name = QFileDialog.getOpenFileName(
+            self,
+            "Open EPUB",
+            dir=r"C:\Users\Ismael\Documents\PROJECTS\EBookV2\epubs",
+            filter="EPUB Files (*.epub)",
+        )[0]
+
+        self.table.book_added(file_name)
 
 
 if __name__ == "__main__":
