@@ -132,40 +132,59 @@ class EReader(WebView):
         # TODO
         # CHECK IF BOOK ALREADY EXISTS
         # GET DATA FROM DATABASE
+        book_data_path = os.path.join(self.temppath, "db", f"{self.file_md5}.json")
+
+        if os.path.exists(book_data_path):
+            with open(book_data_path, "r") as f:
+                book_found = json.loads(f.read())
+
+                book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
+
+                book.read_book()
+                toc, content, images_only = book.generate_content()
+
+                self.this_book = book_found
+                self.this_book[self.file_md5]["content"] = content
+                self.this_book[self.file_md5]["cover"] = base64.b64decode(
+                    book_found[self.file_md5]["cover"]
+                )
 
         # TODO
         # IF NEW BOOK
         # ADD TO DATABASE
+        else:
 
-        # NEW BOOK
-        book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
+            # NEW BOOK
+            book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
 
-        book.read_book()  # INITIALIZE BOOK
-        metadata = book.generate_metadata()  # FOR ADDING TO DB
-        toc, content, images_only = book.generate_content()  # FOR READING
+            book.read_book()  # INITIALIZE BOOK
+            metadata = book.generate_metadata()  # FOR ADDING TO DB
+            toc, content, images_only = book.generate_content()  # FOR READING
 
-        self.this_book = {}
+            self.this_book = {}
 
-        self.this_book[self.file_md5] = {
-            "hash": self.file_md5,
-            "path": self.filepath,
-        }
+            self.this_book[self.file_md5] = {
+                "hash": self.file_md5,
+                "path": self.filepath,
+            }
 
-        cover_image = resize_image(metadata.cover)
+            cover_image = resize_image(metadata.cover)
 
-        self.this_book[self.file_md5]["position"] = {}
+            self.this_book[self.file_md5]["position"] = {}
 
-        self.this_book[self.file_md5]["bookmarks"] = None
-        self.this_book[self.file_md5]["toc"] = toc
-        self.this_book[self.file_md5]["content"] = content
-        self.this_book[self.file_md5]["cover"] = cover_image
-        self.this_book[self.file_md5]["title"] = metadata.title
-        self.this_book[self.file_md5]["author"] = metadata[1]
-        self.this_book[self.file_md5]["year"] = metadata[2]
-        self.this_book[self.file_md5]["isbn"] = metadata[3]
-        self.this_book[self.file_md5]["tags"] = metadata[4]
-        # self.this_book[self.file_md5]["window_size"]["width"] = str(self.width())
-        # self.this_book[self.file_md5]["window_size"]["height"] = str(self.height())
+            self.this_book[self.file_md5]["bookmarks"] = None
+            self.this_book[self.file_md5]["toc"] = toc
+            self.this_book[self.file_md5]["content"] = content
+            self.this_book[self.file_md5]["cover"] = cover_image
+            self.this_book[self.file_md5]["title"] = metadata.title
+            self.this_book[self.file_md5]["author"] = metadata[1]
+            self.this_book[self.file_md5]["year"] = metadata[2]
+            self.this_book[self.file_md5]["isbn"] = metadata[3]
+            self.this_book[self.file_md5]["tags"] = metadata[4]
+
+        self.set_content(
+            int(self.this_book[self.file_md5]["position"]["current_chapter"])
+        )
 
     def set_content(self, position):
         """

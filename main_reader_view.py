@@ -43,7 +43,6 @@ class EWindow(FramelessWindow):
 
         self.content_view = EReader(self, self.filePath, self.temp, self.file_md5)
         self.content_view.load_book()
-        self.content_view.set_content(0)
 
         self.layout_.addWidget(self.content_view)
 
