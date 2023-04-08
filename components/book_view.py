@@ -153,6 +153,12 @@ class EReader(WebView):
                     book_found[self.file_md5]["cover"]
                 )
 
+            if len(self.this_book[self.file_md5]["position"]) == 0:
+                self.set_content(0)
+            self.set_content(
+                int(self.this_book[self.file_md5]["position"]["current_chapter"])
+            )
+
         # TODO
         # IF NEW BOOK
         # ADD TO DATABASE
@@ -186,9 +192,7 @@ class EReader(WebView):
             self.this_book[self.file_md5]["isbn"] = metadata[3]
             self.this_book[self.file_md5]["tags"] = metadata[4]
 
-        self.set_content(
-            int(self.this_book[self.file_md5]["position"]["current_chapter"])
-        )
+            self.set_content(0)
 
     def set_content(self, position):
         """

@@ -1,5 +1,4 @@
 import base64
-from fileinput import filename
 import json
 import os
 
@@ -24,6 +23,9 @@ TEMPDIR = os.path.join(BASEDIR, "temp")
 
 if not os.path.exists(TEMPDIR):
     os.makedirs(TEMPDIR)
+
+# TODO
+# LOOK AT FRAMELESSWINDOW EVENTFILTER
 
 
 # TODO
@@ -104,6 +106,7 @@ class Library(QTableWidget):
         temp_ = TEMPDIR
 
         ewindow = EWindow(filepath, temp_, file_md5, book.full_metadata)
+
         ewindow.show()
 
     def book_added(self, file):
