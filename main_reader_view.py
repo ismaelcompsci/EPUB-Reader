@@ -33,6 +33,8 @@ class EWindow(FramelessWindow):
             grip.setStyleSheet("""background-color: transparent""")
             self.grips.append(grip)
 
+        self.resize(600, 900)
+
     # SET LAYOUT OF FRAMLESSWINDOW
     def set_layout(self) -> None:
         """
@@ -107,15 +109,3 @@ class EWindow(FramelessWindow):
         )
         # bottom left
         self.grips[3].move(0, rect.bottom() - self.gripSize + 1)
-
-
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-
-#     mainwindow = EWindow(path_, temp, file_md5)
-
-#     mainwindow.show()
-
-#     mainwindow.resize(500, 900)
-
-#     app.exec()

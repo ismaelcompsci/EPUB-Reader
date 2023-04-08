@@ -104,6 +104,10 @@ class BookHandler:
 
         print("DONE SAVEING")
 
+    def already_exists(self):
+        # CHECK IF BOOK ALREADY EXISTS USING MD5 HASH
+        ...
+
 
 class EReader(WebView):
     """
