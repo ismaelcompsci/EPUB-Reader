@@ -27,6 +27,9 @@ if not os.path.exists(TEMPDIR):
 # TODO
 # LOOK AT FRAMELESSWINDOW EVENTFILTER
 
+# TODO
+# SET TYPES
+
 
 # TODO
 # PUT NEW CLASSES IN SEPERATE FILES
@@ -36,7 +39,10 @@ if not os.path.exists(TEMPDIR):
 #     - 2ND SCROLL TO LAST POSITION
 
 
-def get_image_from_database(db_path):
+def get_image_from_database(db_path: str) -> list:
+    """
+    returns a 2d array with a row containing max 5 columns per row
+    """
     if not os.path.exists(db_path):
         os.makedirs(db_path)
 
@@ -51,12 +57,16 @@ def get_image_from_database(db_path):
     return to_matrix(books, 5)
 
 
-def to_matrix(l, n):
+def to_matrix(l: list, n: int) -> list:
     return [l[i : i + n] for i in range(0, len(l), n)]
 
 
 class Library(QTableWidget):
-    def __init__(self, parent):
+    """
+    Table view for books
+    """
+
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
 
         self.horizontalHeader().setStretchLastSection(True)
@@ -75,7 +85,10 @@ class Library(QTableWidget):
 
         self.setStyleSheet("border-width: 0px; border-style: solid")
 
-    def create_library(self):
+    def create_library(self) -> None:
+        """
+        Populate table widget
+        """
 
         images = get_image_from_database(os.path.join(TEMPDIR, "db"))
 
@@ -97,7 +110,10 @@ class Library(QTableWidget):
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
 
-    def book_selected(self, row, column):
+    def book_selected(self, row: int, column: int) -> None:
+        """
+        Open selected book
+        """
         book = self.cellWidget(row, column)
 
         file_md5 = book.file_md5
@@ -109,15 +125,23 @@ class Library(QTableWidget):
 
         ewindow.show()
 
-    def book_added(self, file):
+    def book_added(self, file: str) -> None:
+        """
+        Adds book the database and reloads table widget
+        """
         handle = BookHandler(file, temp_dir=TEMPDIR)
         handle.save_book()
 
+        self.clear()
         self.create_library()
 
 
 class MainWindow(FramelessWindow):
-    def __init__(self):
+    """
+    Main view for app
+    """
+
+    def __init__(self) -> None:
         super().__init__()
 
         self.resize(800, 600)
@@ -145,7 +169,10 @@ class MainWindow(FramelessWindow):
         self.titleBar.setWindowTitle("EPUB Reader")
         self.setContentsMargins(0, 22, 0, 0)
 
-    def add_book_clicked(self):
+    def add_book_clicked(self) -> None:
+        """
+        Opens book
+        """
         file_name = QFileDialog.getOpenFileName(
             self,
             "Open EPUB",

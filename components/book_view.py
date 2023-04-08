@@ -24,7 +24,13 @@ from utils.utils import resize_image, add_css_to_html, file_md5_
 
 # DISPLAYS HTML FROM BOOK
 class BookHandler:
-    def __init__(self, file, db_path=None, settings=None, temp_dir=None) -> None:
+    """
+    Adds book to db
+    """
+
+    def __init__(
+        self, file: str, db_path: str = None, settings: str = None, temp_dir: str = None
+    ) -> None:
         self.file = file
         self.database_path = db_path
         self.settings = settings
@@ -59,19 +65,19 @@ class BookHandler:
         self.this_book[self.md5_]["isbn"] = metadata[3]
         self.this_book[self.md5_]["tags"] = metadata[4]
 
-    def hash_book(self):
+    def hash_book(self) -> str:
         md5_ = file_md5_(self.file)
-        print("hash: ", md5_)
+        # print("hash: ", md5_)
         return md5_
 
-    def use_book(self):
+    def use_book(self) -> None:
         ...
 
-    def save_book(self):
+    def save_book(self) -> None:
         """
         Initialize epub file
         """
-        print("MAKING BOOK")
+        # print("MAKING BOOK")
 
         # TODO
         # CHECK IF BOOK ALREADY EXISTS
@@ -81,10 +87,13 @@ class BookHandler:
         # IF NEW BOOK
         # ADD TO DATABASE
 
-        print("SAVING BOOK")
+        # print("SAVING BOOK")
         self.save_new_book()
 
-    def save_new_book(self):
+    def save_new_book(self) -> None:
+        """
+        Saves new book
+        """
         new_metadata = copy.deepcopy(self.this_book)
         new_metadata[self.md5_].pop("content")
 
@@ -102,7 +111,7 @@ class BookHandler:
         with open(os.path.join(database_path, f"{self.md5_}.json"), "w") as f:
             json.dump(new_metadata, f)
 
-        print("DONE SAVEING")
+        # print("DONE SAVEING")
 
     def already_exists(self):
         # CHECK IF BOOK ALREADY EXISTS USING MD5 HASH
@@ -114,7 +123,7 @@ class EReader(WebView):
     Web View for Html
     """
 
-    def __init__(self, parent, path, temp, file_md5):
+    def __init__(self, parent: QWidget, path: str, temp: str, file_md5: str):
         super().__init__(parent)
 
         self.filepath = path
@@ -128,7 +137,7 @@ class EReader(WebView):
 
         # self.verticalScrollBar().sliderMoved.connect(self.record_position)
 
-    def load_book(self):
+    def load_book(self) -> None:
         """
         Initialize epub file
         """
@@ -194,7 +203,7 @@ class EReader(WebView):
 
             self.set_content(0)
 
-    def set_content(self, position):
+    def set_content(self, position: int) -> None:
         """
         Sets html in webengine
         """
@@ -210,17 +219,20 @@ class EReader(WebView):
         self.this_book[self.file_md5]["position"]["current_chapter"] = position
         self.this_book[self.file_md5]["position"]["is_read"] = False
 
+        # TODO
+        # FIND A WAY TO NOT BREAK IMAGES FROM DIFFERENT FILE STRUCTURES
+        # SOMEHOW STUFF WORKS WHEN IMAGES ARE FOUND?????
         self.setHtml(
             content,
             baseUrl=QUrl.fromLocalFile(
-                os.path.join(self.temppath, self.file_md5, "OEBPS", "images")
+                os.path.join(self.temppath, self.file_md5, "OEBPS", "xhtml", "images")
             ),
         )
         self.save_book_data()
 
         self.setFocus()
 
-    def change_chapter(self, direction):
+    def change_chapter(self, direction: int) -> None:
         """
         Changes chapter forward or backwords
         """
@@ -237,16 +249,17 @@ class EReader(WebView):
 
         self.set_content(current_position + direction)
 
-    def set_font_size(self, size):
+    def set_font_size(self, size: int) -> None:
         """
         Changes Font size
         """
         self.settings().setFontSize(QWebEngineSettings.FontSize.MinimumFontSize, size)
 
-    def bg_buttons_toggled(self, button):
+    def bg_buttons_toggled(self, button: QRadioButton) -> None:
         """
         Checks which radiobutton is toggled
         """
+        print(type(button))
         if button.text() == "Dark" and button.isChecked():
             self.web_view_css("html {color: white;}")
             self.set_background_color("#18181b")
@@ -254,14 +267,14 @@ class EReader(WebView):
         if button.text() == "Light" and button.isChecked():
             self.set_background_color("white")
 
-    def set_background_color(self, color):
+    def set_background_color(self, color: str) -> None:
         """
         Queues change background-color change to run when page is done loading
         """
         self.settings_["color"] = color
         self.page().setBackgroundColor(self.settings_["color"])
 
-    def web_view_css(self, css):
+    def web_view_css(self, css: str) -> None:
         """
         Runs javascript code on
         """
@@ -283,10 +296,11 @@ class EReader(WebView):
         # print(height)
         pass
 
-    def keyPressEvent(self, ev) -> None:
+    def keyPressEvent(self, ev: QKeyEvent) -> None:
         """
         Keyboard arrows to change page
         """
+        print(type(ev))
         key = ev.key()
 
         if key == Qt.Key.Key_Right:
@@ -296,7 +310,10 @@ class EReader(WebView):
 
         return super().keyPressEvent(ev)
 
-    def save_book_data(self):
+    def save_book_data(self) -> None:
+        """
+        Saves book data to db
+        """
         new_metadata = copy.deepcopy(self.this_book)
         new_metadata[self.file_md5].pop("content")
 

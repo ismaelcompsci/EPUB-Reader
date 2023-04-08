@@ -12,7 +12,13 @@ from qframelesswindow import FramelessWindow
 
 
 class EWindow(FramelessWindow):
-    def __init__(self, filepath, temp, file_md5, full_metadata):
+    """
+    Main view for reading books
+    """
+
+    def __init__(
+        self, filepath: str, temp: str, file_md5: str, full_metadata: dict
+    ) -> None:
         super().__init__()
 
         self.filePath = filepath
@@ -38,7 +44,7 @@ class EWindow(FramelessWindow):
     # SET LAYOUT OF FRAMLESSWINDOW
     def set_layout(self) -> None:
         """
-        Makes Ui layout and stuff
+        Makes Ui layout
         """
         self.layout_ = QVBoxLayout(self)
         self.layout_.setContentsMargins(0, self.titleBar.height(), 0, 0)
@@ -71,7 +77,7 @@ class EWindow(FramelessWindow):
         self.titleBar.raise_()
         self.content_view.setFocus()
 
-    def settings_button_clicked(self):
+    def settings_button_clicked(self) -> None:
         """
         Hides or shows settings widget
         """
@@ -82,7 +88,7 @@ class EWindow(FramelessWindow):
 
         # self.layout_.addWidget(self.content_view)
 
-    def add_qss(self):
+    def add_qss(self) -> None:
         """
         add qss
         """
@@ -90,13 +96,19 @@ class EWindow(FramelessWindow):
         with open(qss, "r") as f:
             self.setStyleSheet(f.read())
 
-    def next_chapter(self):
+    def next_chapter(self) -> None:
+        """
+        Next chapter
+        """
         self.content_view.change_chapter(1)
 
-    def back_chapter(self):
+    def back_chapter(self) -> None:
+        """
+        Previous chapter
+        """
         self.content_view.change_chapter(-1)
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QResizeEvent) -> None:
         """ADDS RESIZEABLE WINDOW EVENT"""
         super(EWindow, self).resizeEvent(event)
         rect = self.rect()

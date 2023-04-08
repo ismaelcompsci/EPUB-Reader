@@ -4,10 +4,16 @@ from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWebEngineCore import *
 import PySide6
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QObject
 
 
 class Page(QWebEnginePage):
-    def __init__(self, parent):
+    """
+    WebEngineView Page
+    """
+
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
 
     def javaScriptConsoleMessage(
@@ -26,7 +32,7 @@ class WebView(QWebEngineView):
     https://doc.qt.io/qtforpython/PySide6/QtWebEngineWidgets/QWebEngineView.html
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
         self._page = Page(self)
         self.setPage(self._page)
@@ -41,7 +47,7 @@ class WebView(QWebEngineView):
 
         self.page()
 
-    def on_load_finished(self):
+    def on_load_finished(self) -> None:
         """
         Runs function after view is done loading.
         """
@@ -50,20 +56,20 @@ class WebView(QWebEngineView):
         while not self.queue.empty():
             self.queue.get()()
 
-    def load_started(self):
+    def load_started(self) -> None:
         self.loading = True
 
-    def queue_func(self, function):
+    def queue_func(self, function) -> None:
         """
         Queue function to run when view is done loading
         """
         self.queue.put(function)
 
-    def run_func(self, function):
+    def run_func(self, function) -> None:
         if not self.loading:
             function()
 
-    def eventFilter(self, source, event):
+    def eventFilter(self, source: QObject, event: QEvent):
         """
         MAKES MOUSE EVENT HANDLERS WORK
         """

@@ -21,7 +21,11 @@ from qframelesswindow import StandardTitleBar, FramelessWindow
 
 
 class SettingsWidget(FramelessWindow):
-    def __init__(self):
+    """
+    Settings widget
+    """
+
+    def __init__(self) -> None:
         super().__init__()
 
         # WIDGET LAYOUT
@@ -62,9 +66,8 @@ class SettingsWidget(FramelessWindow):
 
 
 class MyTitleBar(StandardTitleBar):
-    def __init__(self, parent, cover):
+    def __init__(self, parent: QWidget, cover: bytes) -> None:
         super().__init__(parent)
-
         self.toc_b = QPushButton("Contents")
         self.cover = cover
 
@@ -92,7 +95,7 @@ class MyTitleBar(StandardTitleBar):
         )
         self.addIconToButton()
 
-    def addIconToButton(self):
+    def addIconToButton(self) -> None:
         img = QImage.fromData(self.cover, "JPEG")
         self.q_img = QPixmap.fromImage(img)
 
@@ -108,7 +111,7 @@ class MyTitleBar(StandardTitleBar):
 
 
 class CustomWidget(QWidget):
-    def __init__(self, metadata, parent=None):
+    def __init__(self, metadata: dict, parent: QWidget = None):
         QWidget.__init__(self, parent)
 
         self.file_md5 = metadata["hash"]
@@ -131,6 +134,9 @@ class CustomWidget(QWidget):
         self.initUi()
 
     def initUi(self):
+        """
+        Set image into qlabel
+        """
 
         pix = self.pixmap.scaled(
             100, 200, Qt.AspectRatioMode.KeepAspectRatioByExpanding
