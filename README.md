@@ -3,7 +3,7 @@
 Using Lectors EPUB Parser\
 https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py 
 
-## Compatibility\
+## Compatibility
 Only tested on Windows 10
 
 
