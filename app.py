@@ -1,21 +1,17 @@
-import base64
-import json
 import os
 
 import PySide6
+from components.book_view import BookHandler
+from components.custom_widgets import CustomWidget
+from main_reader_view import EWindow
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import *
 from PySide6.QtWidgets import *
-
-from components.book_view import BookHandler
-from main_reader_view import EWindow
 from qframelesswindow import *
-from components.custom_widgets import CustomWidget
-
-
 from static import rc_resources
+from utils.utils import get_image_from_database
 
 BASEDIR = os.path.dirname(__file__)
 
@@ -37,28 +33,6 @@ if not os.path.exists(TEMPDIR):
 # ON BOOK CLICK OPEN WINDOW AT LAST LOCATION AND SIZE
 #     - 1ST OPEN AT LAST CHAPTER
 #     - 2ND SCROLL TO LAST POSITION
-
-
-def get_image_from_database(db_path: str) -> list:
-    """
-    returns a 2d array with a row containing max 5 columns per row
-    """
-    if not os.path.exists(db_path):
-        os.makedirs(db_path)
-
-    books = []
-    for file in os.listdir(db_path):
-        filepath = os.path.join(db_path, file)
-        with open(filepath, "r") as f:
-            book = json.loads(f.read())
-            filehash = os.path.splitext(file)[0]
-            books.append({"hash": filehash, "book": book})
-
-    return to_matrix(books, 5)
-
-
-def to_matrix(l: list, n: int) -> list:
-    return [l[i : i + n] for i in range(0, len(l), n)]
 
 
 class Library(QTableWidget):
