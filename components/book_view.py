@@ -2,6 +2,7 @@ import base64
 import copy
 import json
 import os
+import pathlib
 
 
 from epub_tools.epub import ParseEPUB
@@ -21,6 +22,25 @@ from utils.utils import resize_image, add_css_to_html, file_md5_
 # count blocks
 # check which block we are in
 # set that block to the top
+
+
+def find_html_dir(temp: str, file_md5: str) -> str:
+    """
+    Find html dir for setHtml baseUrl
+    """
+    base_dir = os.path.join(temp, file_md5)
+
+    for path, subdirs, files in os.walk(base_dir):
+        html_file_count = 0
+        for name in files:
+            if "htm" in name:
+                html_file_count += 1
+                if html_file_count >= 2:
+                    # return a dir with 2 or more html files
+                    return str(pathlib.Path(path).resolve()) + os.path.sep
+    # Return the temp dir of the book
+    return os.path.join(temp, file_md5) + os.path.join
+
 
 # DISPLAYS HTML FROM BOOK
 class BookHandler:
@@ -132,6 +152,8 @@ class EReader(WebView):
         self.file_md5 = file_md5
         self.settings_ = {}
 
+        self.base_url = find_html_dir(self.temppath, self.file_md5)
+
         self.setMouseTracking(True)
         self.page().scrollPositionChanged.connect(self.scroll_position_changed)
 
@@ -211,7 +233,6 @@ class EReader(WebView):
         try:
 
             content = self.this_book[self.file_md5]["content"][position]
-            # print(content)
 
         except IndexError:
             return
@@ -220,13 +241,14 @@ class EReader(WebView):
         self.this_book[self.file_md5]["position"]["is_read"] = False
 
         # TODO
-        # FIND A WAY TO NOT BREAK IMAGES FROM DIFFERENT FILE STRUCTURES
-        # SOMEHOW STUFF WORKS WHEN IMAGES ARE FOUND?????
+        # ----------------****------------
+        # FIND DIRECTORY WITH HTML FILES
+        # 26eba5498bb8250d008595b74c7b33d0 -> OEBPS -> 1.HTML, 2.HTML
+        # FULL DIR IS temppath\26eba5498bb8250d008595b74c7b33d0\OEBPS\    <- ANSWER
+
         self.setHtml(
             content,
-            baseUrl=QUrl.fromLocalFile(
-                os.path.join(self.temppath, self.file_md5, "OEBPS", "xhtml", "images")
-            ),
+            baseUrl=QUrl.fromLocalFile(self.base_url),
         )
         self.save_book_data()
 
@@ -259,7 +281,6 @@ class EReader(WebView):
         """
         Checks which radiobutton is toggled
         """
-        print(type(button))
         if button.text() == "Dark" and button.isChecked():
             self.web_view_css("html {color: white;}")
             self.set_background_color("#18181b")
@@ -300,7 +321,7 @@ class EReader(WebView):
         """
         Keyboard arrows to change page
         """
-        print(type(ev))
+
         key = ev.key()
 
         if key == Qt.Key.Key_Right:

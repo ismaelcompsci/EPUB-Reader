@@ -355,6 +355,7 @@ class EPUB:
                 self.cover_image_name.lower() + ".png" in self.content[0][2].lower(),
                 "cover" in self.content[0][1].lower(),
             )
+            print(cover_replacement_conditions)
 
             if True in cover_replacement_conditions:
                 logger.info(
