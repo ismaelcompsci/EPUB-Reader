@@ -15,3 +15,15 @@ Only tested on Windows 10
 # Reader & Library
 ![image info](static/Screenshot02.png "LIbrary")
 
+### Todo
+- [ ] fix table view
+- [ ] open book at last scroll location
+- [ ] add toc view
+- [ ] better resizing on reader view
+- [ ] fix bookhandler 
+- [ ] add more settings
+  - [ ] font-family
+  - [ ] font-color
+  - [ ] background-color
+  - [ ] default presets 
+- [ ] add threads?
