@@ -1,8 +1,6 @@
-import hashlib
-import json
 import os
-import sys
 
+import PySide6
 from components.book_view import EReader
 from components.custom_widgets import MyTitleBar, SettingsWidget
 from PySide6.QtCore import *
@@ -38,8 +36,6 @@ class EWindow(FramelessWindow):
             grip.resize(self.gripSize, self.gripSize)
             grip.setStyleSheet("""background-color: transparent""")
             self.grips.append(grip)
-
-        self.resize(600, 900)
 
     # SET LAYOUT OF FRAMLESSWINDOW
     def set_layout(self) -> None:
@@ -121,3 +117,33 @@ class EWindow(FramelessWindow):
         )
         # bottom left
         self.grips[3].move(0, rect.bottom() - self.gripSize + 1)
+
+    def closeEvent(self, event: PySide6.QtGui.QCloseEvent) -> None:
+
+        # WINDOW SIZE
+        size = str(self.size().toTuple()).replace("(", "").replace(")", "").split(",")
+        size[1] = size[1].replace(" ", "")
+
+        w, h = size
+
+        self.content_view.this_book[self.file_md5]["window_size"] = {}
+        self.content_view.this_book[self.file_md5]["window_size"]["width"] = w
+        self.content_view.this_book[self.file_md5]["window_size"]["height"] = h
+
+        # SCROLL POSITION
+        try:
+            y = self.content_view.scroll_height.y()
+        except AttributeError:
+            y = 0
+
+        self.content_view.this_book[self.file_md5]["scroll_position"] = y
+
+        # STYLE
+        self.content_view.this_book[self.file_md5]["style"] = self.content_view.style_
+
+        # print(self.content_view.this_book[self.file_md5]["style"])
+
+        # SAVING TO FILE
+        self.content_view.save_book_data()
+
+        return super().closeEvent(event)

@@ -15,13 +15,14 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QFileDialog,
     QPushButton,
+    QAbstractScrollArea,
 )
 
 import PySide6
 from components.book_view import BookHandler
 from components.custom_widgets import CustomWidget
 from main_reader_view import EWindow
-from qframelesswindow import *
+from qframelesswindow import FramelessWindow, StandardTitleBar
 from resources import rc_resources
 from utils.utils import get_image_from_database
 
@@ -51,11 +52,15 @@ class Library(QTableWidget):
         super().__init__(parent)
 
         self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setMaximumWidth(100)
+
         self.setShowGrid(False)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        self.verticalScrollBar().setSingleStep(9)
 
         self.cellDoubleClicked.connect(self.book_selected)
 
@@ -143,11 +148,10 @@ class MainWindow(FramelessWindow):
         self.setLayout(self.v_layout)
         # self.setCentralWidget(self.table)
 
-        self.table.resizeColumnsToContents()
-        self.table.resizeRowsToContents()
-
+        titlebar = StandardTitleBar(self)
+        titlebar.setTitle("EPUB Reader")
+        self.setTitleBar(titlebar)
         self.titleBar.raise_()
-        self.titleBar.setWindowTitle("EPUB Reader")
         self.setContentsMargins(0, 22, 0, 0)
 
     def add_book_clicked(self) -> None:

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QWidget,
     QRadioButton,
+    QSizePolicy,
 )
 
 from qframelesswindow import StandardTitleBar, FramelessWindow
@@ -127,6 +128,7 @@ class CustomWidget(QWidget):
         self.lbPixmap = QLabel(self)
         self.lbText = QLabel(self)
         self.lbText.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.lbText.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
 
         self.layout().addWidget(self.lbPixmap)
         self.layout().addWidget(self.lbText)

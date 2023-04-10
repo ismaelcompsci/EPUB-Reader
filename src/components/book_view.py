@@ -145,6 +145,7 @@ class EReader(WebView):
 
     def __init__(self, parent: QWidget, path: str, temp: str, file_md5: str):
         super().__init__(parent)
+        self.style_ = None
 
         self.filepath = path
         self.temppath = temp
@@ -155,6 +156,8 @@ class EReader(WebView):
         self.base_url = find_html_dir(self.temppath, self.file_md5)
 
         self.setMouseTracking(True)
+
+        self.scroll_height = 0
         self.page().scrollPositionChanged.connect(self.scroll_position_changed)
 
         # self.verticalScrollBar().sliderMoved.connect(self.record_position)
@@ -183,12 +186,35 @@ class EReader(WebView):
                 self.this_book[self.file_md5]["cover"] = base64.b64decode(
                     book_found[self.file_md5]["cover"]
                 )
+            # SET SCROLL POS
+            self.scroll_y = None
+            if "scroll_position" in self.this_book[self.file_md5]:
+                # self.parent().
+                self.scroll_y = self.this_book[self.file_md5]["scroll_position"]
 
+            # CHECK IF WE HAVE A RECORDED POS
             if len(self.this_book[self.file_md5]["position"]) == 0:
                 self.set_content(0)
-            self.set_content(
-                int(self.this_book[self.file_md5]["position"]["current_chapter"])
-            )
+
+            else:
+                # SET CHAPTER POS
+                self.set_content(
+                    int(self.this_book[self.file_md5]["position"]["current_chapter"])
+                )
+                self.scroll_to(self.scroll_y)
+
+            # SET RECORDED WINDOW SIZE
+            if "window_size" in self.this_book[self.file_md5]:
+                w = int(self.this_book[self.file_md5]["window_size"]["width"])
+                h = int(self.this_book[self.file_md5]["window_size"]["height"])
+
+                self.parent().resize(w, h)
+            else:
+                self.parent().resize(600, 900)
+
+            if "style" in self.this_book[self.file_md5]:
+                style = self.this_book[self.file_md5]["style"]
+                self.presets(style)
 
         # TODO
         # IF NEW BOOK
@@ -275,6 +301,7 @@ class EReader(WebView):
         """
         Changes Font size
         """
+        self.set_settings("font_size", size)
         self.settings().setFontSize(QWebEngineSettings.FontSize.MinimumFontSize, size)
 
     def bg_buttons_toggled(self, button: QRadioButton) -> None:
@@ -282,18 +309,27 @@ class EReader(WebView):
         Checks which radiobutton is toggled
         """
         if button.text() == "Dark" and button.isChecked():
+            self.presets("Dark")
+
+        if button.text() == "Light" and button.isChecked():
+            self.presets("Light")
+
+    def presets(self, style):
+        self.style_ = style
+
+        if style == "Dark":
             self.web_view_css("html {color: white;}")
             self.set_background_color("#18181b")
 
-        if button.text() == "Light" and button.isChecked():
+        if style == "Light":
             self.set_background_color("white")
 
     def set_background_color(self, color: str) -> None:
         """
         Queues change background-color change to run when page is done loading
         """
-        self.settings_["color"] = color
-        self.page().setBackgroundColor(self.settings_["color"])
+        self.set_settings("background_color", color)
+        self.page().setBackgroundColor(color)
 
     def web_view_css(self, css: str) -> None:
         """
@@ -314,8 +350,11 @@ class EReader(WebView):
         self.page().scripts().insert(script_)
 
     def scroll_position_changed(self, height):
-        # print(height)
-        pass
+        self.scroll_height = height
+
+    def scroll_to(self, pos):
+        # SET SCROLL POS
+        self.queue_func(lambda: self.page().runJavaScript(f"window.scrollTo(0, {pos})"))
 
     def keyPressEvent(self, ev: QKeyEvent) -> None:
         """
@@ -330,6 +369,9 @@ class EReader(WebView):
             self.change_chapter(-1)
 
         return super().keyPressEvent(ev)
+
+    def set_settings(self, key: str, value: str | int):
+        self.settings_[key] = value
 
     def save_book_data(self) -> None:
         """
