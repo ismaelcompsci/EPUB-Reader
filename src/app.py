@@ -1,17 +1,30 @@
 import os
+import sys
+
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
+
+
+from PySide6.QtGui import *
+from PySide6.QtWebEngineCore import *
+from PySide6.QtWebEngineWidgets import *
+from PySide6.QtWidgets import (
+    QTableWidget,
+    QWidget,
+    QAbstractItemView,
+    QVBoxLayout,
+    QFileDialog,
+    QPushButton,
+)
 
 import PySide6
 from components.book_view import BookHandler
 from components.custom_widgets import CustomWidget
 from main_reader_view import EWindow
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWebEngineCore import *
-from PySide6.QtWebEngineWidgets import *
-from PySide6.QtWidgets import *
 from qframelesswindow import *
 from resources import rc_resources
 from utils.utils import get_image_from_database
+
 
 BASEDIR = os.path.dirname(__file__)
 
@@ -23,13 +36,7 @@ if not os.path.exists(TEMPDIR):
 # TODO
 # LOOK AT FRAMELESSWINDOW EVENTFILTER
 
-# TODO
-# SET TYPES
 
-
-# TODO
-# PUT NEW CLASSES IN SEPERATE FILES
-# IMPLEMENT ADD BOOK BUTTON
 # ON BOOK CLICK OPEN WINDOW AT LAST LOCATION AND SIZE
 #     - 1ST OPEN AT LAST CHAPTER
 #     - 2ND SCROLL TO LAST POSITION
@@ -115,8 +122,8 @@ class MainWindow(FramelessWindow):
     Main view for app
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
 
         self.resize(800, 600)
 
@@ -157,7 +164,10 @@ class MainWindow(FramelessWindow):
 
 
 if __name__ == "__main__":
+    # QApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
+    # Create the QApplication object
     app = QApplication(sys.argv)
+
     mainwindow = MainWindow()
     mainwindow.setStyleSheet("background-color: white")
     mainwindow.show()
