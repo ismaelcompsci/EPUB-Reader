@@ -3,8 +3,8 @@ import sys
 from queue import Queue
 
 import PySide6
-from PySide6.QtCore import QEvent, QObject
-from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
+from PySide6.QtCore import QEvent, QObject, QPoint
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent, QDesktopServices
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget
@@ -23,6 +23,11 @@ class Page(QWebEnginePage):
 
         if msg:
             self.parent().handle_(msg)
+
+    def acceptNavigationRequest(self, url, _type, isMainFrame):
+        if _type == QWebEnginePage.NavigationTypeLinkClicked:
+            return False
+        return super().acceptNavigationRequest(url, _type, isMainFrame)
 
 
 class WebView(QWebEngineView):
@@ -88,6 +93,8 @@ class WebView(QWebEngineView):
             if event.type() == QEvent.Type.MouseButtonPress:
                 # print(event.pos())
                 self.mousePressEvent(event)
+            if event.type() == QEvent.Type.MouseButtonRelease:
+                self.mouseReleaseEvent(event)
 
         # KEY PRESS
         elif isinstance(event, QKeyEvent) and source is self._childWidget:

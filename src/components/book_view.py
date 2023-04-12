@@ -22,6 +22,10 @@ from components.web_view import WebView
 from utils.utils import resize_image, add_css_to_html, file_md5_
 
 
+# APPEND SCRIPT ON EVERY PAGE IN THE BOOK
+# CREATE BRIDGE / WEBCHANNEL
+
+
 def find_html_dir(temp: str, file_md5: str) -> str:
     """
     Find html dir for setHtml baseUrl
