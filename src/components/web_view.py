@@ -97,5 +97,4 @@ class WebView(QWebEngineView):
         return super().eventFilter(source, event)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
-        # print(event)
         return super().wheelEvent(event)

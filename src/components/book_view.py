@@ -29,13 +29,10 @@ def find_html_dir(temp: str, file_md5: str) -> str:
     base_dir = os.path.join(temp, file_md5)
 
     for path, subdirs, files in os.walk(base_dir):
-        html_file_count = 0
-        for name in files:
-            if "htm" in name:
-                html_file_count += 1
-                if html_file_count >= 2:
-                    # return a dir with 2 or more html files
-                    return str(pathlib.Path(path).resolve()) + os.path.sep
+        html_file_count = sum(1 for name in files if "htm" in name)
+        if html_file_count >= 2:
+            # return a dir with 2 or more html files
+            return str(pathlib.Path(path).resolve()) + os.path.sep
     # Return the temp dir of the book
     return os.path.join(temp, file_md5) + os.path.join
 
@@ -56,7 +53,6 @@ class BookHandler:
 
     def hash_book(self) -> str:
         md5_ = file_md5_(self.file)
-        # print("hash: ", md5_)
         return md5_
 
     def read_book(self):
@@ -72,26 +68,23 @@ class BookHandler:
 
         self.this_book = {}
 
+        cover_image = resize_image(metadata.cover)
+
         self.this_book[self.md5_] = {
             "hash": self.md5_,
             "path": self.file,
+            "position": {},
+            "bookmarks": None,
+            "toc": toc,
+            "content": content,
+            "cover": cover_image,
+            "title": metadata.title,
+            "author": metadata[1],
+            "year": metadata[2],
+            "isbn": metadata[3],
+            "tags": metadata[4],
+            "date_added": datetime.datetime.now().timestamp() * 1000,
         }
-
-        cover_image = resize_image(metadata.cover)
-
-        self.this_book[self.md5_]["position"] = {}
-        self.this_book[self.md5_]["bookmarks"] = None
-        self.this_book[self.md5_]["toc"] = toc
-        self.this_book[self.md5_]["content"] = content
-        self.this_book[self.md5_]["cover"] = cover_image
-        self.this_book[self.md5_]["title"] = metadata.title
-        self.this_book[self.md5_]["author"] = metadata[1]
-        self.this_book[self.md5_]["year"] = metadata[2]
-        self.this_book[self.md5_]["isbn"] = metadata[3]
-        self.this_book[self.md5_]["tags"] = metadata[4]
-        self.this_book[self.md5_]["date_added"] = (
-            datetime.datetime.now().timestamp() * 1000
-        )
 
     def save_book(self) -> None:
         """
@@ -126,19 +119,16 @@ class BookHandler:
         with open(os.path.join(database_path, f"{self.md5_}.json"), "w") as f:
             json.dump(new_metadata, f)
 
-        # print("DONE SAVEING")
-
 
 class EReader(WebView):
     """
     Web View for Html
     """
 
-    next_chapter = Signal(str)
-
     def __init__(self, parent: QWidget, path: str, temp: str, file_md5: str):
         super().__init__(parent)
         self.style_ = None
+        self.has_scrollbar = True
 
         self.filepath = path
         self.temppath = temp
@@ -152,10 +142,6 @@ class EReader(WebView):
 
         self.scroll_height = 0
         self.page().scrollPositionChanged.connect(self.scroll_position_changed)
-
-        self.run_func(lambda: self.hide())
-
-        self.next_chapter.connect(lambda: self.change_chapter(1))
 
     def load_book(self) -> None:
         """
@@ -195,9 +181,6 @@ class EReader(WebView):
                     int(self.this_book[self.file_md5]["position"]["current_chapter"])
                 )
                 self.scroll_to(self.scroll_y)
-                self.queue_func(
-                    lambda: self.page().runJavaScript("window.scrollTo(0, 50);")
-                )
 
             # SET RECORDED WINDOW SIZE
             if "window_size" in self.this_book[self.file_md5]:
@@ -219,8 +202,6 @@ class EReader(WebView):
         """
         Sets html in webengine
         """
-        self.queue_func(lambda: self.show())
-
         try:
 
             content = self.this_book[self.file_md5]["content"][position]
@@ -248,13 +229,24 @@ class EReader(WebView):
         #         "console.log(document.documentElement.scrollHeight)", self.get_height
         #     )
         # )
-
         script = """
+            var is_scroll =false
+            if (document.body.scrollWidth > document.body.clientWidth || document.body.scrollHeight > document.body.clientHeight){
+                is_scroll = true
+            }
+
+            if (!is_scroll){
+            console.log("no-scroll-bar")
+            } else {
+            console.log("has-scroll-bar")
+            }
 
             let topelemnt = document.createElement('div');
             topelemnt.style.cssText = 'height:50px;';
             document.body.prepend(topelemnt)
-            
+
+            console.log(document.body.scrollHeight,window.scrollY)
+
             var count = 0
             var up_count = 0
             var prev_scroll = 0
@@ -306,6 +298,12 @@ class EReader(WebView):
 
             if response == "-1":
                 self.change_chapter(-1, True)
+
+            if response == "no-scroll-bar":
+                self.has_scrollbar = False
+
+            if response == "has-scroll-bar":
+                self.has_scrollbar = True
 
     def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
         """
@@ -434,3 +432,15 @@ class EReader(WebView):
 
         with open(os.path.join(database_path, f"{self.file_md5}.json"), "w") as f:
             json.dump(new_metadata, f)
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+
+        if not self.has_scrollbar:
+            delta = event.angleDelta().y()
+            if delta > 0:
+                # scrolling up
+                self.change_chapter(-1)
+            elif delta < 0:
+                # scrolling down
+                self.change_chapter(1)
+        return super().wheelEvent(event)

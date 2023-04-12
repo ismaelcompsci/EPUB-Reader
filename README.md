@@ -29,4 +29,5 @@ Only tested on Windows 10
   - [ ] default presets 
 - [ ] add threads?
 - [ ] use different database
+- [ ] better way to communicate with javascript in webview
   
