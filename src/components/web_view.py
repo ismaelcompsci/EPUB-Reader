@@ -1,11 +1,13 @@
+import json
+import sys
 from queue import Queue
-from PySide6.QtCore import QEvent
-from PySide6.QtGui import QKeyEvent, QMouseEvent, QScrollEvent, QWheelEvent
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWebEngineCore import *
+
 import PySide6
+from PySide6.QtCore import QEvent, QObject
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
+from PySide6.QtWebEngineCore import *
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import QObject
 
 
 class Page(QWebEnginePage):
@@ -16,15 +18,11 @@ class Page(QWebEnginePage):
     def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
 
-    def javaScriptConsoleMessage(
-        self,
-        level: PySide6.QtWebEngineCore.QWebEnginePage.JavaScriptConsoleMessageLevel,
-        message: str,
-        lineNumber: int,
-        sourceID: str,
-    ) -> None:
-        print(message)
-        return super().javaScriptConsoleMessage(level, message, lineNumber, sourceID)
+    def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
+        print(f"{source_id}:{linenumber}: {msg}")
+
+        if msg:
+            self.parent().handle_(msg)
 
 
 class WebView(QWebEngineView):

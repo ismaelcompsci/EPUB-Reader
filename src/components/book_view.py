@@ -155,7 +155,7 @@ class EReader(WebView):
 
         self.run_func(lambda: self.hide())
 
-        # self.next_chapter.connect(self.changing)
+        self.next_chapter.connect(lambda: self.change_chapter(1))
 
     def load_book(self) -> None:
         """
@@ -195,6 +195,9 @@ class EReader(WebView):
                     int(self.this_book[self.file_md5]["position"]["current_chapter"])
                 )
                 self.scroll_to(self.scroll_y)
+                self.queue_func(
+                    lambda: self.page().runJavaScript("window.scrollTo(0, 50);")
+                )
 
             # SET RECORDED WINDOW SIZE
             if "window_size" in self.this_book[self.file_md5]:
@@ -246,43 +249,65 @@ class EReader(WebView):
         #     )
         # )
 
-        #     script = """
-        #     var count = 0
-        #         document.addEventListener('scroll', function s(e) {
-        #     let documentHeight = document.body.scrollHeight;
-        #     let currentScroll = window.scrollY + window.innerHeight;
-        #     // When the user is [modifier]px from the bottom, fire the event.
-        #     let modifier = 1;
-        #     if(currentScroll + modifier > documentHeight) {
-        #     let element = document.createElement('div');
-        #     element.style.cssText = 'height:50px;';
-        #     document.body.append(element);
-        #     count+=1
-        #     }
+        script = """
 
-        #     if (count > 3){
-        #     console.log(1)
-        #     document.removeEventListener("scroll", s)
-        #     return
-        #     }
+            let topelemnt = document.createElement('div');
+            topelemnt.style.cssText = 'height:50px;';
+            document.body.prepend(topelemnt)
+            
+            var count = 0
+            var up_count = 0
+            var prev_scroll = 0
+            document.addEventListener('scroll', function s(e) {
+                let documentHeight = document.body.scrollHeight;
+                let currentScroll = window.scrollY + window.innerHeight;
 
-        # })
+                let modifier = 1;
+                if(currentScroll + modifier > documentHeight) {
+                let element = document.createElement('div');
+                element.style.cssText = 'height:50px;';
+                document.body.append(element);
+                count+=1
+                }
 
-        #     """
+                if (!window.pageYOffset){
+                    let topelemnt = document.createElement('div');
+                    topelemnt.style.cssText = 'height:25px;';
+                    document.body.prepend(topelemnt)
+                    window.scrollTo(0, 25)
+                    up_count += 1
 
-        # self.queue_func(lambda: self.page().runJavaScript(script, 0, self.__callback))
+                }
+                
+                if(up_count > 3){
+                console.log(-1)
+                document.removeEventListener("scroll", s)
+                return
+                }
+
+                if (count > 3){
+                
+                document.removeEventListener("scroll", s)
+                console.log(1)
+                return
+                }
+        })
+            """
+
+        self.queue_func(lambda: self.page().runJavaScript(script))
         self.setFocus()
+        self.queue_func(lambda: self.page().runJavaScript("window.scrollTo(0, 50);"))
 
-    # def __callback(self, response):
+    def handle_(self, response):
 
-    #     # if response:
-    #     print("js response: ", response, end="")
-    #     if response:
-    #         print("hfaswdf;lasdfkj")
+        if response:
+            if response == "1":
+                self.change_chapter(1)
 
-    #     self.next_chapter.emit(response)
+            if response == "-1":
+                self.change_chapter(-1, True)
 
-    def change_chapter(self, direction: int) -> None:
+    def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
         """
         Changes chapter forward or backwords
         """
@@ -298,6 +323,13 @@ class EReader(WebView):
             return
 
         self.set_content(current_position + direction)
+
+        if scroll_botom:
+            self.queue_func(
+                lambda: self.page().runJavaScript(
+                    """window.scrollTo(0, document.body.scrollHeight);"""
+                )
+            )
 
     def set_font_size(self, size: int) -> None:
         """
@@ -320,7 +352,7 @@ class EReader(WebView):
         self.style_ = style
 
         if style == "Dark":
-            self.web_view_css("html {color: white;}")
+            self.web_view_css("html {color: white;, background-color: black;}")
             self.set_background_color("#18181b")
 
         if style == "Light":
@@ -340,9 +372,9 @@ class EReader(WebView):
         """
 
         script = f'(function() {{ css = document.createElement("style"); css.type = "text/css"; document.head.appendChild(css); css.innerText = "{css}";}})()'
-        self.inser_script(script, "style")
+        self.insert_script(script, "style")
 
-    def inser_script(self, script, name):
+    def insert_script(self, script, name):
         script_ = QWebEngineScript()
 
         self.page().runJavaScript(
@@ -356,18 +388,14 @@ class EReader(WebView):
 
         self.page().scripts().insert(script_)
 
+        return script_
+
     def scroll_position_changed(self, height):
         self.scroll_height = height
 
     def scroll_to(self, pos):
         # SET SCROLL POS
         self.queue_func(lambda: self.page().runJavaScript(f"window.scrollTo(0, {pos})"))
-
-    # def wheelEvent(self, event: QWheelEvent) -> None:
-    #     print(self.height_)
-    #     if not self.loading:
-    #         bias = event.angleDelta().y()
-    #         print(bias)
 
     def keyPressEvent(self, ev: QKeyEvent) -> None:
         """

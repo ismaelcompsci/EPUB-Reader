@@ -16,6 +16,7 @@ Only tested on Windows 10
 ![image info](static/screenshot1.png "LIbrary")
 
 ### Todo
+- [ ] clean up code make more concise
 - [ ] fix table view
 - [X] open book at last scroll location
 - [ ] add toc view
