@@ -10,10 +10,10 @@ Only tested on Windows 10
 
 
 # Library
-![image info](static/screenshot.png "Library")
+![image info](static/screenshot2.png "Library")
 
 # Reader & Library
-![image info](static/Screenshot02.png "LIbrary")
+![image info](static/screenshot1.png "LIbrary")
 
 ### Todo
 - [ ] fix table view
