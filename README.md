@@ -17,7 +17,7 @@ Only tested on Windows 10
 
 ### Todo
 - [ ] fix table view
-- [ ] open book at last scroll location
+- [X] open book at last scroll location
 - [ ] add toc view
 - [ ] better resizing on reader view
 - [ ] fix bookhandler 
@@ -27,3 +27,5 @@ Only tested on Windows 10
   - [ ] background-color
   - [ ] default presets 
 - [ ] add threads?
+- [ ] use different database
+  

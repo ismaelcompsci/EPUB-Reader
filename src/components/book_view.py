@@ -1,8 +1,11 @@
 import base64
 import copy
+import datetime
 import json
 import os
 import pathlib
+
+import PySide6
 
 
 from epub_tools.epub import ParseEPUB
@@ -17,11 +20,6 @@ from qframelesswindow import *
 
 from components.web_view import WebView
 from utils.utils import resize_image, add_css_to_html, file_md5_
-
-# EPUB IS p tag is a block
-# count blocks
-# check which block we are in
-# set that block to the top
 
 
 def find_html_dir(temp: str, file_md5: str) -> str:
@@ -56,6 +54,13 @@ class BookHandler:
         self.settings = settings
         self.temp_dir = temp_dir
 
+    def hash_book(self) -> str:
+        md5_ = file_md5_(self.file)
+        # print("hash: ", md5_)
+        return md5_
+
+    def read_book(self):
+
         self.md5_ = self.hash_book()
 
         # BOOK DATA
@@ -84,30 +89,20 @@ class BookHandler:
         self.this_book[self.md5_]["year"] = metadata[2]
         self.this_book[self.md5_]["isbn"] = metadata[3]
         self.this_book[self.md5_]["tags"] = metadata[4]
-
-    def hash_book(self) -> str:
-        md5_ = file_md5_(self.file)
-        # print("hash: ", md5_)
-        return md5_
-
-    def use_book(self) -> None:
-        ...
+        self.this_book[self.md5_]["date_added"] = (
+            datetime.datetime.now().timestamp() * 1000
+        )
 
     def save_book(self) -> None:
         """
         Initialize epub file
         """
-        # print("MAKING BOOK")
-
-        # TODO
         # CHECK IF BOOK ALREADY EXISTS
-        # GET DATA FROM DATABASE
+        if f"{self.md5_}.json" in os.listdir(os.path.join(self.temp_dir, "db")):
+            return
 
-        # TODO
         # IF NEW BOOK
         # ADD TO DATABASE
-
-        # print("SAVING BOOK")
         self.save_new_book()
 
     def save_new_book(self) -> None:
@@ -133,15 +128,13 @@ class BookHandler:
 
         # print("DONE SAVEING")
 
-    def already_exists(self):
-        # CHECK IF BOOK ALREADY EXISTS USING MD5 HASH
-        ...
-
 
 class EReader(WebView):
     """
     Web View for Html
     """
+
+    next_chapter = Signal(str)
 
     def __init__(self, parent: QWidget, path: str, temp: str, file_md5: str):
         super().__init__(parent)
@@ -160,15 +153,15 @@ class EReader(WebView):
         self.scroll_height = 0
         self.page().scrollPositionChanged.connect(self.scroll_position_changed)
 
-        # self.verticalScrollBar().sliderMoved.connect(self.record_position)
+        self.run_func(lambda: self.hide())
+
+        # self.next_chapter.connect(self.changing)
 
     def load_book(self) -> None:
         """
         Initialize epub file
         """
 
-        # TODO
-        # CHECK IF BOOK ALREADY EXISTS
         # GET DATA FROM DATABASE
         book_data_path = os.path.join(self.temppath, "db", f"{self.file_md5}.json")
 
@@ -216,45 +209,14 @@ class EReader(WebView):
                 style = self.this_book[self.file_md5]["style"]
                 self.presets(style)
 
-        # TODO
-        # IF NEW BOOK
-        # ADD TO DATABASE
-        else:
-
-            # NEW BOOK
-            book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
-
-            book.read_book()  # INITIALIZE BOOK
-            metadata = book.generate_metadata()  # FOR ADDING TO DB
-            toc, content, images_only = book.generate_content()  # FOR READING
-
-            self.this_book = {}
-
-            self.this_book[self.file_md5] = {
-                "hash": self.file_md5,
-                "path": self.filepath,
-            }
-
-            cover_image = resize_image(metadata.cover)
-
-            self.this_book[self.file_md5]["position"] = {}
-
-            self.this_book[self.file_md5]["bookmarks"] = None
-            self.this_book[self.file_md5]["toc"] = toc
-            self.this_book[self.file_md5]["content"] = content
-            self.this_book[self.file_md5]["cover"] = cover_image
-            self.this_book[self.file_md5]["title"] = metadata.title
-            self.this_book[self.file_md5]["author"] = metadata[1]
-            self.this_book[self.file_md5]["year"] = metadata[2]
-            self.this_book[self.file_md5]["isbn"] = metadata[3]
-            self.this_book[self.file_md5]["tags"] = metadata[4]
-
-            self.set_content(0)
+            else:
+                self.set_content(0)
 
     def set_content(self, position: int) -> None:
         """
         Sets html in webengine
         """
+        self.queue_func(lambda: self.show())
 
         try:
 
@@ -278,7 +240,47 @@ class EReader(WebView):
         )
         self.save_book_data()
 
+        # self.page_height = self.queue_func(
+        #     lambda: self.page().runJavaScript(
+        #         "console.log(document.documentElement.scrollHeight)", self.get_height
+        #     )
+        # )
+
+        #     script = """
+        #     var count = 0
+        #         document.addEventListener('scroll', function s(e) {
+        #     let documentHeight = document.body.scrollHeight;
+        #     let currentScroll = window.scrollY + window.innerHeight;
+        #     // When the user is [modifier]px from the bottom, fire the event.
+        #     let modifier = 1;
+        #     if(currentScroll + modifier > documentHeight) {
+        #     let element = document.createElement('div');
+        #     element.style.cssText = 'height:50px;';
+        #     document.body.append(element);
+        #     count+=1
+        #     }
+
+        #     if (count > 3){
+        #     console.log(1)
+        #     document.removeEventListener("scroll", s)
+        #     return
+        #     }
+
+        # })
+
+        #     """
+
+        # self.queue_func(lambda: self.page().runJavaScript(script, 0, self.__callback))
         self.setFocus()
+
+    # def __callback(self, response):
+
+    #     # if response:
+    #     print("js response: ", response, end="")
+    #     if response:
+    #         print("hfaswdf;lasdfkj")
+
+    #     self.next_chapter.emit(response)
 
     def change_chapter(self, direction: int) -> None:
         """
@@ -323,6 +325,7 @@ class EReader(WebView):
 
         if style == "Light":
             self.set_background_color("white")
+            self.web_view_css("html {color: black;}")
 
     def set_background_color(self, color: str) -> None:
         """
@@ -337,16 +340,20 @@ class EReader(WebView):
         """
 
         script = f'(function() {{ css = document.createElement("style"); css.type = "text/css"; document.head.appendChild(css); css.innerText = "{css}";}})()'
+        self.inser_script(script, "style")
+
+    def inser_script(self, script, name):
         script_ = QWebEngineScript()
 
         self.page().runJavaScript(
             script, QWebEngineScript.ScriptWorldId.ApplicationWorld
         )
-        script_.setName("style")
+        script_.setName(name)
         script_.setSourceCode(script)
         script_.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
         script_.setRunsOnSubFrames(True)
         script_.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
+
         self.page().scripts().insert(script_)
 
     def scroll_position_changed(self, height):
@@ -355,6 +362,12 @@ class EReader(WebView):
     def scroll_to(self, pos):
         # SET SCROLL POS
         self.queue_func(lambda: self.page().runJavaScript(f"window.scrollTo(0, {pos})"))
+
+    # def wheelEvent(self, event: QWheelEvent) -> None:
+    #     print(self.height_)
+    #     if not self.loading:
+    #         bias = event.angleDelta().y()
+    #         print(bias)
 
     def keyPressEvent(self, ev: QKeyEvent) -> None:
         """
@@ -393,9 +406,3 @@ class EReader(WebView):
 
         with open(os.path.join(database_path, f"{self.file_md5}.json"), "w") as f:
             json.dump(new_metadata, f)
-
-    # def test(self):
-    #     script = "console.log(window.pageXOffset, window.pageYOffset)"
-    #     self.page().runJavaScript(
-    #         script, QWebEngineScript.ScriptWorldId.ApplicationWorld
-    #     )

@@ -46,6 +46,7 @@ class EWindow(FramelessWindow):
         self.layout_.setContentsMargins(0, self.titleBar.height(), 0, 0)
 
         self.content_view = EReader(self, self.filePath, self.temp, self.file_md5)
+
         self.content_view.load_book()
 
         self.layout_.addWidget(self.content_view)
@@ -146,4 +147,5 @@ class EWindow(FramelessWindow):
         # SAVING TO FILE
         self.content_view.save_book_data()
 
+        self.deleteLater()
         return super().closeEvent(event)

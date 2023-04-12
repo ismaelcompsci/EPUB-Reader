@@ -1,6 +1,6 @@
 from queue import Queue
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QKeyEvent, QMouseEvent
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QScrollEvent, QWheelEvent
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWebEngineCore import *
 import PySide6
@@ -45,7 +45,7 @@ class WebView(QWebEngineView):
         self._childWidget = None
         self.installEventFilter(self)
 
-        self.page()
+        # self.page()
 
     def on_load_finished(self) -> None:
         """
@@ -81,12 +81,23 @@ class WebView(QWebEngineView):
         ):
             self._childWidget = event.child()
             self._childWidget.installEventFilter(self)
+        # MOUSE SCROLL
+        elif isinstance(event, QWheelEvent) and source is self._childWidget:
+            self.wheelEvent(event)
+
+        # MOUSE PRESS
         elif isinstance(event, QMouseEvent) and source is self._childWidget:
             if event.type() == QEvent.Type.MouseButtonPress:
                 # print(event.pos())
                 self.mousePressEvent(event)
+
+        # KEY PRESS
         elif isinstance(event, QKeyEvent) and source is self._childWidget:
             if event.type() == QEvent.Type.KeyPress:
                 self.keyPressEvent(event)
 
         return super().eventFilter(source, event)
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        # print(event)
+        return super().wheelEvent(event)

@@ -116,6 +116,7 @@ class Library(QTableWidget):
         Adds book the database and reloads table widget
         """
         handle = BookHandler(file, temp_dir=TEMPDIR)
+        handle.read_book()
         handle.save_book()
 
         self.clear()
@@ -169,6 +170,7 @@ class MainWindow(FramelessWindow):
 
 if __name__ == "__main__":
     # QApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
+    QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseOpenGLES)
     # Create the QApplication object
     app = QApplication(sys.argv)
 
