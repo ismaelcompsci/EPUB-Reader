@@ -1,38 +1,31 @@
 import os
 import sys
 
-from PySide6.QtWidgets import QApplication
+import tinydb
+
+from tinydb import TinyDB, Query
+
+from components.book_view import BookHandler
+from components.custom_widgets import CustomWidget
+from main_reader_view import EWindow
 from PySide6.QtCore import Qt
-
-
 from PySide6.QtGui import *
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import *
 from PySide6.QtWidgets import (
-    QTableWidget,
-    QWidget,
     QAbstractItemView,
-    QVBoxLayout,
+    QAbstractScrollArea,
+    QApplication,
     QFileDialog,
     QPushButton,
-    QAbstractScrollArea,
+    QTableWidget,
+    QVBoxLayout,
+    QWidget,
 )
-
-import PySide6
-from components.book_view import BookHandler
-from components.custom_widgets import CustomWidget
-from main_reader_view import EWindow
 from qframelesswindow import FramelessWindow, StandardTitleBar
 from resources import rc_resources
-from utils.utils import get_image_from_database
+from utils.utils import get_image_from_database, create_or_check
 
-
-BASEDIR = os.path.dirname(__file__)
-
-TEMPDIR = os.path.join(BASEDIR, "temp")
-
-if not os.path.exists(TEMPDIR):
-    os.makedirs(TEMPDIR)
 
 # TODO
 # LOOK AT FRAMELESSWINDOW EVENTFILTER
@@ -43,6 +36,22 @@ if not os.path.exists(TEMPDIR):
 #     - 2ND SCROLL TO LAST POSITION
 
 
+BASEDIR = os.path.dirname(__file__)
+
+TEMPDIR = os.path.join(BASEDIR, "temp")
+DB_DIR = os.path.join(TEMPDIR, "tinydb")
+
+create_or_check(TEMPDIR)
+create_or_check(DB_DIR)
+
+db_ = TinyDB(DB_DIR + "\\Books.json")
+
+db = db_.table("Books")
+settings = db_.table("settings")
+
+BooksQ = Query()
+
+
 class Library(QTableWidget):
     """
     Table view for books
@@ -50,6 +59,9 @@ class Library(QTableWidget):
 
     def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
+
+        self.db = self.parent().db
+        self.query = self.parent().query
 
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().setMaximumWidth(100)
@@ -76,7 +88,9 @@ class Library(QTableWidget):
         Populate table widget
         """
 
-        images = get_image_from_database(os.path.join(TEMPDIR, "db"))
+        images = get_image_from_database(
+            os.path.join(TEMPDIR, "db"), self.db, self.query
+        )
 
         self.setRowCount(len(images))
         self.setColumnCount(5)
@@ -85,7 +99,6 @@ class Library(QTableWidget):
         try:
             for i in range(self.rowCount()):
                 for j in range(self.columnCount()):
-
                     lb = CustomWidget(
                         images[i][j],
                     )
@@ -102,20 +115,24 @@ class Library(QTableWidget):
         """
         book = self.cellWidget(row, column)
 
-        file_md5 = book.file_md5
-        filepath = book.full_metadata[file_md5]["path"]
+        if book:
+            file_md5 = book.file_md5
+            filepath = book.full_metadata["path"]
 
-        temp_ = TEMPDIR
+            temp_ = TEMPDIR
+            self.ewindow = EWindow(
+                filepath, temp_, file_md5, book.full_metadata, self.db, self.query
+            )
 
-        ewindow = EWindow(filepath, temp_, file_md5, book.full_metadata)
+            self.reading_book = True
 
-        ewindow.show()
+            self.ewindow.show()
 
     def book_added(self, file: str) -> None:
         """
         Adds book the database and reloads table widget
         """
-        handle = BookHandler(file, temp_dir=TEMPDIR)
+        handle = BookHandler(file, temp_dir=TEMPDIR, database=self.db, query=self.query)
         handle.read_book()
         handle.save_book()
 
@@ -128,16 +145,18 @@ class MainWindow(FramelessWindow):
     Main view for app
     """
 
-    def __init__(self, parent=None) -> None:
-        super().__init__(parent)
-
+    def __init__(self, database: TinyDB, query: Query) -> None:
+        super().__init__()
         self.resize(800, 600)
+
+        self.db = database
+        self.query = query
 
         self.v_layout = QVBoxLayout()
 
-        self.table = Library(self)
+        self.library_view = Library(self)
 
-        self.v_layout.addWidget(self.table)
+        self.v_layout.addWidget(self.library_view)
 
         self.add_book = QPushButton("Add Book")
         self.add_book.clicked.connect(self.add_book_clicked)
@@ -147,12 +166,12 @@ class MainWindow(FramelessWindow):
 
         self.v_layout.setContentsMargins(0, 10, 0, 0)
         self.setLayout(self.v_layout)
-        # self.setCentralWidget(self.table)
 
         titlebar = StandardTitleBar(self)
         titlebar.setTitle("EPUB Reader")
         self.setTitleBar(titlebar)
         self.titleBar.raise_()
+
         self.setContentsMargins(0, 22, 0, 0)
 
     def add_book_clicked(self) -> None:
@@ -165,16 +184,15 @@ class MainWindow(FramelessWindow):
             filter="EPUB Files (*.epub)",
         )[0]
 
-        self.table.book_added(file_name)
+        if file_name:
+            self.library_view.book_added(file_name)
 
 
 if __name__ == "__main__":
-    # QApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
-    QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseOpenGLES)
     # Create the QApplication object
     app = QApplication(sys.argv)
 
-    mainwindow = MainWindow()
+    mainwindow = MainWindow(database=db, query=BooksQ)
     mainwindow.setStyleSheet("background-color: white")
     mainwindow.show()
     app.exec()

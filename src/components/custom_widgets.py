@@ -79,9 +79,7 @@ class MyTitleBar(StandardTitleBar):
         self.hBoxLayout.insertWidget(
             5, self.settings_b, 0, Qt.AlignmentFlag.AlignVCenter
         )
-        self.setTitle(
-            self.parent().content_view.this_book[self.parent().file_md5]["title"]
-        )
+        self.setTitle(self.parent().content_view.this_book["title"])
 
         self.setStyleSheet(
             """
@@ -92,6 +90,7 @@ class MyTitleBar(StandardTitleBar):
             QPushButton:hover {
             border: 1px solid black
             }
+
         """
         )
         self.addIconToButton()
@@ -116,11 +115,11 @@ class CustomWidget(QWidget):
         QWidget.__init__(self, parent)
 
         self.file_md5 = metadata["hash"]
-        self.full_metadata = metadata["book"]
+        self.full_metadata = metadata
 
-        self._text = self.full_metadata[self.file_md5]["title"]
+        self._text = self.full_metadata["title"]
 
-        self.cover = base64.b64decode(self.full_metadata[self.file_md5]["cover"])
+        self.cover = base64.b64decode(self.full_metadata["cover"])
         self.pixmap = QPixmap()
         self.pixmap.loadFromData(self.cover)
 

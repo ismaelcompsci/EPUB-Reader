@@ -28,6 +28,6 @@ Only tested on Windows 10
   - [ ] background-color
   - [ ] default presets 
 - [ ] add threads?
-- [ ] use different database
+- [X] use different database
 - [ ] better way to communicate with javascript in webview
   

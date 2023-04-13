@@ -6,6 +6,7 @@ import os
 import pathlib
 
 import PySide6
+from tinydb import Query, TinyDB
 
 
 from epub_tools.epub import ParseEPUB
@@ -48,11 +49,12 @@ class BookHandler:
     """
 
     def __init__(
-        self, file: str, db_path: str = None, settings: str = None, temp_dir: str = None
+        self, file: str, temp_dir: str, database: TinyDB, query: Query
     ) -> None:
+        self.db = database
+        self.query = query
+
         self.file = file
-        self.database_path = db_path
-        self.settings = settings
         self.temp_dir = temp_dir
 
     def hash_book(self) -> str:
@@ -60,7 +62,6 @@ class BookHandler:
         return md5_
 
     def read_book(self):
-
         self.md5_ = self.hash_book()
 
         # BOOK DATA
@@ -74,7 +75,7 @@ class BookHandler:
 
         cover_image = resize_image(metadata.cover)
 
-        self.this_book[self.md5_] = {
+        self.this_book = {
             "hash": self.md5_,
             "path": self.file,
             "position": {},
@@ -90,12 +91,27 @@ class BookHandler:
             "date_added": datetime.datetime.now().timestamp() * 1000,
         }
 
+    def read_saved_book(self) -> tuple:
+        """
+        Reads book in database
+        """
+        self.file_md5 = self.hash_book()
+
+        book_found = self.db.get(self.query.hash == self.file_md5)
+
+        book = ParseEPUB(self.file, self.temp_dir, self.file_md5)
+        book.read_book()
+        toc, content, images_only = book.generate_content()
+
+        return (book_found, toc, content)
+
     def save_book(self) -> None:
         """
         Initialize epub file
         """
         # CHECK IF BOOK ALREADY EXISTS
-        if f"{self.md5_}.json" in os.listdir(os.path.join(self.temp_dir, "db")):
+        book = self.db.get(self.query.hash == self.md5_)
+        if book:
             return
 
         # IF NEW BOOK
@@ -107,21 +123,15 @@ class BookHandler:
         Saves new book
         """
         new_metadata = copy.deepcopy(self.this_book)
-        new_metadata[self.md5_].pop("content")
+        new_metadata.pop("content")
 
         # ENCODED IMAGE
-        image = base64.b64encode(new_metadata[self.md5_]["cover"]).decode("utf-8")
+        image = base64.b64encode(new_metadata["cover"]).decode("utf-8")
         # DECODE -> base64.b64decode(encoded_image)
 
-        new_metadata[self.md5_]["cover"] = image
+        new_metadata["cover"] = image
 
-        database_path = os.path.join(self.temp_dir, "db")
-
-        if not os.path.exists(database_path):
-            os.makedirs(database_path)
-
-        with open(os.path.join(database_path, f"{self.md5_}.json"), "w") as f:
-            json.dump(new_metadata, f)
+        self.db.insert(new_metadata)
 
 
 class EReader(WebView):
@@ -129,13 +139,25 @@ class EReader(WebView):
     Web View for Html
     """
 
-    def __init__(self, parent: QWidget, path: str, temp: str, file_md5: str):
+    def __init__(
+        self,
+        parent: QWidget,
+        path: str,
+        temp: str,
+        file_md5: str,
+        database: TinyDB,
+        query: Query,
+        metadata: dict,
+    ):
         super().__init__(parent)
         self.style_ = None
         self.has_scrollbar = True
 
         self.filepath = path
         self.temppath = temp
+        self.db = database
+        self.query = query
+        self.metadata = metadata
 
         self.file_md5 = file_md5
         self.settings_ = {}
@@ -152,87 +174,67 @@ class EReader(WebView):
         Initialize epub file
         """
 
+        # TODO
+        # CALL BOOKHANDLER INSTEAD
+        # BookHandler(self.filepath, self.temppath, self.filemd5, self.db) -> book
+
         # GET DATA FROM DATABASE
-        book_data_path = os.path.join(self.temppath, "db", f"{self.file_md5}.json")
 
-        if os.path.exists(book_data_path):
-            with open(book_data_path, "r") as f:
-                book_found = json.loads(f.read())
+        handle = BookHandler(self.filepath, self.temppath, self.db, self.query)
+        book_found, _, content = handle.read_saved_book()
 
-                book = ParseEPUB(self.filepath, self.temppath, self.file_md5)
+        self.this_book = book_found
+        self.this_book["content"] = content
+        self.this_book["cover"] = base64.b64decode(book_found["cover"])
+        # SET SCROLL POS
+        self.scroll_y = None
+        if "scroll_position" in self.this_book:
+            # self.parent().
+            self.scroll_y = self.this_book["scroll_position"]
 
-                book.read_book()
-                toc, content, images_only = book.generate_content()
+        # CHECK IF WE HAVE A RECORDED POS
+        if len(self.this_book["position"]) == 0:
+            self.set_content(0)
 
-                self.this_book = book_found
-                self.this_book[self.file_md5]["content"] = content
-                self.this_book[self.file_md5]["cover"] = base64.b64decode(
-                    book_found[self.file_md5]["cover"]
-                )
-            # SET SCROLL POS
-            self.scroll_y = None
-            if "scroll_position" in self.this_book[self.file_md5]:
-                # self.parent().
-                self.scroll_y = self.this_book[self.file_md5]["scroll_position"]
+        else:
+            # SET CHAPTER POS
+            self.set_content(int(self.this_book["position"]["current_chapter"]))
+            self.scroll_to(self.scroll_y)
 
-            # CHECK IF WE HAVE A RECORDED POS
-            if len(self.this_book[self.file_md5]["position"]) == 0:
-                self.set_content(0)
+        # SET RECORDED WINDOW SIZE
+        if "window_size" in self.this_book:
+            w = int(self.this_book["window_size"]["width"])
+            h = int(self.this_book["window_size"]["height"])
 
-            else:
-                # SET CHAPTER POS
-                self.set_content(
-                    int(self.this_book[self.file_md5]["position"]["current_chapter"])
-                )
-                self.scroll_to(self.scroll_y)
+            self.parent().resize(w, h)
+        else:
+            self.parent().resize(600, 900)
 
-            # SET RECORDED WINDOW SIZE
-            if "window_size" in self.this_book[self.file_md5]:
-                w = int(self.this_book[self.file_md5]["window_size"]["width"])
-                h = int(self.this_book[self.file_md5]["window_size"]["height"])
+        if "style" in self.this_book:
+            style = self.this_book["style"]
+            self.presets(style)
 
-                self.parent().resize(w, h)
-            else:
-                self.parent().resize(600, 900)
-
-            if "style" in self.this_book[self.file_md5]:
-                style = self.this_book[self.file_md5]["style"]
-                self.presets(style)
-
-            else:
-                self.set_content(0)
+        else:
+            self.set_content(0)
 
     def set_content(self, position: int) -> None:
         """
         Sets html in webengine
         """
         try:
-
-            content = self.this_book[self.file_md5]["content"][position]
+            content = self.this_book["content"][position]
 
         except IndexError:
             return
 
-        self.this_book[self.file_md5]["position"]["current_chapter"] = position
-        self.this_book[self.file_md5]["position"]["is_read"] = False
-
-        # TODO
-        # ----------------****------------
-        # FIND DIRECTORY WITH HTML FILES
-        # 26eba5498bb8250d008595b74c7b33d0 -> OEBPS -> 1.HTML, 2.HTML
-        # FULL DIR IS temppath\26eba5498bb8250d008595b74c7b33d0\OEBPS\    <- ANSWER
+        self.this_book["position"]["current_chapter"] = position
+        self.this_book["position"]["is_read"] = False
 
         self.setHtml(
             content,
             baseUrl=QUrl.fromLocalFile(self.base_url),
         )
-        self.save_book_data()
 
-        # self.page_height = self.queue_func(
-        #     lambda: self.page().runJavaScript(
-        #         "console.log(document.documentElement.scrollHeight)", self.get_height
-        #     )
-        # )
         script = """
             var is_scroll =false
             if (document.body.scrollWidth > document.body.clientWidth || document.body.scrollHeight > document.body.clientHeight){
@@ -295,7 +297,6 @@ class EReader(WebView):
         self.queue_func(lambda: self.page().runJavaScript("window.scrollTo(0, 50);"))
 
     def handle_(self, response):
-
         if response:
             if response == "1":
                 self.change_chapter(1)
@@ -313,8 +314,8 @@ class EReader(WebView):
         """
         Changes chapter forward or backwords
         """
-        current_position = self.this_book[self.file_md5]["position"]["current_chapter"]
-        final_position = len(self.this_book[self.file_md5]["content"])
+        current_position = self.this_book["position"]["current_chapter"]
+        final_position = len(self.this_book["content"])
 
         # PREVENT SCROLLING BELOW PAGE 1
         if current_position == 0 and direction == -1:
@@ -332,6 +333,8 @@ class EReader(WebView):
                     """window.scrollTo(0, document.body.scrollHeight);"""
                 )
             )
+
+        self.setFocus()
 
     def set_font_size(self, size: int) -> None:
         """
@@ -421,24 +424,17 @@ class EReader(WebView):
         Saves book data to db
         """
         new_metadata = copy.deepcopy(self.this_book)
-        new_metadata[self.file_md5].pop("content")
+        new_metadata.pop("content")
 
         # ENCODED IMAGE
-        image = base64.b64encode(new_metadata[self.file_md5]["cover"]).decode("utf-8")
+        image = base64.b64encode(new_metadata["cover"]).decode("utf-8")
         # DECODE -> base64.b64decode(encoded_image)
 
-        new_metadata[self.file_md5]["cover"] = image
+        new_metadata["cover"] = image
 
-        database_path = os.path.join(self.temppath, "db")
-
-        if not os.path.exists(database_path):
-            os.makedirs(database_path)
-
-        with open(os.path.join(database_path, f"{self.file_md5}.json"), "w") as f:
-            json.dump(new_metadata, f)
+        self.db.update(new_metadata, self.query.hash == self.file_md5)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
-
         if not self.has_scrollbar:
             delta = event.angleDelta().y()
             if delta > 0:
