@@ -20,118 +20,17 @@ from qframelesswindow import *
 
 
 from components.web_view import WebView
-from utils.utils import resize_image, add_css_to_html, file_md5_
+from utils.utils import (
+    resize_image,
+    add_css_to_html,
+    file_md5_,
+    BookHandler,
+    find_html_dir,
+)
 
 
 # APPEND SCRIPT ON EVERY PAGE IN THE BOOK
 # CREATE BRIDGE / WEBCHANNEL
-
-
-def find_html_dir(temp: str, file_md5: str) -> str:
-    """
-    Find html dir for setHtml baseUrl
-    """
-    base_dir = os.path.join(temp, file_md5)
-
-    for path, subdirs, files in os.walk(base_dir):
-        html_file_count = sum(1 for name in files if "htm" in name)
-        if html_file_count >= 2:
-            # return a dir with 2 or more html files
-            return str(pathlib.Path(path).resolve()) + os.path.sep
-    # Return the temp dir of the book
-    return os.path.join(temp, file_md5) + os.path.join
-
-
-# DISPLAYS HTML FROM BOOK
-class BookHandler:
-    """
-    Adds book to db
-    """
-
-    def __init__(
-        self, file: str, temp_dir: str, database: TinyDB, query: Query
-    ) -> None:
-        self.db = database
-        self.query = query
-
-        self.file = file
-        self.temp_dir = temp_dir
-
-    def hash_book(self) -> str:
-        md5_ = file_md5_(self.file)
-        return md5_
-
-    def read_book(self):
-        self.md5_ = self.hash_book()
-
-        # BOOK DATA
-        self.parsed_book = ParseEPUB(self.file, self.temp_dir, self.md5_)
-        # NEW BOOK
-        self.parsed_book.read_book()  # INITIALIZE BOOK
-        metadata = self.parsed_book.generate_metadata()  # FOR ADDING TO DB
-        toc, content, images_only = self.parsed_book.generate_content()  # FOR READING
-
-        self.this_book = {}
-
-        cover_image = resize_image(metadata.cover)
-
-        self.this_book = {
-            "hash": self.md5_,
-            "path": self.file,
-            "position": {},
-            "bookmarks": None,
-            "toc": toc,
-            "content": content,
-            "cover": cover_image,
-            "title": metadata.title,
-            "author": metadata[1],
-            "year": metadata[2],
-            "isbn": metadata[3],
-            "tags": metadata[4],
-            "date_added": datetime.datetime.now().timestamp() * 1000,
-        }
-
-    def read_saved_book(self) -> tuple:
-        """
-        Reads book in database
-        """
-        self.file_md5 = self.hash_book()
-
-        book_found = self.db.get(self.query.hash == self.file_md5)
-
-        book = ParseEPUB(self.file, self.temp_dir, self.file_md5)
-        book.read_book()
-        toc, content, images_only = book.generate_content()
-
-        return (book_found, toc, content)
-
-    def save_book(self) -> None:
-        """
-        Initialize epub file
-        """
-        # CHECK IF BOOK ALREADY EXISTS
-        book = self.db.get(self.query.hash == self.md5_)
-        if book:
-            return
-
-        # IF NEW BOOK
-        # ADD TO DATABASE
-        self.save_new_book()
-
-    def save_new_book(self) -> None:
-        """
-        Saves new book
-        """
-        new_metadata = copy.deepcopy(self.this_book)
-        new_metadata.pop("content")
-
-        # ENCODED IMAGE
-        image = base64.b64encode(new_metadata["cover"]).decode("utf-8")
-        # DECODE -> base64.b64decode(encoded_image)
-
-        new_metadata["cover"] = image
-
-        self.db.insert(new_metadata)
 
 
 class EReader(WebView):
@@ -432,7 +331,7 @@ class EReader(WebView):
 
         new_metadata["cover"] = image
 
-        self.db.update(new_metadata, self.query.hash == self.file_md5)
+        self.db.upsert(new_metadata, self.query.hash == self.file_md5)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         if not self.has_scrollbar:

@@ -95,18 +95,12 @@ class BookHandler:
     """
 
     def __init__(
-        self,
-        file: str,
-        db_path: str = None,
-        settings: str = None,
-        temp_dir: str = None,
-        parent: QWidget = None,
+        self, file: str, temp_dir: str, database: TinyDB, query: Query
     ) -> None:
-        self.parent = parent
+        self.db = database
+        self.query = query
 
         self.file = file
-        self.database_path = db_path
-        self.settings = settings
         self.temp_dir = temp_dir
 
     def hash_book(self) -> str:
@@ -127,7 +121,7 @@ class BookHandler:
 
         cover_image = resize_image(metadata.cover)
 
-        self.this_book[self.md5_] = {
+        self.this_book = {
             "hash": self.md5_,
             "path": self.file,
             "position": {},
@@ -143,12 +137,27 @@ class BookHandler:
             "date_added": datetime.datetime.now().timestamp() * 1000,
         }
 
+    def read_saved_book(self) -> tuple:
+        """
+        Reads book in database
+        """
+        self.file_md5 = self.hash_book()
+
+        book_found = self.db.get(self.query.hash == self.file_md5)
+
+        book = ParseEPUB(self.file, self.temp_dir, self.file_md5)
+        book.read_book()
+        toc, content, images_only = book.generate_content()
+
+        return (book_found, toc, content)
+
     def save_book(self) -> None:
         """
         Initialize epub file
         """
         # CHECK IF BOOK ALREADY EXISTS
-        if f"{self.md5_}.json" in os.listdir(os.path.join(self.temp_dir, "db")):
+        book = self.db.get(self.query.hash == self.md5_)
+        if book:
             return
 
         # IF NEW BOOK
@@ -160,18 +169,12 @@ class BookHandler:
         Saves new book
         """
         new_metadata = copy.deepcopy(self.this_book)
-        new_metadata[self.md5_].pop("content")
+        new_metadata.pop("content")
 
         # ENCODED IMAGE
-        image = base64.b64encode(new_metadata[self.md5_]["cover"]).decode("utf-8")
+        image = base64.b64encode(new_metadata["cover"]).decode("utf-8")
         # DECODE -> base64.b64decode(encoded_image)
 
-        new_metadata[self.md5_]["cover"] = image
+        new_metadata["cover"] = image
 
-        database_path = os.path.join(self.temp_dir, "db")
-
-        if not os.path.exists(database_path):
-            os.makedirs(database_path)
-
-        with open(os.path.join(database_path, f"{self.md5_}.json"), "w") as f:
-            json.dump(new_metadata, f)
+        self.db.insert(new_metadata)
