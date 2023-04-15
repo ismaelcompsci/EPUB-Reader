@@ -4,3 +4,4 @@ PySideSix_Frameless_Window
 xmltodict
 tinydb
 lxml
+qdarkstyle
