@@ -13,7 +13,7 @@ python app.py
 # Library
 ![image info](static/screenshot2.png "Library")
 
-# Reader & Library
+# Reader
 ![image info](static/screenshot1.png "LIbrary")
 
 ### Todo
