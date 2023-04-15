@@ -1,6 +1,7 @@
 import base64
 import copy
 import datetime
+from genericpath import isfile
 import hashlib
 import io
 import os
@@ -9,7 +10,7 @@ import logging
 import shutil
 
 from bs4 import BeautifulSoup
-from tinydb import Query, TinyDB
+from tinydb import Query, TinyDB, where
 from epub_tools.epub import ParseEPUB
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtGui import QImage, Qt
@@ -58,7 +59,7 @@ def file_md5_(file: str = None) -> str:
     return
 
 
-def get_image_from_database(db_path: str, db: TinyDB, query: Query) -> list:
+def get_image_from_database(db_path: str, db: TinyDB) -> list:
     """
     returns a 2d array with a row containing max 5 columns per row
     """
@@ -97,11 +98,8 @@ class BookHandler:
     Adds book to db
     """
 
-    def __init__(
-        self, file: str, temp_dir: str, database: TinyDB, query: Query
-    ) -> None:
+    def __init__(self, file: str, temp_dir: str, database: TinyDB) -> None:
         self.db = database
-        self.query = query
 
         self.file = file
         self.temp_dir = temp_dir
@@ -110,10 +108,28 @@ class BookHandler:
         md5_ = file_md5_(self.file)
         return md5_
 
+    def delete_book(self):
+        md5_ = file_md5_(self.file)
+
+        # REMOVE FROM DB
+        self.db.remove(where("hash") == md5_)
+
+        # REMOVE FROM TEMP
+        book_dir = os.path.join(self.temp_dir, md5_)
+        shutil.rmtree(book_dir)
+
+        # REMOVE COVER
+        cover_path = (
+            os.path.join(self.temp_dir, os.path.basename(self.file)) + " - cover"
+        )
+        if os.path.isfile(cover_path):
+            os.remove(cover_path)
+
     def read_book(self):
+        Check = Query()
         self.md5_ = self.hash_book()
 
-        book = self.db.get(self.query.hash == self.md5_)
+        book = self.db.get(Check.hash == self.md5_)
         if book:
             return False
 
@@ -164,9 +180,10 @@ class BookHandler:
         """
         Reads book in database
         """
+        Book = Query()
         self.file_md5 = self.hash_book()
 
-        book_found = self.db.get(self.query.hash == self.file_md5)
+        book_found = self.db.get(Book.hash == self.file_md5)
 
         book = ParseEPUB(self.file, self.temp_dir, self.file_md5)
         book.read_book()
@@ -178,8 +195,9 @@ class BookHandler:
         """
         Initialize epub file
         """
+        Book = Query()
         # CHECK IF BOOK ALREADY EXISTS
-        book = self.db.get(self.query.hash == self.md5_)
+        book = self.db.get(Book.hash == self.md5_)
         if book:
             return
 

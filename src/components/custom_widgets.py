@@ -1,14 +1,14 @@
 import base64
 import logging
-
-from PySide6.QtCore import QSize, Qt
+import qdarkstyle
+from PySide6.QtCore import QSize, Qt, QFile, QTextStream
 from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
+    QApplication,
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QRadioButton,
     QSizePolicy,
     QSpinBox,
     QVBoxLayout,
@@ -57,13 +57,13 @@ class SettingsWidget(FramelessWindow):
         layout.addWidget(self.separator)
 
         # BACKGROUND COLOR
-        self.bg_dark = QRadioButton("Dark")
-        self.bg_light = QRadioButton("Light")
+        # self.bg_dark = QRadioButton("Dark")
+        # self.bg_light = QRadioButton("Light")
 
-        self.bg_light.setChecked(True)
+        # self.bg_light.setChecked(True)
 
-        layout.addWidget(self.bg_dark)
-        layout.addWidget(self.bg_light)
+        # layout.addWidget(self.bg_dark)
+        # layout.addWidget(self.bg_light)
 
         self.setLayout(layout)
         self.titleBar.raise_()

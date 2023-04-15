@@ -4,10 +4,10 @@ from queue import Queue
 
 import PySide6
 from PySide6.QtCore import QEvent, QObject, QPoint
-from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent, QDesktopServices
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent, QAction
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMenu
 
 
 class Page(QWebEnginePage):
@@ -47,8 +47,6 @@ class WebView(QWebEngineView):
 
         self._childWidget = None
         self.installEventFilter(self)
-
-        # self.page()
 
     def on_load_finished(self) -> None:
         """

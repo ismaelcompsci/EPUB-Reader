@@ -1,15 +1,14 @@
-from importlib import metadata
 import os
-from sqlite3 import DatabaseError
+import qdarkstyle
 
 import PySide6
-from tinydb import Query, TinyDB
 from components.book_view import EReader
 from components.custom_widgets import MyTitleBar, SettingsWidget
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 from qframelesswindow import FramelessWindow
+from tinydb import Query, TinyDB
 
 
 class EWindow(FramelessWindow):
@@ -24,9 +23,11 @@ class EWindow(FramelessWindow):
         file_md5: str,
         full_metadata: dict,
         database: TinyDB,
-        query: Query,
+        parent: QWidget,
     ) -> None:
         super().__init__()
+
+        self._parent = parent
 
         self.filePath = filepath
         self.temp = temp
@@ -34,10 +35,11 @@ class EWindow(FramelessWindow):
         self.metadata = full_metadata
 
         self.db = database
-        self.query = query
+
+        self.parent_bg_color = self._parent.palette().color(QPalette.ColorRole.Window)
+        self.parent_color = self._parent.palette().color(QPalette.ColorRole.Text)
 
         self.set_layout()  # SET LAYOUT
-        self.add_qss()
 
         # RESIZE GRIPS qwebengineview resize not working -> solution
         # https://stackoverflow.com/a/62812752
@@ -64,7 +66,6 @@ class EWindow(FramelessWindow):
             self.temp,
             self.file_md5,
             self.db,
-            self.query,
             self.metadata,
         )
 
@@ -80,17 +81,21 @@ class EWindow(FramelessWindow):
             self.content_view.set_font_size
         )
 
-        # BACKGROUND COLOR
-        self.settings_widget.bg_dark.toggled.connect(
-            lambda: self.content_view.bg_buttons_toggled(self.settings_widget.bg_dark)
-        )
-        self.settings_widget.bg_light.toggled.connect(
-            lambda: self.content_view.bg_buttons_toggled(self.settings_widget.bg_light)
-        )
+        # # BACKGROUND COLOR
+        # self.settings_widget.bg_dark.toggled.connect(
+        #     lambda: self.content_view.bg_buttons_toggled(self.settings_widget.bg_dark)
+        # )
+        # self.settings_widget.bg_light.toggled.connect(
+        #     lambda: self.content_view.bg_buttons_toggled(self.settings_widget.bg_light)
+        # )
 
         self.setLayout(self.layout_)
         self.setTitleBar(MyTitleBar(self, self.content_view.this_book["cover"]))
         self.titleBar.raise_()
+
+        self.content_view.set_background_color(self.parent_bg_color)
+        r, g, b, a = tuple(map(str, self.parent_color.getRgb()))
+        self.content_view.web_view_css(f"body {{color: rgba({r}, {g}, {b}, {a})}}")
 
     def settings_button_clicked(self) -> None:
         """
@@ -102,14 +107,6 @@ class EWindow(FramelessWindow):
             self.settings_widget.hide()
 
         # self.layout_.addWidget(self.content_view)
-
-    def add_qss(self) -> None:
-        """
-        add qss
-        """
-        qss = os.path.join(os.path.dirname(__file__), "resources", "css", "ewindow.qss")
-        with open(qss, "r") as f:
-            self.setStyleSheet(f.read())
 
     def next_chapter(self) -> None:
         """

@@ -1,7 +1,0 @@
-EWindow{
-    background-color: white;
-}
-
-QSpinBox::up-arrow {
-
-}

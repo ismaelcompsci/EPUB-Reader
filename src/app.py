@@ -1,13 +1,14 @@
 import os
 import sys
 import logging
+import qdarkstyle
 
-from tinydb import TinyDB, Query
+from tinydb import TinyDB, Query, where
 
 from components.book_view import BookHandler
 from components.custom_widgets import CustomWidget
 from main_reader_view import EWindow
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt
 from PySide6.QtGui import *
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import *
@@ -20,9 +21,10 @@ from PySide6.QtWidgets import (
     QTableWidget,
     QVBoxLayout,
     QWidget,
+    QMenu,
 )
 from qframelesswindow import FramelessWindow, StandardTitleBar
-from resources import rc_resources
+
 from utils.utils import get_image_from_database, create_or_check
 
 
@@ -57,11 +59,10 @@ class Library(QTableWidget):
     Table view for books
     """
 
-    def __init__(self, parent: QWidget) -> None:
+    def __init__(self, parent: QWidget, db: TinyDB) -> None:
         super().__init__(parent)
 
-        self.db = self.parent().db
-        self.query = self.parent().query
+        self.db = db
 
         # GRID SETTINGS
         self.horizontalHeader().setStretchLastSection(True)
@@ -88,9 +89,7 @@ class Library(QTableWidget):
         Populate table widget
         """
 
-        images = get_image_from_database(
-            os.path.join(TEMPDIR, "db"), self.db, self.query
-        )
+        images = get_image_from_database(os.path.join(TEMPDIR, "db"), self.db)
 
         self.setRowCount(len(images))
         self.setColumnCount(5)
@@ -109,7 +108,7 @@ class Library(QTableWidget):
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
 
-    def book_selected(self, row: int, column: int) -> None:
+    def book_selected(self, row: int, column: int, action: str = "open") -> None:
         """
         Open selected book
         """
@@ -119,14 +118,25 @@ class Library(QTableWidget):
             file_md5 = book.file_md5
             filepath = book.full_metadata["path"]
 
-            temp_ = TEMPDIR
-            self.ewindow = EWindow(
-                filepath, temp_, file_md5, book.full_metadata, self.db, self.query
-            )
+            if action == "open":
+                temp_ = TEMPDIR
+                self.ewindow = EWindow(
+                    filepath,
+                    temp_,
+                    file_md5,
+                    book.full_metadata,
+                    self.db,
+                    self,
+                )
 
-            self.reading_book = True
+                self.ewindow.show()
 
-            self.ewindow.show()
+            if action == "delete":
+                # DELETE BOOK FROM DB, TEMP, COVER
+                handle = BookHandler(filepath, temp_dir=TEMPDIR, database=self.db)
+                handle.delete_book()
+                self.clear()
+                self.create_library()
 
     def book_added(self, file: str) -> None:
         """
@@ -135,7 +145,7 @@ class Library(QTableWidget):
         if not file:
             return
 
-        handle = BookHandler(file, temp_dir=TEMPDIR, database=self.db, query=self.query)
+        handle = BookHandler(file, temp_dir=TEMPDIR, database=self.db)
         is_read = handle.read_book()
 
         if not is_read:
@@ -146,19 +156,20 @@ class Library(QTableWidget):
         self.clear()
         self.create_library()
 
-    # def multiple_books_added(self, filenames):
-    #     for file in filenames:
-    #         handle = BookHandler(
-    #             file, temp_dir=TEMPDIR, database=self.db, query=self.query
-    #         )
+    def contextMenuEvent(self, event) -> None:
+        if self.selectionModel().selection().indexes():
+            for i in self.selectionModel().selection().indexes():
+                row, column = i.row(), i.column()
+            menu = QMenu()
+            open_action = menu.addAction("Open")
+            delete_action = menu.addAction("Delete")
+            action = menu.exec(self.mapToGlobal(event.pos()))
 
-    #         if not handle.read_book():
-    #             continue
+            if action == open_action:
+                self.book_selected(row, column, "open")
 
-    #         handle.save_book()
-
-    #     self.clear()
-    #     self.create_library()
+            if action == delete_action:
+                self.book_selected(row, column, "delete")
 
 
 class MainWindow(FramelessWindow):
@@ -175,18 +186,19 @@ class MainWindow(FramelessWindow):
 
         self.v_layout = QVBoxLayout()
 
-        self.library_view = Library(self)
+        self.library_view = Library(self, self.db)
 
         self.v_layout.addWidget(self.library_view)
 
         self.add_book = QPushButton("Add Book")
-        self.add_book.raise_()
         self.add_book.clicked.connect(self.add_book_clicked)
         self.v_layout.addWidget(
             self.add_book, stretch=0, alignment=Qt.AlignmentFlag.AlignHCenter
         )
 
         # self.v_layout.setContentsMargins(0, 10, 0, 0)
+
+        self.v_layout.setContentsMargins(0, 10, 0, 0)
         self.setLayout(self.v_layout)
 
         self.titlebar = MainTitleBar(self)
@@ -196,7 +208,9 @@ class MainWindow(FramelessWindow):
         self.setContentsMargins(0, 22, 0, 0)
 
         self.gui_funcitons = MainGuiStyle(self)
-        self.gui_funcitons.dark()
+        self.gui_funcitons.default_ui()
+
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def add_book_clicked(self) -> None:
         """
@@ -222,24 +236,31 @@ class MainGuiStyle:
         self.library_view = self.main_window.library_view
         self.main_titlebar = self.main_window.titlebar
 
-    def dark(self):
-        # MAIN WINDOW DARK
-        self.main_window.setStyleSheet(
-            """ * {background-color: #18191A; color: #FFFFFF;} """
-        )
-
-        # TITLE BAR DARK
-        self.main_titlebar.closeBtn.setNormalColor("#FFFFFF")
-        self.main_titlebar.minBtn.setNormalColor("#FFFFFF")
-        self.main_titlebar.maxBtn.setNormalColor("#FFFFFF")
-        self.main_titlebar.setStyleSheet("color: white;")
-
+    def default_ui(self):
         self.library_view.setStyleSheet(
             """
-            QTableWidget::item{ selection-background-color: #161618;}
             QTableWidget {border-width: 0px; border-style: solid}
             """
         )
+
+    # def dark(self):
+    #     # MAIN WINDOW DARK
+    #     self.main_window.setStyleSheet(
+    #         """ * {background-color: #18191A; color: #FFFFFF;} """
+    #     )
+
+    #     # TITLE BAR DARK
+    #     self.main_titlebar.closeBtn.setNormalColor("#FFFFFF")
+    #     self.main_titlebar.minBtn.setNormalColor("#FFFFFF")
+    #     self.main_titlebar.maxBtn.setNormalColor("#FFFFFF")
+    #     self.main_titlebar.setStyleSheet("color: white;")
+
+    #     self.library_view.setStyleSheet(
+    #         """
+    #         QTableWidget::item{ selection-background-color: #161618;}
+    #         QTableWidget {border-width: 0px; border-style: solid}
+    #         """
+    #     )
 
 
 class MainTitleBar(StandardTitleBar):
@@ -251,6 +272,8 @@ class MainTitleBar(StandardTitleBar):
 if __name__ == "__main__":
     # Create the QApplication object
     app = QApplication(sys.argv)
+
+    app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api="pyside6"))
 
     mainwindow = MainWindow(database=db, query=BooksQ)
     mainwindow.show()

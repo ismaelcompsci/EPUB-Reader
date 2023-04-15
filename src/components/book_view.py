@@ -1,9 +1,6 @@
 import base64
 import copy
-import datetime
-import json
-import os
-import pathlib
+
 
 import PySide6
 from tinydb import Query, TinyDB
@@ -42,7 +39,6 @@ class EReader(WebView):
         temp: str,
         file_md5: str,
         database: TinyDB,
-        query: Query,
         metadata: dict,
     ):
         super().__init__(parent)
@@ -52,7 +48,6 @@ class EReader(WebView):
         self.filepath = path
         self.temppath = temp
         self.db = database
-        self.query = query
         self.metadata = metadata
 
         self.file_md5 = file_md5
@@ -76,12 +71,14 @@ class EReader(WebView):
 
         # GET DATA FROM DATABASE
 
-        handle = BookHandler(self.filepath, self.temppath, self.db, self.query)
+        handle = BookHandler(self.filepath, self.temppath, self.db)
         book_found, _, content = handle.read_saved_book()
 
         self.this_book = book_found
         self.this_book["content"] = content
         self.this_book["cover"] = base64.b64decode(book_found["cover"])
+
+        # INITIALIZE BOOK WITH PREVIOUS SETTTINGS
         # SET SCROLL POS
         self.scroll_y = None
         if "scroll_position" in self.this_book:
@@ -106,12 +103,7 @@ class EReader(WebView):
         else:
             self.parent().resize(600, 900)
 
-        if "style" in self.this_book:
-            style = self.this_book["style"]
-            self.presets(style)
-
-        else:
-            self.set_content(0)
+        self.scroll_webpage_behavior()
 
     def set_content(self, position: int) -> None:
         """
@@ -131,6 +123,53 @@ class EReader(WebView):
             baseUrl=QUrl.fromLocalFile(self.base_url),
         )
 
+        # self.queue_func(lambda: self.page().runJavaScript(script))
+        self.queue_func(lambda: self.page().runJavaScript("window.scrollTo(0, 50);"))
+
+        self.setFocus()
+
+    def handle_(self, response):
+        if response:
+            if response == "1":
+                self.change_chapter(1)
+
+            if response == "-1":
+                self.change_chapter(-1, True)
+
+            if response == "no-scroll-bar":
+                self.has_scrollbar = False
+
+            if response == "has-scroll-bar":
+                self.has_scrollbar = True
+
+    def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
+        """
+        Changes chapter forward or backwords
+        """
+        current_position = self.this_book["position"]["current_chapter"]
+        final_position = len(self.this_book["content"])
+
+        # PREVENT SCROLLING BELOW PAGE 1
+        if current_position == 0 and direction == -1:
+            return
+
+        # PREVENT SCROLLING BEYOND LAST PAGE
+        if current_position == final_position and direction == 1:
+            return
+
+        self.set_content(current_position + direction)
+
+        if scroll_botom:
+            self.queue_func(
+                lambda: self.page().runJavaScript(
+                    """window.scrollTo(0, document.body.scrollHeight);"""
+                )
+            )
+
+    def scroll_webpage_behavior(self):
+        """
+        Adds scroll to next page behavior
+        """
         height = self.height()
 
         script = (
@@ -180,50 +219,8 @@ class EReader(WebView):
             f"    }}"
             f"}});"
         )
-        # print(script)
 
-        self.queue_func(lambda: self.page().runJavaScript(script))
-        self.queue_func(lambda: self.page().runJavaScript("window.scrollTo(0, 50);"))
-
-        self.setFocus()
-
-    def handle_(self, response):
-        if response:
-            if response == "1":
-                self.change_chapter(1)
-
-            if response == "-1":
-                self.change_chapter(-1, True)
-
-            if response == "no-scroll-bar":
-                self.has_scrollbar = False
-
-            if response == "has-scroll-bar":
-                self.has_scrollbar = True
-
-    def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
-        """
-        Changes chapter forward or backwords
-        """
-        current_position = self.this_book["position"]["current_chapter"]
-        final_position = len(self.this_book["content"])
-
-        # PREVENT SCROLLING BELOW PAGE 1
-        if current_position == 0 and direction == -1:
-            return
-
-        # PREVENT SCROLLING BEYOND LAST PAGE
-        if current_position == final_position and direction == 1:
-            return
-
-        self.set_content(current_position + direction)
-
-        if scroll_botom:
-            self.queue_func(
-                lambda: self.page().runJavaScript(
-                    """window.scrollTo(0, document.body.scrollHeight);"""
-                )
-            )
+        self.insert_script(script, "scroll_behavior")
 
     def set_font_size(self, size: int) -> None:
         """
@@ -232,28 +229,7 @@ class EReader(WebView):
         self.set_settings("font_size", size)
         self.settings().setFontSize(QWebEngineSettings.FontSize.MinimumFontSize, size)
 
-    def bg_buttons_toggled(self, button: QRadioButton) -> None:
-        """
-        Checks which radiobutton is toggled
-        """
-        if button.text() == "Dark" and button.isChecked():
-            self.presets("Dark")
-
-        if button.text() == "Light" and button.isChecked():
-            self.presets("Light")
-
-    def presets(self, style):
-        self.style_ = style
-
-        if style == "Dark":
-            self.web_view_css("html {color: white;, background-color: black;}")
-            self.set_background_color("#18181b")
-
-        if style == "Light":
-            self.set_background_color("white")
-            self.web_view_css("html {color: black;}")
-
-    def set_background_color(self, color: str) -> None:
+    def set_background_color(self, color: str | QColor) -> None:
         """
         Queues change background-color change to run when page is done loading
         """
@@ -262,7 +238,7 @@ class EReader(WebView):
 
     def web_view_css(self, css: str) -> None:
         """
-        Runs javascript code on
+        Adds css code on whole browser
         """
 
         script = f'(function() {{ css = document.createElement("style"); css.type = "text/css"; document.head.appendChild(css); css.innerText = "{css}";}})()'
@@ -321,7 +297,8 @@ class EReader(WebView):
 
         new_metadata["cover"] = image
 
-        self.db.upsert(new_metadata, self.query.hash == self.file_md5)
+        Save = Query()
+        self.db.upsert(new_metadata, Save.hash == self.file_md5)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         if not self.has_scrollbar:
