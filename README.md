@@ -7,7 +7,7 @@ https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py
 Only tested on Windows 10
 
 # Usage
-pip install -r requirements.txt
+pip install -r requirements.txt  
 python app.py
 
 # Library
