@@ -6,8 +6,9 @@ https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py
 ## Compatibility
 Only tested on Windows 10
 
-
-
+# Usage
+pip install -r requirements.txt
+python app.py
 
 # Library
 ![image info](static/screenshot2.png "Library")
@@ -30,4 +31,5 @@ Only tested on Windows 10
 - [ ] add threads?
 - [X] use different database
 - [ ] better way to communicate with javascript in webview
+- [ ] fix imports
   
