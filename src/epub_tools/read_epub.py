@@ -51,7 +51,12 @@ class EPUB:
         self.generate_references()
 
     def generate_references(self):
-        self.zip_file = zipfile.ZipFile(self.book_filename, mode="r", allowZip64=True)
+        try:
+            self.zip_file = zipfile.ZipFile(
+                self.book_filename, mode="r", allowZip64=True
+            )
+        except zipfile.BadZipFile:
+            return
         self.file_list = self.zip_file.namelist()
 
         # Book structure relies on parsing the .opf file
@@ -380,11 +385,12 @@ class EPUB:
         book_metadata = self.opf_dict["package"]["metadata"]
 
         def flattener(this_object):
-            if isinstance(this_object, collections.OrderedDict):
+            if isinstance(this_object, dict):
                 return this_object["#text"]
 
             if isinstance(this_object, list):
                 if isinstance(this_object[0], collections.OrderedDict):
+                    logger.warning("CHANGE LINE 392 to dict")
                     return this_object[0]["#text"]
                 else:
                     return this_object[0]

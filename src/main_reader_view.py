@@ -1,3 +1,4 @@
+from importlib import metadata
 import os
 from sqlite3 import DatabaseError
 
@@ -67,6 +68,7 @@ class EWindow(FramelessWindow):
             self.metadata,
         )
 
+        self.content_view.show()
         self.content_view.load_book()
 
         self.layout_.addWidget(self.content_view)
@@ -89,7 +91,6 @@ class EWindow(FramelessWindow):
         self.setLayout(self.layout_)
         self.setTitleBar(MyTitleBar(self, self.content_view.this_book["cover"]))
         self.titleBar.raise_()
-        self.content_view.setFocus()
 
     def settings_button_clicked(self) -> None:
         """

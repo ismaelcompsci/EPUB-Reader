@@ -3,16 +3,19 @@ import copy
 import datetime
 import hashlib
 import io
-import json
 import os
 import pathlib
+import logging
+import shutil
 
 from bs4 import BeautifulSoup
 from tinydb import Query, TinyDB
 from epub_tools.epub import ParseEPUB
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtGui import QImage, Qt
-from PySide6.QtWidgets import QWidget
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def resize_image(cover_image_raw: bytes) -> bytes:
@@ -110,12 +113,28 @@ class BookHandler:
     def read_book(self):
         self.md5_ = self.hash_book()
 
+        book = self.db.get(self.query.hash == self.md5_)
+        if book:
+            return False
+
         # BOOK DATA
         self.parsed_book = ParseEPUB(self.file, self.temp_dir, self.md5_)
         # NEW BOOK
         self.parsed_book.read_book()  # INITIALIZE BOOK
         metadata = self.parsed_book.generate_metadata()  # FOR ADDING TO DB
-        toc, content, images_only = self.parsed_book.generate_content()  # FOR READING
+
+        try:
+            (
+                toc,
+                content,
+                images_only,
+            ) = self.parsed_book.generate_content()  # FOR READING
+
+        except Exception as e:
+            shutil.rmtree(os.path.join(self.temp_dir, self.md5_))
+            this_error = f"Content generation error: {self.file}"
+            logger.exception(this_error + f" {type(e).__name__} Arguments: {e.args}")
+            return False
 
         self.this_book = {}
 
@@ -136,6 +155,10 @@ class BookHandler:
             "tags": metadata[4],
             "date_added": datetime.datetime.now().timestamp() * 1000,
         }
+
+        logger.info(f" DONE READDING BOOK: {metadata.title}")
+
+        return True
 
     def read_saved_book(self) -> tuple:
         """

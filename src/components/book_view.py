@@ -21,9 +21,6 @@ from qframelesswindow import *
 
 from components.web_view import WebView
 from utils.utils import (
-    resize_image,
-    add_css_to_html,
-    file_md5_,
     BookHandler,
     find_html_dir,
 )
@@ -134,66 +131,61 @@ class EReader(WebView):
             baseUrl=QUrl.fromLocalFile(self.base_url),
         )
 
-        script = """
-            var is_scroll =false
-            if (document.body.scrollWidth > document.body.clientWidth || document.body.scrollHeight > document.body.clientHeight){
-                is_scroll = true
-            }
+        height = self.height()
 
-            if (!is_scroll){
-            console.log("no-scroll-bar")
-            } else {
-            console.log("has-scroll-bar")
-            }
-
-            let topelemnt = document.createElement('div');
-            topelemnt.style.cssText = 'height:50px;';
-            document.body.prepend(topelemnt)
-
-            console.log(document.body.scrollHeight,window.scrollY)
-
-            var count = 0
-            var up_count = 0
-            var prev_scroll = 0
-            document.addEventListener('scroll', function s(e) {
-                let documentHeight = document.body.scrollHeight;
-                let currentScroll = window.scrollY + window.innerHeight;
-
-                let modifier = 1;
-                if(currentScroll + modifier > documentHeight) {
-                let element = document.createElement('div');
-                element.style.cssText = 'height:50px;';
-                document.body.append(element);
-                count+=1
-                }
-
-                if (!window.pageYOffset){
-                    let topelemnt = document.createElement('div');
-                    topelemnt.style.cssText = 'height:25px;';
-                    document.body.prepend(topelemnt)
-                    window.scrollTo(0, 25)
-                    up_count += 1
-
-                }
-                
-                if(up_count > 3){
-                console.log(-1)
-                document.removeEventListener("scroll", s)
-                return
-                }
-
-                if (count > 3){
-                
-                document.removeEventListener("scroll", s)
-                console.log(1)
-                return
-                }
-        })
-            """
+        script = (
+            f"var is_scroll = false;"
+            f"var count = 0;"
+            f"var up_count = 0;"
+            f"var prev_scroll = 0;"
+            f"console.log(document.body.scrollHeight , {height});"
+            f"if (document.body.scrollHeight > {height}) {{"
+            f"    is_scroll = true;"
+            f'    console.log("PAGE HAS SCROLL BAR");'
+            f"}}"
+            f"if (!is_scroll) {{"
+            f'    console.log("no-scroll-bar");'
+            f"}} else {{"
+            f'    console.log("has-scroll-bar");'
+            f"}}"
+            f'let topelement = document.createElement("div");'
+            f'topelement.style.cssText = "height:25px;";'
+            f"document.body.prepend(topelement);"
+            f'document.addEventListener("scroll", function scrolling(e) {{'
+            f"    let documentHeight = document.body.scrollHeight;"
+            f"    let currentScroll = window.scrollY + window.innerHeight;"
+            f"    let modifier = 1;"
+            f"    if (currentScroll + modifier > documentHeight) {{"
+            f'        let element = document.createElement("div");'
+            f'        element.style.cssText = "height:50px;";'
+            f"        document.body.append(element);"
+            f"        count += 1;"
+            f"    }}"
+            f"    if (!window.pageYOffset) {{"
+            f'        let topelemnt_ = document.createElement("div");'
+            f'        topelemnt_.style.cssText = "height:25px;";'
+            f"        document.body.prepend(topelemnt_);"
+            f"        window.scrollTo(0, 25);"
+            f"        up_count += 1;"
+            f"    }}"
+            f"    if (up_count > 3) {{"
+            f"        console.log(-1);"
+            f'        document.removeEventListener("scroll", scrolling);'
+            f"        return;"
+            f"    }}"
+            f"    if (count > 3) {{"
+            f'        document.removeEventListener("scroll", scrolling);'
+            f"        console.log(1);"
+            f"        return;"
+            f"    }}"
+            f"}});"
+        )
+        # print(script)
 
         self.queue_func(lambda: self.page().runJavaScript(script))
-        self.setFocus()
         self.queue_func(lambda: self.page().runJavaScript("window.scrollTo(0, 50);"))
+
+        self.setFocus()
 
     def handle_(self, response):
         if response:
@@ -232,8 +224,6 @@ class EReader(WebView):
                     """window.scrollTo(0, document.body.scrollHeight);"""
                 )
             )
-
-        self.setFocus()
 
     def set_font_size(self, size: int) -> None:
         """
@@ -343,3 +333,18 @@ class EReader(WebView):
                 # scrolling down
                 self.change_chapter(1)
         return super().wheelEvent(event)
+
+    # def event(self, e):
+    #     if e.type() in (QEvent.Show, QEvent.Resize):
+    #         widget_w = self.frameGeometry().width()
+    #         widget_h = self.frameGeometry().height()
+    #         screen_w = self.width()
+    #         screen_h = self.height()
+
+    #         # For "debugging" purposes:
+    #         print(widget_w, widget_h)
+    #         print(screen_w, screen_h)
+
+    #         return ((widget_w, widget_h), (screen_w, screen_h))
+
+    # return {"widget": {"width": widget_w, "height": widget_h}, "screen": {"width": screen_w, "height": screen_h}}

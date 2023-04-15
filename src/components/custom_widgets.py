@@ -1,24 +1,28 @@
 import base64
+import logging
+
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (
-    QPushButton,
-    QVBoxLayout,
-    QLabel,
-    QHBoxLayout,
-    QSpinBox,
     QFrame,
-    QWidget,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
     QRadioButton,
     QSizePolicy,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
 )
-
-from qframelesswindow import StandardTitleBar, FramelessWindow
+from qframelesswindow import FramelessWindow, StandardTitleBar
 
 # CREATE SETTINGS WIDGET
 # CHANGE FONT SIZE
 # CHANGE FONT FAMILY
 # CHANGE BACKGROUND COLOR LIGHT OR DARK
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 class SettingsWidget(FramelessWindow):
@@ -144,6 +148,15 @@ class CustomWidget(QWidget):
         )
 
         self.lbPixmap.setPixmap(pix)
+        if isinstance(self._text, dict):
+            logger.info(f'Trying to find title in: {self.full_metadata["path"]}')
+
+            try:
+                self._text = self._text["#text"]
+            except:
+                logger.warning(f'Title not found in: {self.full_metadata["path"]}')
+
+                self._text = ""
 
         self.lbText.setText(self._text)
 

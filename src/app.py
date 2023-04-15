@@ -1,14 +1,13 @@
 import os
 import sys
-
-import tinydb
+import logging
 
 from tinydb import TinyDB, Query
 
 from components.book_view import BookHandler
 from components.custom_widgets import CustomWidget
 from main_reader_view import EWindow
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import *
 from PySide6.QtWebEngineCore import *
 from PySide6.QtWebEngineWidgets import *
@@ -35,6 +34,7 @@ from utils.utils import get_image_from_database, create_or_check
 #     - 1ST OPEN AT LAST CHAPTER
 #     - 2ND SCROLL TO LAST POSITION
 
+logger = logging.getLogger(__name__)
 
 BASEDIR = os.path.dirname(__file__)
 
@@ -63,9 +63,9 @@ class Library(QTableWidget):
         self.db = self.parent().db
         self.query = self.parent().query
 
+        # GRID SETTINGS
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().setMaximumWidth(100)
-
         self.setShowGrid(False)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
@@ -81,7 +81,7 @@ class Library(QTableWidget):
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
 
-        self.setStyleSheet("border-width: 0px; border-style: solid")
+        self.verticalScrollBar().setSingleStep(1)
 
     def create_library(self) -> None:
         """
@@ -132,12 +132,33 @@ class Library(QTableWidget):
         """
         Adds book the database and reloads table widget
         """
+        if not file:
+            return
+
         handle = BookHandler(file, temp_dir=TEMPDIR, database=self.db, query=self.query)
-        handle.read_book()
+        is_read = handle.read_book()
+
+        if not is_read:
+            return
+
         handle.save_book()
 
         self.clear()
         self.create_library()
+
+    # def multiple_books_added(self, filenames):
+    #     for file in filenames:
+    #         handle = BookHandler(
+    #             file, temp_dir=TEMPDIR, database=self.db, query=self.query
+    #         )
+
+    #         if not handle.read_book():
+    #             continue
+
+    #         handle.save_book()
+
+    #     self.clear()
+    #     self.create_library()
 
 
 class MainWindow(FramelessWindow):
@@ -159,20 +180,23 @@ class MainWindow(FramelessWindow):
         self.v_layout.addWidget(self.library_view)
 
         self.add_book = QPushButton("Add Book")
+        self.add_book.raise_()
         self.add_book.clicked.connect(self.add_book_clicked)
         self.v_layout.addWidget(
             self.add_book, stretch=0, alignment=Qt.AlignmentFlag.AlignHCenter
         )
 
-        self.v_layout.setContentsMargins(0, 10, 0, 0)
+        # self.v_layout.setContentsMargins(0, 10, 0, 0)
         self.setLayout(self.v_layout)
 
-        titlebar = StandardTitleBar(self)
-        titlebar.setTitle("EPUB Reader")
-        self.setTitleBar(titlebar)
-        self.titleBar.raise_()
+        self.titlebar = MainTitleBar(self)
+        self.setTitleBar(self.titlebar)
+        self.titlebar.raise_()
 
         self.setContentsMargins(0, 22, 0, 0)
+
+        self.gui_funcitons = MainGuiStyle(self)
+        self.gui_funcitons.dark()
 
     def add_book_clicked(self) -> None:
         """
@@ -182,10 +206,47 @@ class MainWindow(FramelessWindow):
             self,
             "Open EPUB",
             filter="EPUB Files (*.epub)",
+            dir=r"D:\MACFILESTOORBOOKS\newBooks",
         )[0]
 
-        if file_name:
-            self.library_view.book_added(file_name)
+        self.library_view.book_added(file_name)
+        # if len(file_names) == 1:
+        #     self.library_view.book_added(file_names[0])
+        # else:
+        #     self.library_view.multiple_books_added(file_names)
+
+
+class MainGuiStyle:
+    def __init__(self, parent: QWidget):
+        super().__init__()
+        self.main_window = parent
+        self.library_view = self.main_window.library_view
+        self.main_titlebar = self.main_window.titlebar
+
+    def dark(self):
+        # MAIN WINDOW DARK
+        self.main_window.setStyleSheet(
+            """ * {background-color: #18191A; color: #FFFFFF;} """
+        )
+
+        # TITLE BAR DARK
+        self.main_titlebar.closeBtn.setNormalColor("#FFFFFF")
+        self.main_titlebar.minBtn.setNormalColor("#FFFFFF")
+        self.main_titlebar.maxBtn.setNormalColor("#FFFFFF")
+        self.main_titlebar.setStyleSheet("color: white;")
+
+        self.library_view.setStyleSheet(
+            """
+            QTableWidget::item{ selection-background-color: #161618;}
+            QTableWidget {border-width: 0px; border-style: solid}
+            """
+        )
+
+
+class MainTitleBar(StandardTitleBar):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setTitle("EPUB Reader")
 
 
 if __name__ == "__main__":
@@ -193,6 +254,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     mainwindow = MainWindow(database=db, query=BooksQ)
-    mainwindow.setStyleSheet("background-color: white")
     mainwindow.show()
     app.exec()
