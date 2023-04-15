@@ -206,7 +206,6 @@ class MainWindow(FramelessWindow):
             self,
             "Open EPUB",
             filter="EPUB Files (*.epub)",
-            dir=r"D:\MACFILESTOORBOOKS\newBooks",
         )[0]
 
         self.library_view.book_added(file_name)
