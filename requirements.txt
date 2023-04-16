@@ -2,5 +2,6 @@ beautifulsoup4
 PySide6
 PySideSix_Frameless_Window
 xmltodict
-tindydb
+tinydb
 lxml
+qdarkstyle
