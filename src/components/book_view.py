@@ -178,7 +178,7 @@ class EReader(WebView):
             f"var up_count = 0;"
             f"var prev_scroll = 0;"
             f"console.log(document.body.scrollHeight , {height});"
-            f"if (document.body.scrollHeight > {height}) {{"
+            f"if (document.body.scrollWidth > document.body.clientWidth || document.body.scrollHeight > document.body.clientHeight) {{"
             f"    is_scroll = true;"
             f'    console.log("PAGE HAS SCROLL BAR");'
             f"}}"

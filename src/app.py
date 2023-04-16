@@ -120,7 +120,7 @@ class Library(QTableWidget):
 
             if action == "open":
                 temp_ = TEMPDIR
-                self.ewindow = EWindow(
+                ewindow = EWindow(
                     filepath,
                     temp_,
                     file_md5,
@@ -129,7 +129,7 @@ class Library(QTableWidget):
                     self,
                 )
 
-                self.ewindow.show()
+                ewindow.show()
 
             if action == "delete":
                 # DELETE BOOK FROM DB, TEMP, COVER

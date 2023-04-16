@@ -1,19 +1,18 @@
 import base64
 import copy
 import datetime
-from genericpath import isfile
 import hashlib
 import io
+import logging
 import os
 import pathlib
-import logging
 import shutil
 
 from bs4 import BeautifulSoup
-from tinydb import Query, TinyDB, where
 from epub_tools.epub import ParseEPUB
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtGui import QImage, Qt
+from tinydb import Query, TinyDB, where
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
