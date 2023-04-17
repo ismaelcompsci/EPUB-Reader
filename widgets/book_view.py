@@ -1,5 +1,6 @@
 import base64
 import copy
+import logging
 
 from tinydb import Query, TinyDB
 
@@ -15,6 +16,8 @@ from qframelesswindow import *
 from .browser import BookWebView
 from .bookhandler import BookHandler
 
+logger = logging.getLogger(__name__)
+
 
 class BookViewer(BookWebView):
     def __init__(
@@ -27,6 +30,8 @@ class BookViewer(BookWebView):
         metadata: dict,
     ):
         super().__init__(parent)
+
+        logger.info("Initializng BookViewer")
 
         self.book_path = book_path
         self.temp_dir = temp_dir
@@ -47,15 +52,23 @@ class BookViewer(BookWebView):
         """
         Initialize epub file
         """
+        logger.info("Loading Book")
+
         handle = BookHandler(self.book_path, self.temp_dir, self.database)
         book_found, _, content = handle.read_saved_book()
+
+        logger.info("Done Parsing Book")
 
         self.this_book = book_found
         self.this_book["content"] = content
         self.this_book["cover"] = base64.b64decode(book_found["cover"])
 
+        logger.info("Inserting content and cover into book")
+
         # INITIALIZE BOOK WITH PREVIOUS SETTTINGS
         # SET SCROLL POS
+
+        logger.info("Inserting previous settings")
         self.scroll_y = None
         if "scroll_position" in self.this_book:
             # self.parent().
@@ -79,6 +92,8 @@ class BookViewer(BookWebView):
         else:
             w, h = 600, 900
             self.parent().resize(w, h)
+
+        logger.info("Done Inserting previous settings")
 
         self.scroll_webpage_behavior(w, h)
 

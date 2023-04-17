@@ -6,6 +6,10 @@ from tinydb import TinyDB
 from .book_view import BookViewer
 from .titlebars import BookSettingsWidget, BookTitleBar
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class ReaderWindow(FramelessWindow):
     """
@@ -22,6 +26,7 @@ class ReaderWindow(FramelessWindow):
         parent: QWidget,
     ):
         super().__init__()
+        logger.info("Initializing ReaderWindow")
 
         self._parent = parent
 
@@ -47,14 +52,18 @@ class ReaderWindow(FramelessWindow):
             grip.setStyleSheet("""background-color: transparent""")
             self.grips.append(grip)
 
+        logger.info("Done initializing ReaderWindow")
+
     def init_ui(self):
         """
         Makes layout
         """
+        logger.info("Makeing UI")
 
         self.v_layout = QVBoxLayout()
         self.v_layout.setContentsMargins(0, self.titleBar.height(), 0, 0)
 
+        logger.info("Creating BookViewer")
         self.book_view = BookViewer(
             self,
             self.book_path,
@@ -64,6 +73,7 @@ class ReaderWindow(FramelessWindow):
             self.metadata,
         )
 
+        logger.info("Showing BookViewer")
         self.book_view.show()
         self.book_view.load_book()
 

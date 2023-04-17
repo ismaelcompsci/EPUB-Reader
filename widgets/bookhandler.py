@@ -1,12 +1,15 @@
 import base64
 import copy
 import datetime
+import logging
 import os
 import shutil
 from tinydb import Query, TinyDB, where
 
 from utils.utils import get_file_md5_hash, resize_image
 from epub.epub import ParseEPUB
+
+logger = logging.getLogger(__name__)
 
 
 class BookHandler:
@@ -103,6 +106,9 @@ class BookHandler:
         """
         Reads book in database
         """
+
+        logger.info("Reading book from database")
+
         Book = Query()
         self.file_md5 = self.hash_book()
 

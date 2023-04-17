@@ -1,6 +1,6 @@
 import base64
-from .reader import ReaderWindow
-from .bookhandler import BookHandler
+import logging
+
 from config.config import TEMPDIR
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
@@ -16,6 +16,11 @@ from PySide6.QtWidgets import (
 )
 from tinydb import TinyDB
 from utils.utils import get_items_from_database
+
+from .bookhandler import BookHandler
+from .reader import ReaderWindow
+
+logger = logging.getLogger(__name__)
 
 
 class LibraryWidget(QTableWidget):
@@ -49,6 +54,7 @@ class LibraryWidget(QTableWidget):
         """
         Populate table Widget
         """
+        logger.info("Creating Library")
 
         books = get_items_from_database(self.database)
 
@@ -62,19 +68,23 @@ class LibraryWidget(QTableWidget):
                     self.setCellWidget(i, j, lb)
 
         except IndexError:
-            print("INDEX ERROR")
             pass
 
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
 
+        logger.info("Done creating library")
+
     def book_selected(self, row: int, column: int, action: str = "open") -> None:
         """
         Open selected book
         """
+
         book = self.cellWidget(row, column)
 
         if book:
+            logger.info(f"Book: {book.metadata['title']}")
+
             file_md5 = book.book_md5
             filepath = book.metadata["path"]
 
@@ -89,6 +99,7 @@ class LibraryWidget(QTableWidget):
                     self,
                 )
 
+                logger.info("Showing ReaderWindow")
                 self.ewindow.show()
 
             if action == "delete":
@@ -97,6 +108,8 @@ class LibraryWidget(QTableWidget):
                 handle.delete_book()
                 self.clear()
                 self.create_library()
+
+                logger.info(f"Deleting book: {book.metadata['title']}")
 
     def book_added(self, file: str) -> None:
         """
@@ -108,10 +121,13 @@ class LibraryWidget(QTableWidget):
         handle = BookHandler(file, TEMPDIR, self.database)
         is_read = handle.read_book()
 
+        logger.info("Added book")
+
         if not is_read:
             return
 
         handle.save_book()
+        logger.info("Saved Book")
 
         self.clear()
         self.create_library()

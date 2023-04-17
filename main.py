@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 
 import qdarkstyle
 from qframelesswindow import FramelessWindow
@@ -15,6 +16,11 @@ from tinydb import TinyDB
 from config.config import _db
 from widgets.titlebars import MainTitleBar
 from widgets.library import LibraryWidget
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+)
 
 db = _db.table("Books")
 settings = _db.table("settings")
@@ -79,4 +85,6 @@ if __name__ == "__main__":
 
     mainwindow = MainWindow(database=db)
     mainwindow.show()
+    logger.info("STARTING APP")
     app.exec()
+    logger.info("EXITED")
