@@ -1,15 +1,10 @@
-import base64
-import logging
-import qdarkstyle
-from qtpy.QtCore import QSize, Qt, QFile, QTextStream
-from qtpy.QtGui import QIcon, QImage, QPixmap
-from qtpy.QtWidgets import (
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon, QImage, QPixmap
+from PySide6.QtWidgets import (
     QFrame,
-    QApplication,
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QSizePolicy,
     QSpinBox,
     QVBoxLayout,
     QWidget,

@@ -1,11 +1,11 @@
 from queue import Queue
 
 
-from qtpy.QtCore import QEvent, QObject
-from qtpy.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
-from qtpy.QtWebEngineCore import *
-from qtpy.QtWebEngineWidgets import QWebEngineView
-from qtpy.QtWidgets import QWidget
+from PySide6.QtCore import QEvent, QObject
+from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
+from PySide6.QtWebEngineCore import *
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import QWidget
 
 
 class Page(QWebEnginePage):

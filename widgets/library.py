@@ -2,9 +2,9 @@ import base64
 from .reader import ReaderWindow
 from .bookhandler import BookHandler
 from config.config import TEMPDIR
-from qtpy.QtCore import Qt
-from qtpy.QtGui import QPixmap
-from qtpy.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
     QLabel,

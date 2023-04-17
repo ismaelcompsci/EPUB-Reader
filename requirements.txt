@@ -5,3 +5,4 @@ xmltodict
 tinydb
 lxml
 qdarkstyle
+platformdirs

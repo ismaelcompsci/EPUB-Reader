@@ -1,17 +1,15 @@
 import base64
 import copy
 
-
-import PySide6
 from tinydb import Query, TinyDB
 
 from utils.utils import find_html_dir
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWebEngineWidgets import *
-from qtpy.QtWebEngineCore import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtWebEngineWidgets import *
+from PySide6.QtWebEngineCore import *
 
-from qtpy.QtWidgets import *
+from PySide6.QtWidgets import *
 from qframelesswindow import *
 
 from .browser import BookWebView

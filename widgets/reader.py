@@ -1,14 +1,10 @@
-import base64
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtWidgets import *
 from qframelesswindow import FramelessWindow
 from tinydb import TinyDB
 from .book_view import BookViewer
 from .titlebars import BookSettingsWidget, BookTitleBar
-
-from .bookhandler import BookHandler
-from utils.utils import find_html_dir
 
 
 class ReaderWindow(FramelessWindow):
