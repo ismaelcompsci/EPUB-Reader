@@ -41,7 +41,6 @@ class MainWindow(FramelessWindow):
         self.library_view = LibraryWidget(self, self.db)
 
         self.v_layout.addWidget(self.library_view)
-
         self.add_book = QPushButton("Add Book")
 
         self.add_book.clicked.connect(self.add_book_clicked)
