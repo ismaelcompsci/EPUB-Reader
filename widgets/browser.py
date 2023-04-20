@@ -1,11 +1,11 @@
 from queue import Queue
 
 
-from PySide6.QtCore import QEvent, QObject
-from PySide6.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
-from PySide6.QtWebEngineCore import *
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget
+from PyQt5.QtCore import QEvent, QObject
+from PyQt5.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
+from PyQt5.QtWebEngineCore import *
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from PyQt5.QtWidgets import QWidget
 
 
 class Page(QWebEnginePage):
@@ -49,7 +49,10 @@ class BookWebView(QWebEngineView):
         self._child_widget = None
         self.installEventFilter(self)
 
+        self.web_width, self.web_height = self.size().width(), self.size().height()
+
     def load_finished(self, ok):
+        self.web_width, self.web_height = self.size().width(), self.size().height()
         if ok:
             self.loading = False
 
@@ -58,6 +61,7 @@ class BookWebView(QWebEngineView):
 
     def load_started(self):
         self.loading = True
+        self.web_width, self.web_height = self.size().width(), self.size().height()
 
     def queue_func(self, funciton):
         self.queue.put(funciton)

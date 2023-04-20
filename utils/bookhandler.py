@@ -140,3 +140,5 @@ class BookHandler:
         new_metadata["cover"] = image
 
         self.db.insert(new_metadata)
+
+        return new_metadata

@@ -1,0 +1,15 @@
+<!DOCTYPE RCC>
+<RCC>
+    <qresource prefix="reader">
+        <file>dark/book_interface.qss</file>
+        <file>dark/library_interface.qss</file>
+        <file>dark/main_window.qss</file>
+        <file>dark/setting_interface.qss</file>
+
+        <file>light/book_interface.qss</file>
+        <file>light/library_interface.qss</file>
+        <file>light/main_window.qss</file>
+        <file>light/setting_interface.qss</file>
+
+    </qresource>
+</RCC>

@@ -3,8 +3,8 @@ import io
 import os
 import pathlib
 
-from qtpy.QtCore import QBuffer, QByteArray, QIODevice
-from qtpy.QtGui import QImage, Qt
+from PyQt5.QtCore import QBuffer, QByteArray, QIODevice, Qt
+from PyQt5.QtGui import QImage
 from tinydb import TinyDB
 
 
@@ -67,7 +67,6 @@ def find_html_dir(temp: str, file_md5: str) -> str:
         if html_file_count >= 2:
             # return a dir with 2 or more html files
             return str(pathlib.Path(path).resolve()) + os.path.sep
-        # if html_file_count < 2:
-        #     return str(pathlib.Path(path).resolve()) + os.path.sep
     # Return the temp dir of the book
-    return os.path.join(temp, file_md5) + os.path.join
+
+    return os.path.join(temp, file_md5) + os.path.sep

@@ -1,18 +1,61 @@
-from platformdirs import *
 import os
-
+from qfluentwidgets import (
+    QConfig,
+    ConfigItem,
+    FolderValidator,
+    qconfig,
+)
+from platformdirs import user_data_dir
 from tinydb import TinyDB
-from utils.utils import create_or_check
+
 
 appname = "EPUB-Reader"
-appauthor = "Ismael Olvera"
+appautor = "Ismael Olvera"
 
-# STORES EXTRACTED EPUBS AND DATABASE
+
+def create_or_check(path: str | list) -> str | list:
+    if isinstance(path, str):
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    if isinstance(path, list):
+        for dir_ in path:
+            if not os.path.exists(dir_):
+                os.makedirs(dir_)
+
+    return path
+
+
+# STORES BOOK STUFF
 DATA_DIR = user_data_dir(appname)
 
-# DATABASE DIR
-DATABASE_DIR = create_or_check(os.path.join(DATA_DIR, "db"))
-TEMPDIR = create_or_check(DATA_DIR)
+# STORES EXTRACTED EPUB FILES
+EXTRACTED_EPUB_DIR = os.path.join(DATA_DIR, "data")
 
-# CREATE DATABASE
-_db = TinyDB(DATABASE_DIR + "\\Books.json")
+# DATABASE DIR
+DATABASE_DIR = os.path.join(DATA_DIR, "db")
+
+# STORES COPIED BOOK
+BOOK_COPIES_DIR = os.path.join(DATA_DIR, "Books")
+
+# GUI CONFIGN
+GUI_CONFIG_DIR = os.path.join(DATA_DIR, "config")
+
+# CREATE THE DIRS
+create_or_check(
+    [DATA_DIR, DATABASE_DIR, BOOK_COPIES_DIR, EXTRACTED_EPUB_DIR, GUI_CONFIG_DIR]
+)
+
+
+class Config(QConfig):
+    tempFolder = ConfigItem("Folders", "temp", GUI_CONFIG_DIR, FolderValidator())
+
+
+cfg = Config()
+
+
+qconfig.load(GUI_CONFIG_DIR + "\\config.json", cfg)
+
+db_ = TinyDB(DATABASE_DIR + "\\Books.json")
+Books = db_.table("Books")
+Settings = db_.table("Settings")

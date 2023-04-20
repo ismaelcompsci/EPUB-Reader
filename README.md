@@ -27,7 +27,7 @@ python app.py
 
 
 ### Todo
-- [ ] add support for  linux
+- [ ] add support for  linux 
 - [ ] fix table view
 - [x] open book at last scroll location
 - [ ] add toc view

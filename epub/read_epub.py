@@ -28,7 +28,7 @@ from urllib.parse import unquote
 import xmltodict
 
 # from PyQt5 import QtGui
-from PySide6.QtGui import QTextDocument
+from PyQt5.QtGui import QTextDocument
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -389,8 +389,7 @@ class EPUB:
                 return this_object["#text"]
 
             if isinstance(this_object, list):
-                if isinstance(this_object[0], collections.OrderedDict):
-                    logger.warning("CHANGE LINE 392 to dict")
+                if isinstance(this_object[0], dict):
                     return this_object[0]["#text"]
                 else:
                     return this_object[0]
