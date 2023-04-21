@@ -26,3 +26,5 @@ python main.py
 
 
 ### Todo
+- [ ] Add More Features to ReaderInterface
+- [ ] Add a ToC

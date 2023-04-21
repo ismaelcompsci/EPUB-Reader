@@ -309,9 +309,7 @@ class LibraryInterface(LibraryScrollInterface):
         )
 
         self.thread_ = BackGroundBookAddition(files, self.parent(), self)
-
         self.thread_.bookAdded.connect(self.updateLibraryInterface)
-
         self.thread_.start()
 
     def updateLibraryInterface(self, metadata):
