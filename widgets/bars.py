@@ -16,6 +16,9 @@ from qfluentwidgets import (
     SearchLineEdit,
     isDarkTheme,
     ToolTipFilter,
+    NavigationItemPosition,
+    NavigationToolButton,
+    NavigationPanel,
 )
 
 from config.config import cfg
@@ -109,3 +112,63 @@ class LibraryToolBar(QWidget):
     def toggleTheme(self):
         theme = Theme.LIGHT if isDarkTheme() else Theme.DARK
         cfg.set(cfg.themeMode, theme)
+
+
+class NavigationBar(QWidget):
+    """Navigation widget"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.hBoxLayout = QHBoxLayout(self)
+        self.menuButton = NavigationToolButton(FIF.MENU, self)
+        self.navigationPanel = NavigationPanel(parent, True)
+        self.titleLabel = QLabel(self)
+
+        self.navigationPanel.move(0, 31)
+        self.hBoxLayout.setContentsMargins(5, 5, 5, 5)
+        self.hBoxLayout.addWidget(self.menuButton)
+        self.hBoxLayout.addWidget(self.titleLabel)
+
+        self.menuButton.clicked.connect(self.showNavigationPanel)
+        self.navigationPanel.setExpandWidth(260)
+        self.navigationPanel.setMenuButtonVisible(True)
+        self.navigationPanel.hide()
+
+    def setTitle(self, title: str):
+        self.titleLabel.setText(title)
+        self.titleLabel.adjustSize()
+
+    def showNavigationPanel(self):
+        self.navigationPanel.show()
+        self.navigationPanel.raise_()
+        self.navigationPanel.expand()
+
+    def addItem(
+        self,
+        routeKey,
+        icon,
+        text: str,
+        onClick,
+        selectable=True,
+        position=NavigationItemPosition.TOP,
+    ):
+        def wrapper():
+            onClick()
+            self.setTitle(text)
+
+        self.navigationPanel.addItem(
+            routeKey, icon, text, wrapper, selectable, position
+        )
+
+    def addSeparator(self, position=NavigationItemPosition.TOP):
+        self.navigationPanel.addSeparator(position)
+
+    def setCurrentItem(self, routeKey: str):
+        self.navigationPanel.setCurrentItem(routeKey)
+        self.setTitle(self.navigationPanel.items[routeKey]._text)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self.navigationPanel.resize(
+            self.navigationPanel.width(), self.window().height() - 31
+        )

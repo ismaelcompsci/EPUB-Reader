@@ -191,7 +191,6 @@ class LibraryCardView(QWidget):
             self.makeInfopanel()
 
     def makeInfopanel(self):
-
         if len(self.books) == 0:
             self.infoPanel = None
         else:
@@ -314,6 +313,6 @@ class LibraryInterface(LibraryScrollInterface):
 
     def updateLibraryInterface(self, metadata):
         self.libraryView.emptyLibrary = False
-        self.libraryView.infoPanel.deleteLater() # IS THIS OKAY? ???
+        self.libraryView.infoPanel.deleteLater()  # IS THIS OKAY? ???
         self.libraryView.makeInfopanel()
         self.libraryView.addLibraryItem(metadata)

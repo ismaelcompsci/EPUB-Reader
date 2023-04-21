@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QApplication,
     QFrame,
     QHBoxLayout,
+    QVBoxLayout,
     QWidget,
 )
 from qfluentwidgets import FluentIcon as FIF
@@ -20,7 +21,7 @@ from qframelesswindow import FramelessWindow
 from widgets.libraryinterface import LibraryInterface
 from widgets.reader import ReaderInterface
 from widgets.settingsinterface import SettingInterface
-from widgets.bars import CustomTitleBar
+from widgets.bars import CustomTitleBar, NavigationBar
 
 
 class StackedWidget(QFrame):
@@ -66,11 +67,11 @@ class Window(FramelessWindow):
 
         self.emptyLibrary = True
 
-        self.hBoxLayout = QHBoxLayout(self)
-        self.widgetLayout = QHBoxLayout()
+        self.vBoxLayout = QVBoxLayout(self)
+        # self.widgetLayout = QHBoxLayout()
 
         self.stackWidget = StackedWidget(self)
-        self.navigationInterface = NavigationInterface(self, True, True)
+        self.navigationInterface = NavigationBar(self)
 
         # create sub interface
         self.libraryInterface = LibraryInterface("Library", "libraryInterface", self)
@@ -85,16 +86,19 @@ class Window(FramelessWindow):
         self.initWindow()
 
     def initLayout(self):
-        self.hBoxLayout.setSpacing(0)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.hBoxLayout.addWidget(self.navigationInterface)
-        self.hBoxLayout.addLayout(self.widgetLayout)
-        self.hBoxLayout.setStretchFactor(self.widgetLayout, 1)
+        self.vBoxLayout.setSpacing(0)
+        self.vBoxLayout.setContentsMargins(0, self.titleBar.height(), 0, 0)
+        self.vBoxLayout.addWidget(self.navigationInterface)
+        self.vBoxLayout.addWidget(self.stackWidget)
+        self.vBoxLayout.setStretchFactor(self.stackWidget, 1)
 
-        self.widgetLayout.addWidget(self.stackWidget)
-        self.widgetLayout.setContentsMargins(0, 48, 0, 0)
+        self.stackWidget.addWidget(self.libraryInterface)
+        self.stackWidget.addWidget(self.settingInterface)
 
-        self.navigationInterface.displayModeChanged.connect(self.titleBar.raise_)
+        # self.widgetLayout.addWidget(self.stackWidget)
+        # self.widgetLayout.setContentsMargins(0, 48, 0, 0)
+
+        # self.navigationInterface.displayModeChanged.connect(self.titleBar.raise_)
         self.titleBar.raise_()
 
     def initNavigation(self):
@@ -117,14 +121,9 @@ class Window(FramelessWindow):
             NavigationItemPosition.BOTTOM,
         )
 
-        # Default route
-        self.navigationInterface.setDefaultRouteKey(self.libraryInterface.objectName())
-
-        # Update current widget
         self.stackWidget.currentWidgetChanged.connect(
-            lambda: self.navigationInterface.setCurrentItem(w.objectName())
+            lambda w: self.navigationInterface.setCurrentItem(w.objectName())
         )
-        # Set Library as home
         self.navigationInterface.setCurrentItem(self.libraryInterface.objectName())
         self.stackWidget.setCurrentIndex(0)
 
@@ -133,7 +132,7 @@ class Window(FramelessWindow):
 
     def initWindow(self):
         self.resize(1084, 680)
-        self.setMinimumWidth(600)
+        self.setMinimumWidth(300)
         self.setWindowTitle("EPUB-Reader")
         self.titleBar.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
 
@@ -173,12 +172,12 @@ class Window(FramelessWindow):
             routeKey=objectName,
             icon=icon,
             text=text,
-            onClick=lambda t: self.switchTo(interface, t),
+            onClick=lambda: self.switchTo(interface),
             position=position,
         )
 
     def switchTo(self, widget, triggerByUser=True):
-        self.stackWidget.setCurrentWidget(widget, not triggerByUser)
+        self.stackWidget.setCurrentWidget(widget)
 
     def onCurrentInterfaceChanged(self, index):
         widget = self.stackWidget.widget(index)
