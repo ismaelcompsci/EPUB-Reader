@@ -1,5 +1,6 @@
 # coding:utf-8
 import sys
+from turtle import Turtle
 import resource.resource_rc
 
 from helpers.style_sheet import StyleSheet
@@ -67,11 +68,11 @@ class Window(FramelessWindow):
 
         self.emptyLibrary = True
 
-        self.vBoxLayout = QVBoxLayout(self)
-        # self.widgetLayout = QHBoxLayout()
+        self.hBoxLayout = QHBoxLayout(self)
+        self.widgetLayout = QHBoxLayout()
 
         self.stackWidget = StackedWidget(self)
-        self.navigationInterface = NavigationBar(self)
+        self.navigationInterface = NavigationInterface(self, True, True)
 
         # create sub interface
         self.libraryInterface = LibraryInterface("Library", "libraryInterface", self)
@@ -86,19 +87,16 @@ class Window(FramelessWindow):
         self.initWindow()
 
     def initLayout(self):
-        self.vBoxLayout.setSpacing(0)
-        self.vBoxLayout.setContentsMargins(0, self.titleBar.height(), 0, 0)
-        self.vBoxLayout.addWidget(self.navigationInterface)
-        self.vBoxLayout.addWidget(self.stackWidget)
-        self.vBoxLayout.setStretchFactor(self.stackWidget, 1)
+        self.hBoxLayout.setSpacing(0)
+        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.hBoxLayout.addWidget(self.navigationInterface)
+        self.hBoxLayout.addLayout(self.widgetLayout)
+        self.hBoxLayout.setStretchFactor(self.widgetLayout, 1)
 
-        self.stackWidget.addWidget(self.libraryInterface)
-        self.stackWidget.addWidget(self.settingInterface)
+        self.widgetLayout.addWidget(self.stackWidget)
+        self.widgetLayout.setContentsMargins(0, 48, 0, 0)
 
-        # self.widgetLayout.addWidget(self.stackWidget)
-        # self.widgetLayout.setContentsMargins(0, 48, 0, 0)
-
-        # self.navigationInterface.displayModeChanged.connect(self.titleBar.raise_)
+        self.navigationInterface.displayModeChanged.connect(self.titleBar.raise_)
         self.titleBar.raise_()
 
     def initNavigation(self):
@@ -120,6 +118,8 @@ class Window(FramelessWindow):
             "Settings",
             NavigationItemPosition.BOTTOM,
         )
+
+        self.navigationInterface.setDefaultRouteKey(self.libraryInterface.objectName())
 
         self.stackWidget.currentWidgetChanged.connect(
             lambda w: self.navigationInterface.setCurrentItem(w.objectName())
