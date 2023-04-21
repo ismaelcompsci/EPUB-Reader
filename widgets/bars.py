@@ -104,6 +104,8 @@ class LibraryToolBar(QWidget):
         self.themeButton.clicked.connect(self.toggleTheme)
         self.addButton.clicked.connect(self.openFileDialog.emit)
 
+        self.searchLine.textChanged.connect(self.parent().search)
+
     def toggleTheme(self):
         theme = Theme.LIGHT if isDarkTheme() else Theme.DARK
         cfg.set(cfg.themeMode, theme)

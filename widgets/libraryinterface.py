@@ -107,6 +107,8 @@ class LibraryInfoPanel(QFrame):
         self.iconNameTitleLabel.setObjectName("subTitleLabel")
 
     def setIcon(self, metadata):
+        if not metadata:
+            return
         self.iconWidget.set_pixmap(metadata["cover"])
         self.nameLabel.setText(metadata["title"])
         self.iconNameLabel.setText(metadata["author"])
@@ -186,6 +188,9 @@ class LibraryCardView(QWidget):
 
         if self.emptyLibrary == False:
             self.genLibrary()
+            self.makeInfopanel()
+
+    def makeInfopanel(self):
 
         if len(self.books) == 0:
             self.infoPanel = None
@@ -214,7 +219,6 @@ class LibraryCardView(QWidget):
         book.clicked.connect(self.setSelectedBook)
 
         self.cards.append(book)
-
         self.books.append(book_data)
         self.flowLayout.addWidget(book)
 
@@ -312,4 +316,6 @@ class LibraryInterface(LibraryScrollInterface):
 
     def updateLibraryInterface(self, metadata):
         self.libraryView.emptyLibrary = False
+        self.libraryView.infoPanel.deleteLater() # IS THIS OKAY? ???
+        self.libraryView.makeInfopanel()
         self.libraryView.addLibraryItem(metadata)
