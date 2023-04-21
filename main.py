@@ -1,6 +1,6 @@
 # coding:utf-8
 import sys
-from resource import resource_rc
+import resource.resource_rc
 
 from helpers.style_sheet import StyleSheet
 from PyQt5.QtCore import QEasingCurve, Qt, pyqtSignal
