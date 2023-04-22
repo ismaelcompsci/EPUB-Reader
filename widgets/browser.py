@@ -19,9 +19,6 @@ class Page(QWebEnginePage):
     def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
         print(f"{source_id}:{linenumber}: {msg}")
 
-        if msg:
-            self.parent().handle_(msg)
-
     def acceptNavigationRequest(self, url, _type, isMainFrame):
         if _type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
             return False
