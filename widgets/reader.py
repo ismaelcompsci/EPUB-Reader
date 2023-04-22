@@ -18,8 +18,8 @@ from qfluentwidgets import (
     FluentIcon as FIF,
     drawIcon,
     NavigationPushButton,
-    setTheme,
     Theme,
+    SpinBox,
 )
 
 from qfluentwidgets.components.dialog_box.mask_dialog_base import MaskDialogBase
@@ -29,11 +29,11 @@ from qfluentwidgets.components.dialog_box.color_dialog import BrightnessSlider
 class SettingsCard(MaskDialogBase):
     settingsChanged = pyqtSignal(dict)
 
-    def __init__(self, title, parent=None):
+    def __init__(self, settings, parent=None):
         super().__init__(parent)
 
-        self.oldBookSettings = {"title": title}
-        self.bookSettings = {"title": title}
+        self.oldBookSettings = settings
+        self.bookSettings = settings
 
         self.scrollArea = ScrollArea(self.widget)
         self.scrollWidget = QWidget(self.scrollArea)
@@ -42,8 +42,9 @@ class SettingsCard(MaskDialogBase):
         self.yesButton = PrimaryPushButton(self.tr("OK"), self.buttonGroup)
         self.cancelButton = QPushButton(self.tr("Cancel"), self.buttonGroup)
 
-        self.titleLabel = QLabel(title, self.scrollWidget)
-        self.brightSlider = BrightnessSlider("red", self.scrollWidget)
+        self.titleLabel = QLabel("Book Setttings", self.scrollWidget)
+
+        self.fontSizeBox = SpinBox(self.scrollWidget)
 
         self.vBoxLayout = QVBoxLayout(self.widget)
 
@@ -69,7 +70,7 @@ class SettingsCard(MaskDialogBase):
         self.__connectSignalToSlot()
 
     def __initLayout(self):
-        self.brightSlider.move(0, 324)
+        self.fontSizeBox.move(0, 324)
 
         self.vBoxLayout.setSpacing(0)
         self.vBoxLayout.setAlignment(Qt.AlignTop)
@@ -85,13 +86,16 @@ class SettingsCard(MaskDialogBase):
         self.yesButton.setObjectName("yesButton")
         self.cancelButton.setObjectName("cancelButton")
         self.buttonGroup.setObjectName("buttonGroup")
+        self.fontSizeBox.setObjectName("fontSizeSpinBox")
         FluentStyleSheet.COLOR_DIALOG.apply(self)
         self.titleLabel.adjustSize()
+        self.fontSizeBox.adjustSize()
 
     def updateStyle(self):
         """update style sheet"""
         self.setStyle(QApplication.style())
         self.titleLabel.adjustSize()
+        self.fontSizeBox.adjustSize()
 
     def __onYesButtonClicked(self):
         self.accept()
@@ -101,6 +105,8 @@ class SettingsCard(MaskDialogBase):
     def __connectSignalToSlot(self):
         self.cancelButton.clicked.connect(self.reject)
         self.yesButton.clicked.connect(self.__onYesButtonClicked)
+
+        self.fontSizeBox.valueChanged.connect(lambda v: print(v))
 
 
 class SettingsOpenButton(NavigationPushButton):
@@ -146,17 +152,15 @@ class SettingsOpenButton(NavigationPushButton):
             painter.setBrush(themeColor())
             painter.drawRoundedRect(0, 10, 3, 16, 1.5, 1.5)
         elif self.isEnter and self.isEnabled():
-            painter.setBrush(QColor(0, 0, 0, 10))
+            painter.setBrush(QColor(c, c, c, 10))
             painter.drawRoundedRect(self.rect(), 5, 5)
 
-        drawIcon(self.icon, painter, QRectF(11.5, 10, 16, 16), fill="#272727")
+        drawIcon(self.icon, painter, QRectF(11.5, 10, 16, 16))
 
 
 class ReaderInterfaceWindow(FramelessWindow):
     def __init__(self, metadata):
         super().__init__()
-        self.resize(800, 720)
-        self.setContentsMargins(0, 32, 0, 0)
         self.setTitleBar(StandardTitleBar(self))
         self.titleBar.raise_()
 
@@ -173,22 +177,28 @@ class ReaderInterfaceWindow(FramelessWindow):
         )
         self.book_view.load_book()
 
+        self.__initWidget()
+
+    def __initWidget(self):
+        self.resize(800, 720)
+        self.setContentsMargins(0, 32, 0, 0)
+
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.addWidget(self.book_view)
         self.button.raise_()
 
         StyleSheet.BOOK_WINDOW_INTERFACE.apply(self)
 
-        self.setFocus()
-
         cfg.themeChanged.connect(self.__themeColorChanged)
+
+        self.__themeColorChanged(Theme.DARK if isDarkTheme() else Theme.LIGHT)
 
     def __themeColorChanged(self, theme):
         if theme == Theme.DARK:
             bg_color = "rgb(39, 39, 39)"
             color = "rgb(249, 249, 249)"
         if theme == Theme.LIGHT:
-            bg_color = "rgb(249, 249, 249)"
+            bg_color = "rgb(255, 255, 255)"
             color = "black"
 
         self.book_view.insert_web_view_css(
@@ -196,7 +206,7 @@ class ReaderInterfaceWindow(FramelessWindow):
         )
 
     def resizeEvent(self, e):
-        self.button.move(self.width() - 50, 45)
+        self.button.move(self.width() - 50, 38)
         return super().resizeEvent(e)
 
 
