@@ -26,5 +26,7 @@ python main.py
 
 
 ### Todo
-- [ ] Add More Features to ReaderInterface
-- [ ] Add a ToC
+- [ ] Add More Features to ReaderInterface  
+- [ ] Add a ToC 
+- [ ] Fix Hyper link breaking keyboard event
+- [ ] connect font size

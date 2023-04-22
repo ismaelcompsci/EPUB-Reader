@@ -20,7 +20,12 @@ class Page(QWebEnginePage):
         print(f"{source_id}:{linenumber}: {msg}")
 
     def acceptNavigationRequest(self, url, _type, isMainFrame):
+        """
+        CLICKING NAV LINKS CAUSES ARROW KEY EVENT FILTER TO STOP WORKING WHEN RETURN SET TO FALSE
+        """
         if _type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
+            print(_type)
+            print(url.toString())
             return False
         return super().acceptNavigationRequest(url, _type, isMainFrame)
 
@@ -76,6 +81,7 @@ class BookWebView(QWebEngineView):
         return super().setHtml(html, baseUrl)
 
     def eventFilter(self, source: QObject, event: QEvent):
+        print(event)
         if (
             event.type() == QEvent.Type.ChildAdded
             and source is self
