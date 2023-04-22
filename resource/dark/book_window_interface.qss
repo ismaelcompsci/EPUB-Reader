@@ -1,23 +1,6 @@
-
-StackedWidget {
-    border: 1px solid rgb(229, 229, 229);
-    border-right: none;
-    border-bottom: none;
-    border-top-left-radius: 10px;
-    background-color: rgb(249, 249, 249);
+ReaderInterfaceWindow {
+    background-color: rgb(39, 39, 39);
 }
-
-Window {
-    background-color: rgb(243, 243, 243);
-}
-
-CustomTitleBar > QLabel#titleLabel {
-    color: black;
-    background: transparent;
-    font: 13px 'Segoe UI';
-    padding: 0 4px
-}
-
 
 MinimizeButton {
     qproperty-normalColor: black;
@@ -29,7 +12,7 @@ MinimizeButton {
 }
 
 
-MaximizeButton { 
+MaximizeButton {
     qproperty-normalColor: black;
     qproperty-normalBackgroundColor: transparent;
     qproperty-hoverColor: black;

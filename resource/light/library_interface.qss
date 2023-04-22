@@ -1,5 +1,5 @@
 
-LibraryScrollInterface, ToolBar, #view {
+LibraryScrollInterface, LibraryToolBar, #view {
     background-color: transparent;
 }
 

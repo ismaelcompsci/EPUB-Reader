@@ -8,6 +8,7 @@ from PyQt5.QtCore import QEasingCurve, Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     QApplication,
     QFrame,
+    QAction,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
@@ -16,13 +17,15 @@ from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     NavigationInterface,
     NavigationItemPosition,
+    RoundMenu,
     PopUpAniStackedWidget,
+    NavigationToolButton,
 )
 from qframelesswindow import FramelessWindow
 from widgets.libraryinterface import LibraryInterface
-from widgets.reader import ReaderInterface
+from widgets.reader import ReaderInterfaceWindow
 from widgets.settingsinterface import SettingInterface
-from widgets.bars import CustomTitleBar, NavigationBar
+from widgets.bars import CustomTitleBar
 
 
 class StackedWidget(QFrame):
@@ -61,6 +64,20 @@ class StackedWidget(QFrame):
         self.setCurrentWidget(self.view.widget(index), popOut)
 
 
+class BookNavigationInterface(NavigationInterface):
+    def __init__(self, parent, showMenuButton, showReturnButton):
+        super().__init__(parent, showMenuButton, showReturnButton)
+
+    def contextMenuEvent(self, event) -> None:
+        menu = RoundMenu(parent=self)
+
+        deleteAction = QAction(FIF.DELETE.icon(), "Close")
+
+        menu.addAction(deleteAction)
+
+        menu.exec(event.globalPos(), ani=True)
+
+
 class Window(FramelessWindow):
     def __init__(self):
         super().__init__()
@@ -72,7 +89,7 @@ class Window(FramelessWindow):
         self.widgetLayout = QHBoxLayout()
 
         self.stackWidget = StackedWidget(self)
-        self.navigationInterface = NavigationInterface(self, True, True)
+        self.navigationInterface = BookNavigationInterface(self, True, True)
 
         # create sub interface
         self.libraryInterface = LibraryInterface("Library", "libraryInterface", self)
@@ -145,18 +162,8 @@ class Window(FramelessWindow):
 
     def openBook(self, metadata):
         # Create Book View
-        bookInterface = ReaderInterface(self, metadata)
-
-        self.addSubInterface(
-            bookInterface,
-            metadata["hash"],
-            FIF.VIDEO,
-            metadata["title"],
-            NavigationItemPosition.TOP,
-        )
-
-        self.switchTo(bookInterface, True)
-        self.navigationInterface.setCurrentItem(metadata["hash"])
+        self.bookInterface = ReaderInterfaceWindow(metadata)
+        self.bookInterface.show()
 
     def addSubInterface(
         self,
@@ -189,6 +196,11 @@ class Window(FramelessWindow):
 
 
 if __name__ == "__main__":
+    QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    )
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app = QApplication(sys.argv + ["", "--no-sandbox"])
     w = Window()
     w.show()

@@ -20,7 +20,7 @@ from qfluentwidgets import FluentIcon as FIF
 from .bars import LibraryToolBar
 
 from .bookcard import BookCard, BookCover
-from tinydb import Query, TinyDB
+from tinydb import Query, TinyDB, where
 
 from helpers.style_sheet import StyleSheet
 from helpers.threads import BackGroundBookAddition
@@ -133,7 +133,6 @@ class LibraryCardView(QWidget):
 
         self.hBoxLayoutSearchAdd = QHBoxLayout()
 
-        self.libraryLabel = QLabel("Library", self)
         self.searchLineEdit = LibraryToolBar(self)
 
         self.view = QFrame(self)
@@ -161,15 +160,13 @@ class LibraryCardView(QWidget):
 
     def __initWidget(self):
         self.scrollArea.setWidget(self.scrollWidget)
-        self.scrollArea.setViewportMargins(0, 5, 0, 5)
+        self.scrollArea.setViewportMargins(0, 0, 0, 0)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
 
         self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
-        # self.vBoxLayout.setSpacing(12)
-        self.vBoxLayout.addWidget(self.libraryLabel)
         self.vBoxLayout.addWidget(self.searchLineEdit)
         self.vBoxLayout.addLayout(self.hBoxLayoutSearchAdd)
         self.vBoxLayout.addWidget(self.view)
@@ -235,7 +232,7 @@ class LibraryCardView(QWidget):
     def __setQss(self):
         self.view.setObjectName("iconView")
         self.scrollWidget.setObjectName("scrollWidget")
-        self.libraryLabel.setObjectName("iconLibraryLabel")
+        # self.libraryLabel.setObjectName("iconLibraryLabel")
 
         StyleSheet.BOOK_INTERFACE.apply(self)
 
@@ -300,6 +297,9 @@ class LibraryInterface(LibraryScrollInterface):
 
         self.setObjectName(subtitle)
 
+        # self.setContentsMargins(0, 0, 0, 0)
+        # self.setViewportMargins(0, 0, 0, 0)
+
     def openFileDialog(self):
         files = QFileDialog.getOpenFileNames(
             self,
@@ -316,3 +316,8 @@ class LibraryInterface(LibraryScrollInterface):
         self.libraryView.infoPanel.deleteLater()  # IS THIS OKAY? ???
         self.libraryView.makeInfopanel()
         self.libraryView.addLibraryItem(metadata)
+
+
+# TODO
+# MAKE NEW WINDOW POP UP FOR BOOK VIEW
+# JUST BETTER

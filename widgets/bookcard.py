@@ -29,6 +29,7 @@ class BookCover(QLabel):
 
         # pix = pixmap.scaled(200, 225, Qt.AspectRatioMode.KeepAspectRatio)
         self.setPixmap(pixmap)
+        self.setCursor(Qt.PointingHandCursor)
 
 
 class BookCard(QFrame):
@@ -56,6 +57,7 @@ class BookCard(QFrame):
         self.bookCover.setScaledContents(True)
 
         self.setContentsMargins(0, 0, 0, 0)
+        self.setCursor(Qt.PointingHandCursor)
 
     def mouseReleaseEvent(self, event) -> None:
         if self.isSelected:

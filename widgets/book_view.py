@@ -1,6 +1,7 @@
 import base64
 import copy
 import logging
+from re import S
 
 from tinydb import Query, TinyDB
 
@@ -9,6 +10,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtWebEngineCore import *
+
 
 from PyQt5.QtWidgets import *
 from qframelesswindow import *
@@ -40,6 +42,10 @@ class BookViewer(BookWebView):
         self.base_url = find_html_dir(self.temp_dir, self.file_md5)
 
         self.setMouseTracking(True)
+
+        self.settings().setAttribute(
+            QWebEngineSettings.WebAttribute.ShowScrollBars, False
+        )
 
     def load_book(self) -> None:
         """
@@ -92,6 +98,24 @@ class BookViewer(BookWebView):
             return
 
         self.set_content(current_position + direction)
+
+    def insert_web_view_css(self, css: str):
+        script = f'(function() {{ css = document.createElement("style"); css.type = "text/css"; document.head.appendChild(css); css.innerText = "{css}";}})()'
+        self.insert_script(script, "style")
+
+    def insert_script(self, script, name):
+        script_ = QWebEngineScript()
+
+        self.page().runJavaScript(
+            script, QWebEngineScript.ScriptWorldId.ApplicationWorld
+        )
+        script_.setName(name)
+        script_.setSourceCode(script)
+        script_.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
+        script_.setRunsOnSubFrames(True)
+        script_.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
+
+        self.page().scripts().insert(script_)
 
     def keyPressEvent(self, ev: QKeyEvent) -> None:
         """

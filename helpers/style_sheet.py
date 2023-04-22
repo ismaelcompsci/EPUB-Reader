@@ -10,8 +10,9 @@ class StyleSheet(StyleSheetBase, Enum):
     MAIN_WINDOW = "main_window"
     BOOK_INTERFACE = "book_interface"
     SETTING_INTERFACE = "setting_interface"
+    BOOK_WINDOW_INTERFACE = "book_window_interface"
 
     def path(self, theme=Theme.AUTO):
         theme = qconfig.theme if theme == Theme.AUTO else theme
-        print(theme)
+        print(f":/reader/{theme.value.lower()}/{self.value}.qss")
         return f":/reader/{theme.value.lower()}/{self.value}.qss"
