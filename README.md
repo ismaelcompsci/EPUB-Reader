@@ -14,7 +14,7 @@ Using https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master
 
 ## Compatibility
 
-Only tested on Windows 10
+Only tested on Windows 10, Fedora 37 VM
 
 # Usage
 
