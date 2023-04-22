@@ -70,7 +70,8 @@ class BookWebView(QWebEngineView):
     def setHtml(self, html: str, baseUrl) -> None:
         try:
             self.focusProxy().installEventFilter(self)
-        except AttributeError:
+        except AttributeError as e:
+            print(e)
             pass
         return super().setHtml(html, baseUrl)
 

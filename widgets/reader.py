@@ -123,7 +123,7 @@ class SettingsOpenButton(NavigationPushButton):
         return self._text
 
     def mousePressEvent(self, e):
-        w = SettingsCard("Book Settings", self.window())
+        w = SettingsCard({}, self.window())
         w.updateStyle()
         w.exec()
         return super().mousePressEvent(e)
