@@ -33,6 +33,11 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
+img_css = """max-width: 100%;
+max-height: 100vh;
+width: auto;
+margin: auto;"""
+
 
 class EPUB:
     def __init__(self, book_filename, temp_dir):
@@ -368,7 +373,7 @@ class EPUB:
                 self.content[0] = (
                     1,
                     "Cover",
-                    f'<center><img src="{cover_path}" alt="Cover"></center>',
+                    f'<center><img src="{cover_path}" alt="Cover" style="{img_css}"></center>',
                 )
             else:
                 logger.info("Adding cover: " + self.book_filename)
@@ -377,7 +382,7 @@ class EPUB:
                     (
                         1,
                         "Cover",
-                        f'<center><img src="{cover_path}" alt="Cover"></center>',
+                        f'<center><img src="{cover_path}" alt="Cover" style="{img_css}"></center>',
                     ),
                 )
 

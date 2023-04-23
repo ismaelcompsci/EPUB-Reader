@@ -31,6 +31,7 @@ class LineEdit(SearchLineEdit):
         super().__init__(parent)
         self.setPlaceholderText(self.tr("Search Books"))
         self.setFixedWidth(304)
+        self.textChanged.connect(self.search)
 
 
 class CustomTitleBar(TitleBar):
@@ -106,8 +107,6 @@ class LibraryToolBar(QWidget):
 
         self.themeButton.clicked.connect(self.toggleTheme)
         self.addButton.clicked.connect(self.openFileDialog.emit)
-
-        self.searchLine.textChanged.connect(self.parent().search)
 
     def toggleTheme(self):
         theme = Theme.LIGHT if isDarkTheme() else Theme.DARK

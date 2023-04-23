@@ -61,7 +61,16 @@ class BookHandler:
         parsed_book = ParseEPUB(self.book_path, self.temp_dir, self.md5_)
         parsed_book.read_book()
 
-        metadata = parsed_book.generate_metadata()
+        try:
+            metadata = parsed_book.generate_metadata()
+        except KeyError as e:
+            print("Skipping: ", parsed_book.filename)
+            extract_dir = os.path.join(self.temp_dir, self.md5_)
+            if os.path.exists(extract_dir):
+                shutil.rmtree(extract_dir)
+            this_error = f"Content generation error: {self.book_path}"
+            print(this_error + f" {type(e).__name__} Arguments: {e.args}")
+            return False
 
         try:
             (

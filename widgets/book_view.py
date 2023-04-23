@@ -1,6 +1,7 @@
 import base64
 import copy
 import logging
+from operator import pos
 from re import S
 
 from tinydb import Query, TinyDB
@@ -18,10 +19,17 @@ from qframelesswindow import *
 from .browser import BookWebView
 from utils.bookhandler import BookHandler
 
-logger = logging.getLogger(__name__)
+
+# TODO
+# Resize IMAGE to view height and set width
+#
 
 
 class BookViewer(BookWebView):
+    """
+    displays epub html
+    """
+
     def __init__(
         self,
         parent: QWidget,
@@ -42,7 +50,6 @@ class BookViewer(BookWebView):
         self.base_url = find_html_dir(self.temp_dir, self.file_md5)
 
         self.setMouseTracking(True)
-
         self.settings().setAttribute(
             QWebEngineSettings.WebAttribute.ShowScrollBars, False
         )
@@ -67,19 +74,22 @@ class BookViewer(BookWebView):
         Sets html in webengine
         """
         try:
-            content = self.this_book["content"][position]
+            content = self.this_book["content"][position]  # update positon in content
 
         except IndexError:
             return
 
         self.this_book["position"]["current_chapter"] = position
-        self.this_book["position"]["is_read"] = False
+        # self.this_book["position"]["is_read"] = False
 
         self.setHtml(
             content,
-            baseUrl=QUrl.fromLocalFile(self.base_url),
+            baseUrl=QUrl.fromLocalFile(
+                self.base_url
+            ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
         )
 
+        self.scroll_to(0)
         self.setFocus()
 
     def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
@@ -99,11 +109,21 @@ class BookViewer(BookWebView):
 
         self.set_content(current_position + direction)
 
+        if scroll_botom:
+            # IF -1 scroll to bottom of page
+            self.scroll_to("document.body.scrollHeight")
+
     def insert_web_view_css(self, css: str):
+        """
+        add css
+        """
         script = f'(function() {{ css = document.createElement("style"); css.type = "text/css"; document.head.appendChild(css); css.innerText = "{css}";}})()'
         self.insert_script(script, "style")
 
     def insert_script(self, script, name):
+        """
+        insert javascript into world
+        """
         script_ = QWebEngineScript()
 
         self.page().runJavaScript(
@@ -116,6 +136,12 @@ class BookViewer(BookWebView):
         script_.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
         self.page().scripts().insert(script_)
+
+    def scroll_to(self, pos):
+        """
+        set scroll position
+        """
+        self.queue_func(lambda: self.page().runJavaScript(f"window.scrollTo(0, {pos})"))
 
     def save_book_data(self) -> None:
         """

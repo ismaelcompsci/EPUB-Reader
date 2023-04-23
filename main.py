@@ -27,6 +27,8 @@ from widgets.reader import ReaderInterfaceWindow
 from widgets.settingsinterface import SettingInterface
 from widgets.bars import CustomTitleBar
 
+# MOST OF THIS CODE IS BOILERPLATE FORM QLUENTWIDGETS
+
 
 class StackedWidget(QFrame):
     """Stacked widget"""
@@ -72,9 +74,7 @@ class BookNavigationInterface(NavigationInterface):
         menu = RoundMenu(parent=self)
 
         deleteAction = QAction(FIF.DELETE.icon(), "Close")
-
         menu.addAction(deleteAction)
-
         menu.exec(event.globalPos(), ani=True)
 
 
@@ -97,10 +97,8 @@ class Window(FramelessWindow):
 
         # initialize layout
         self.initLayout()
-
         # add items to navigation interface
         self.initNavigation()
-
         self.initWindow()
 
     def initLayout(self):
@@ -141,6 +139,7 @@ class Window(FramelessWindow):
         self.stackWidget.currentWidgetChanged.connect(
             lambda w: self.navigationInterface.setCurrentItem(w.objectName())
         )
+
         self.navigationInterface.setCurrentItem(self.libraryInterface.objectName())
         self.stackWidget.setCurrentIndex(0)
 

@@ -29,16 +29,6 @@ from pytrie import SortedStringTrie as Trie
 from config.config import DATABASE_DIR, Books
 
 
-class LineEdit(SearchLineEdit):
-    """Search line edit"""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setPlaceholderText(self.tr("Search Books"))
-        self.setFixedWidth(304)
-        self.textChanged.connect(self.search)
-
-
 class LibraryScrollInterface(ScrollArea):
     def __init__(self, title: str, subtitle: str, parent=None):
         super().__init__(parent=parent)
@@ -180,8 +170,8 @@ class LibraryCardView(QWidget):
         # self.flowLayout.setContentsMargins(8, 3, 8, 8)
 
         self.__setQss()
-        # self.searchLineEdit.clearSignal.connect(self.showAllIcons)
-        # self.searchLineEdit.searchSignal.connect(self.search)
+        self.searchLineEdit.searchLine.searchSignal.connect(self.search)
+        self.searchLineEdit.searchLine.clearSignal.connect(self.showAllIcons)
 
         if self.emptyLibrary == False:
             self.genLibrary()
@@ -203,12 +193,10 @@ class LibraryCardView(QWidget):
         self.getLibraryBooks()
 
     def getLibraryBooks(self):
-        i = 0
+        self.trie_len = 0
 
         for book in self.books_db:
             self.addLibraryItem(book)
-            self.trie[book["title"].lower()] = i
-            i += 1
 
     def addLibraryItem(self, book_data):
         book = BookCard(book_data, self)
@@ -217,6 +205,10 @@ class LibraryCardView(QWidget):
         self.cards.append(book)
         self.books.append(book_data)
         self.flowLayout.addWidget(book)
+
+        # Add Book to Trie
+        self.trie[book_data["title"].lower()] = self.trie_len
+        self.trie_len += 1
 
     def setSelectedBook(self, book_data):
         index = self.books.index(book_data)
@@ -313,7 +305,12 @@ class LibraryInterface(LibraryScrollInterface):
 
     def updateLibraryInterface(self, metadata):
         self.libraryView.emptyLibrary = False
-        self.libraryView.infoPanel.deleteLater()  # IS THIS OKAY? ???
+
+        if not self.libraryView.infoPanel:
+            self.libraryView.infoPanel.deleteLater()  # IS THIS OKAY? ???
+
+        if self.libraryView.infoPanel:
+            self.libraryView.infoPanel.deleteLater()
         self.libraryView.makeInfopanel()
         self.libraryView.addLibraryItem(metadata)
 

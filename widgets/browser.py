@@ -4,7 +4,7 @@ from queue import Queue
 from PyQt5.QtCore import QEvent, QObject
 from PyQt5.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
 from PyQt5.QtWebEngineCore import *
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
 from PyQt5.QtWidgets import QWidget
 
 
@@ -16,6 +16,16 @@ class Page(QWebEnginePage):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
 
+        # Secure Web
+        s = self.settings()
+        a = s.setAttribute
+
+        a(QWebEngineSettings.WebAttribute.PluginsEnabled, False)
+        a(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, False)
+        a(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, False)
+        # a(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, False)
+        a(QWebEngineSettings.WebAttribute.AllowWindowActivationFromJavaScript, False)
+
     def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
         print(f"{source_id}:{linenumber}: {msg}")
 
@@ -24,8 +34,8 @@ class Page(QWebEnginePage):
         CLICKING NAV LINKS CAUSES ARROW KEY EVENT FILTER TO STOP WORKING WHEN RETURN SET TO FALSE
         """
         if _type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
-            print(_type)
-            print(url.toString())
+            # print(_type)
+            # print(url.toString())  # USE THIS TO FIND POS IN TOC TO MAKE NAV LINKS WORK
             return False
         return super().acceptNavigationRequest(url, _type, isMainFrame)
 
@@ -49,7 +59,7 @@ class BookWebView(QWebEngineView):
         self.loading = False
 
         self._child_widget = None
-        self.installEventFilter(self)
+        # self.installEventFilter(self)
 
         self.web_width, self.web_height = self.size().width(), self.size().height()
 
@@ -73,11 +83,11 @@ class BookWebView(QWebEngineView):
             function()
 
     def setHtml(self, html: str, baseUrl) -> None:
-        try:
-            self.focusProxy().installEventFilter(self)
-        except AttributeError as e:
-            print(e)
-            pass
+        # try:
+        #     self.focusProxy().installEventFilter(self)
+        # except AttributeError as e:
+        #     print(e)
+        #     pass
         return super().setHtml(html, baseUrl)
 
     def eventFilter(self, source: QObject, event: QEvent):
