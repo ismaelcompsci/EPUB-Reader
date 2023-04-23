@@ -117,20 +117,6 @@ class BookViewer(BookWebView):
 
         self.page().scripts().insert(script_)
 
-    def keyPressEvent(self, ev: QKeyEvent) -> None:
-        """
-        Keyboard arrows to change page
-        """
-
-        key = ev.key()
-
-        if key == Qt.Key.Key_Right:
-            self.change_chapter(1)
-        if key == Qt.Key.Key_Left:
-            self.change_chapter(-1)
-
-        return super().keyPressEvent(ev)
-
     def save_book_data(self) -> None:
         """
         Saves book data to db

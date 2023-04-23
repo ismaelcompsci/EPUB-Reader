@@ -205,6 +205,18 @@ class ReaderInterfaceWindow(FramelessWindow):
             f"*{{background-color: {bg_color}; color: {color};}}"
         )
 
+    def keyPressEvent(self, ev: QKeyEvent) -> None:
+        """
+        Keyboard arrows to change page
+        """
+
+        key = ev.key()
+
+        if key == Qt.Key.Key_Right:
+            self.change_chapter(1)
+        if key == Qt.Key.Key_Left:
+            self.change_chapter(-1)
+
     def resizeEvent(self, e):
         self.button.move(self.width() - 50, 38)
         return super().resizeEvent(e)
