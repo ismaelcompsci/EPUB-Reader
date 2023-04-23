@@ -1,6 +1,5 @@
 # coding:utf-8
 import sys
-from turtle import Turtle
 import resource.resource_rc
 
 from helpers.style_sheet import StyleSheet
