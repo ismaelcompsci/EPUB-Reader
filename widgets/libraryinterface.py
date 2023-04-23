@@ -23,7 +23,7 @@ from .bookcard import BookCard, BookCover
 from tinydb import Query, TinyDB, where
 
 from helpers.style_sheet import StyleSheet
-from helpers.threads import BackGroundBookAddition
+from helpers.threads import BackGroundBookAddition, BackGroundBookDeletion
 from pytrie import SortedStringTrie as Trie
 
 from config.config import DATABASE_DIR, Books
@@ -63,14 +63,12 @@ class LibraryInfoPanel(QFrame):
 
     def __init__(self, metadata=None, parent=None):
         super().__init__(parent=parent)
-        if not metadata:
-            return
 
-        self.nameLabel = QLabel(metadata["title"], self)
+        self.nameLabel = QLabel(self)
 
-        self.iconWidget = BookCover(metadata["cover"])
-        self.iconNameTitleLabel = QLabel(metadata["title"], self)
-        self.iconNameLabel = QLabel(metadata["author"], self)
+        self.iconWidget = BookCover(":reader/images/placeholder.png")
+        self.iconNameTitleLabel = QLabel("", self)
+        self.iconNameLabel = QLabel("", self)
 
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.setContentsMargins(16, 20, 16, 20)
@@ -120,6 +118,7 @@ class LibraryCardView(QWidget):
         super().__init__(parent)
         self.trie = Trie()
         self.emptyLibrary = True
+        self.trie_len = 0
 
         self.hBoxLayoutSearchAdd = QHBoxLayout()
 
@@ -139,9 +138,7 @@ class LibraryCardView(QWidget):
 
         self.currentIndex = -1
 
-        self.hasBooks = Books.get(doc_id=1)
-
-        if self.hasBooks:
+        if len(Books):
             self.emptyLibrary = False
         else:
             self.emptyLibrary = True
@@ -175,11 +172,12 @@ class LibraryCardView(QWidget):
 
         if self.emptyLibrary == False:
             self.genLibrary()
-            self.makeInfopanel()
+        self.makeInfopanel()
 
     def makeInfopanel(self):
         if len(self.books) == 0:
-            self.infoPanel = None
+            self.infoPanel = LibraryInfoPanel(None, self)
+            self.hBoxLayout.addWidget(self.infoPanel, 0, Qt.AlignmentFlag.AlignRight)
         else:
             self.infoPanel = LibraryInfoPanel(self.books[0], self)
             self.hBoxLayout.addWidget(self.infoPanel, 0, Qt.AlignmentFlag.AlignRight)
@@ -187,14 +185,13 @@ class LibraryCardView(QWidget):
     def genLibrary(self):
         self.cards = []
         self.books = []
-        self.flowLayout.removeAllWidgets()
+        self.trie_len = 0
+        self.flowLayout.takeAllWidgets()
 
         self.books_db = Books.all()
         self.getLibraryBooks()
 
     def getLibraryBooks(self):
-        self.trie_len = 0
-
         for book in self.books_db:
             self.addLibraryItem(book)
 
@@ -209,6 +206,22 @@ class LibraryCardView(QWidget):
         # Add Book to Trie
         self.trie[book_data["title"].lower()] = self.trie_len
         self.trie_len += 1
+
+    def delLibraryItem(self, book_data):
+        index = self.currentIndex
+
+        card = self.cards.pop(index)
+        book = self.books.pop(index)
+        w = self.flowLayout.takeAt(index)
+
+        if w:
+            w.deleteLater()
+
+        self.genLibrary()
+        self.infoPanel.deleteLater()
+        self.makeInfopanel()
+
+        self.update()
 
     def setSelectedBook(self, book_data):
         index = self.books.index(book_data)
@@ -235,6 +248,8 @@ class LibraryCardView(QWidget):
         if not self.trie.keys():
             return
 
+        key_word = key_word.lower()
+
         # ITEMS ASSOCIATED WITH KEYS PREFIXED BY PREFIX
         hits = self.trie.items(prefix=key_word)
 
@@ -250,6 +265,8 @@ class LibraryCardView(QWidget):
             card.show()
 
     def contextMenuEvent(self, event) -> None:
+        if len(self.cards) == 0:
+            return
         bookSelectedData = self.cards[self.currentIndex].metadata
 
         menu = RoundMenu(parent=self)
@@ -262,11 +279,14 @@ class LibraryCardView(QWidget):
         menu.addAction(deleteAction)
 
         openAction.triggered.connect(lambda: self.openSignal.emit(bookSelectedData))
-        deleteAction.triggered.connect(lambda: print("what"))
+        deleteAction.triggered.connect(lambda: self.deleteSignal.emit(bookSelectedData))
 
         menu.exec(event.globalPos(), ani=True)
 
     def mouseDoubleClickEvent(self, event) -> None:
+        if len(self.cards) == 0:
+            return
+
         widget = self.childAt(event.pos())
 
         if isinstance(widget, BookCover) or isinstance(widget, BookCard):
@@ -286,11 +306,9 @@ class LibraryInterface(LibraryScrollInterface):
         self.vBoxLayout.addWidget(self.libraryView)
 
         self.libraryView.searchLineEdit.openFileDialog.connect(self.openFileDialog)
+        self.libraryView.deleteSignal.connect(self.deleteBook)
 
         self.setObjectName(subtitle)
-
-        # self.setContentsMargins(0, 0, 0, 0)
-        # self.setViewportMargins(0, 0, 0, 0)
 
     def openFileDialog(self):
         files = QFileDialog.getOpenFileNames(
@@ -303,16 +321,23 @@ class LibraryInterface(LibraryScrollInterface):
         self.thread_.bookAdded.connect(self.updateLibraryInterface)
         self.thread_.start()
 
-    def updateLibraryInterface(self, metadata):
-        self.libraryView.emptyLibrary = False
+    def deleteBook(self, book_data):
+        self.thread_ = BackGroundBookDeletion(book_data)
+        self.thread_.finished.connect(
+            lambda: self.updateLibraryInterface(book_data, True)
+        )
+        self.thread_.start()
 
-        if not self.libraryView.infoPanel:
-            self.libraryView.infoPanel.deleteLater()  # IS THIS OKAY? ???
+    def updateLibraryInterface(self, metadata, delete=False):
+        if delete:
+            # DELETE BOOK FROM LIBRARY VIEW
+            self.libraryView.delLibraryItem(metadata)
 
-        if self.libraryView.infoPanel:
-            self.libraryView.infoPanel.deleteLater()
-        self.libraryView.makeInfopanel()
-        self.libraryView.addLibraryItem(metadata)
+        else:
+            self.libraryView.emptyLibrary = False
+            # self.libraryView.infoPanel.deleteLater()
+            # self.libraryView.makeInfopanel()
+            self.libraryView.addLibraryItem(metadata)
 
 
 # TODO

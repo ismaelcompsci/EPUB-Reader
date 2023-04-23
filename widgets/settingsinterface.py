@@ -1,28 +1,25 @@
-from qfluentwidgets import (
-    SettingCardGroup,
-    SwitchSettingCard,
-    FolderListSettingCard,
-    OptionsSettingCard,
-    PushSettingCard,
-    HyperlinkCard,
-    PrimaryPushSettingCard,
-    ScrollArea,
-    ComboBoxSettingCard,
-    ExpandLayout,
-    Theme,
-    CustomColorSettingCard,
-    setTheme,
-    setThemeColor,
-    RangeSettingCard,
-    isDarkTheme,
-)
-from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import InfoBar
-from PyQt5.QtCore import Qt, pyqtSignal, QUrl, QStandardPaths
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog
 from config.config import cfg
 from helpers.style_sheet import StyleSheet
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from qfluentwidgets import ExpandLayout
+from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import (
+    FluentStyleSheet,
+    InfoBar,
+    NavigationPushButton,
+    OptionsSettingCard,
+    PrimaryPushButton,
+    ScrollArea,
+    SettingCardGroup,
+    SpinBox,
+    drawIcon,
+    isDarkTheme,
+    setTheme,
+    themeColor,
+)
+from qfluentwidgets.components.dialog_box.mask_dialog_base import MaskDialogBase
 
 
 class SettingInterface(ScrollArea):
@@ -86,3 +83,136 @@ class SettingInterface(ScrollArea):
             duration=1500,
             parent=self,
         )
+
+
+# BOOK WINDOW SETTINGS
+class SettingsCard(MaskDialogBase):
+    settingsChanged = pyqtSignal(dict)
+
+    def __init__(self, settings, parent=None):
+        super().__init__(parent)
+
+        self.oldBookSettings = settings
+        self.bookSettings = settings
+
+        self.scrollArea = ScrollArea(self.widget)
+        self.scrollWidget = QWidget(self.scrollArea)
+
+        self.buttonGroup = QFrame(self.widget)
+        self.yesButton = PrimaryPushButton(self.tr("OK"), self.buttonGroup)
+        self.cancelButton = QPushButton(self.tr("Cancel"), self.buttonGroup)
+
+        self.titleLabel = QLabel("Book Setttings", self.scrollWidget)
+
+        self.fontSizeBox = SpinBox(self.scrollWidget)
+
+        self.vBoxLayout = QVBoxLayout(self.widget)
+
+        self.__initWidget()
+
+    def __initWidget(self):
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setViewportMargins(48, 24, 0, 24)
+        self.scrollArea.setWidget(self.scrollWidget)
+
+        self.widget.setMaximumSize(488, 696)
+        self.widget.resize(424, 646)
+        self.scrollWidget.resize(440, 560)
+        self.buttonGroup.setFixedSize(486, 81)
+        self.yesButton.setFixedWidth(216)
+        self.cancelButton.setFixedWidth(216)
+
+        self.setShadowEffect(60, (0, 10), QColor(0, 0, 0, 80))
+        self.setMaskColor(QColor(0, 0, 0, 76))
+
+        self.__setQss()
+        self.__initLayout()
+        self.__connectSignalToSlot()
+
+    def __initLayout(self):
+        self.fontSizeBox.move(0, 324)
+
+        self.vBoxLayout.setSpacing(0)
+        self.vBoxLayout.setAlignment(Qt.AlignTop)
+        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.vBoxLayout.addWidget(self.scrollArea, 1)
+        self.vBoxLayout.addWidget(self.buttonGroup, 0, Qt.AlignBottom)
+
+        self.yesButton.move(24, 25)
+        self.cancelButton.move(250, 25)
+
+    def __setQss(self):
+        self.titleLabel.setObjectName("titleLabel")
+        self.yesButton.setObjectName("yesButton")
+        self.cancelButton.setObjectName("cancelButton")
+        self.buttonGroup.setObjectName("buttonGroup")
+        self.fontSizeBox.setObjectName("fontSizeSpinBox")
+        FluentStyleSheet.COLOR_DIALOG.apply(self)
+        self.titleLabel.adjustSize()
+        self.fontSizeBox.adjustSize()
+
+    def updateStyle(self):
+        """update style sheet"""
+        self.setStyle(QApplication.style())
+        self.titleLabel.adjustSize()
+        self.fontSizeBox.adjustSize()
+
+    def __onYesButtonClicked(self):
+        self.accept()
+
+        self.settingsChanged.emit(self.bookSettings)
+
+    def __connectSignalToSlot(self):
+        self.cancelButton.clicked.connect(self.reject)
+        self.yesButton.clicked.connect(self.__onYesButtonClicked)
+
+        self.fontSizeBox.valueChanged.connect(lambda v: print(v))
+
+
+class SettingsOpenButton(NavigationPushButton):
+    def __init__(self, icon, text: str, isSelectable: bool, parent=None):
+        super().__init__(icon, text, isSelectable, parent)
+        self.icon = icon
+        self._text = "WHaT"
+
+        self.setStyleSheet(
+            "NavigationPushButton{font: 14px 'Segoe UI', 'Microsoft YaHei'}"
+        )
+
+    def text(self):
+        return self._text
+
+    def mousePressEvent(self, e):
+        w = SettingsCard({}, self.window())
+        w.updateStyle()
+        w.exec()
+        return super().mousePressEvent(e)
+
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.setRenderHints(
+            QPainter.Antialiasing
+            | QPainter.TextAntialiasing
+            | QPainter.SmoothPixmapTransform
+        )
+        painter.setPen(Qt.NoPen)
+
+        if self.isPressed:
+            painter.setOpacity(0.7)
+        if not self.isEnabled():
+            painter.setOpacity(0.4)
+
+        # draw background
+        c = 255 if isDarkTheme() else 0
+        if self.isSelected:
+            painter.setBrush(QColor(c, c, c, 6 if self.isEnter else 10))
+            painter.drawRoundedRect(self.rect(), 5, 5)
+
+            # draw indicator
+            painter.setBrush(themeColor())
+            painter.drawRoundedRect(0, 10, 3, 16, 1.5, 1.5)
+        elif self.isEnter and self.isEnabled():
+            painter.setBrush(QColor(c, c, c, 10))
+            painter.drawRoundedRect(self.rect(), 5, 5)
+
+        drawIcon(self.icon, painter, QRectF(11.5, 10, 16, 16))

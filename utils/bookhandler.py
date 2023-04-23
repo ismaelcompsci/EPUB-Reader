@@ -43,7 +43,7 @@ class BookHandler:
         if os.path.isfile(cover_path):
             os.remove(cover_path)
 
-        return
+        return True
 
     def read_book(self):
         """

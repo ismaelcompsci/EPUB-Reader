@@ -1,6 +1,9 @@
 <!DOCTYPE RCC>
 <RCC>
     <qresource prefix="reader">
+        <file>images/placeholder.jpg</file>
+
+
         <file>dark/book_interface.qss</file>
         <file>dark/library_interface.qss</file>
         <file>dark/main_window.qss</file>

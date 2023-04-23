@@ -21,9 +21,21 @@ class BackGroundBookAddition(QThread):
     def run(self):
         for file in self.files:
             handle = BookHandler(file, EXTRACTED_EPUB_DIR, Books)
-
-            if not handle.read_book():
+            read_ = handle.read_book()
+            if not read_:
                 continue
             metadata = handle.save_book()
 
             self.bookAdded.emit(metadata)
+
+
+class BackGroundBookDeletion(QThread):
+    def __init__(self, metadata):
+        super().__init__()
+
+        self.metadata = metadata
+
+    def run(self):
+        file = self.metadata["path"]
+        handle = BookHandler(file, EXTRACTED_EPUB_DIR, Books)
+        handle.delete_book()

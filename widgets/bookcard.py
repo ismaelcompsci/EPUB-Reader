@@ -17,15 +17,20 @@ class BookCover(QLabel):
         self.setContentsMargins(0, 0, 0, 0)
 
         self.set_pixmap(cover)
+        
 
     def set_pixmap(self, cover):
         self.makeCover(cover)
         self.update()
 
-    def makeCover(self, cover):
-        bytes_ = base64.b64decode(cover)
-        pixmap = QPixmap()
-        pixmap.loadFromData(bytes_)
+    def makeCover(self, cover: str):
+        if cover.startswith(":"):
+            pixmap = QPixmap(cover)
+            self.setPixmap(pixmap)
+        else:
+            pixmap = QPixmap()
+            bytes_ = base64.b64decode(cover)
+            pixmap.loadFromData(bytes_)
 
         # pix = pixmap.scaled(200, 225, Qt.AspectRatioMode.KeepAspectRatio)
         self.setPixmap(pixmap)
