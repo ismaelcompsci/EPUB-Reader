@@ -6,11 +6,11 @@ Using https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master
 
 # Library
 
-![image info](static/screenshot1.png "Library")
+![image info](static/screenshot1.png "library")
 
 # Reader
 
-![image info](static/screenshot2.png "LIbrary")
+![image info](static/screenshotL.png "reader")
 
 ## Compatibility
 
