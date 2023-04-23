@@ -18,8 +18,9 @@ Only tested on Windows 10, Fedora 37 VM
 
 # Usage
 
+clone repo
 pip install -r requirements.txt  
-python main.py
+python main.py 
 
 
 
