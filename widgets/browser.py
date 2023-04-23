@@ -81,7 +81,6 @@ class BookWebView(QWebEngineView):
         return super().setHtml(html, baseUrl)
 
     def eventFilter(self, source: QObject, event: QEvent):
-        print(event)
         if (
             event.type() == QEvent.Type.ChildAdded
             and source is self
