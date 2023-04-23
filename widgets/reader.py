@@ -213,9 +213,9 @@ class ReaderInterfaceWindow(FramelessWindow):
         key = ev.key()
 
         if key == Qt.Key.Key_Right:
-            self.change_chapter(1)
+            self.book_view.change_chapter(1)
         if key == Qt.Key.Key_Left:
-            self.change_chapter(-1)
+            self.book_view.change_chapter(-1)
 
     def resizeEvent(self, e):
         self.button.move(self.width() - 50, 38)
