@@ -8,6 +8,8 @@ from qfluentwidgets import Theme, isDarkTheme
 from qframelesswindow import FramelessWindow, StandardTitleBar
 from tinydb import TinyDB
 
+from PyQt5.QtWebChannel import QWebChannel
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from .book_view import BookViewer
 from .settingsinterface import SettingsOpenButton
 
@@ -18,7 +20,7 @@ class ReaderInterfaceWindow(FramelessWindow):
         self.setTitleBar(StandardTitleBar(self))
         self.titleBar.raise_()
 
-        self.button = SettingsOpenButton(FIF.MENU, "WHAT", True, self)
+        self.button = SettingsOpenButton(FIF.MENU, "", True, self)
 
         self.metadata = metadata
         self.book_view = BookViewer(
@@ -30,6 +32,15 @@ class ReaderInterfaceWindow(FramelessWindow):
             self.metadata,
         )
         self.book_view.load_book()
+
+        # DEBUGGING WEB
+        # self.mainLayout = QVBoxLayout(self)
+        # self.mainLayout.addWidget(self.book_view, 100)
+
+        # dev_view = QWebEngineView()
+        # self.mainLayout.addWidget(dev_view, 100)
+
+        # self.book_view.page().setDevToolsPage(dev_view.page())
 
         self.__initWidget()
 
@@ -56,8 +67,11 @@ class ReaderInterfaceWindow(FramelessWindow):
             color = "black"
 
         self.book_view.insert_web_view_css(
-            f"*{{background-color: {bg_color}; color: {color};}}"
+            f"html {{background-color: {bg_color}; color: {color};}}"
         )
+
+    def fontSizeChanged(self, size):
+        self.book_view.insert_script(f"incrementFontSize({size})", "fontSize")
 
     def keyPressEvent(self, ev: QKeyEvent) -> None:
         """

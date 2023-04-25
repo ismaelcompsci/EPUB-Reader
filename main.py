@@ -81,7 +81,6 @@ class Window(FramelessWindow):
     def __init__(self):
         super().__init__()
         self.setTitleBar(CustomTitleBar(self))
-
         self.emptyLibrary = True
 
         self.hBoxLayout = QHBoxLayout(self)

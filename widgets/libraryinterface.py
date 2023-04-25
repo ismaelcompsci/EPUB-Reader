@@ -12,21 +12,22 @@ from PyQt5.QtWidgets import (
 from qfluentwidgets import (
     FlowLayout,
     SmoothScrollArea,
-    SearchLineEdit,
     ScrollArea,
     RoundMenu,
+    InfoBarPosition,
+    InfoBar,
+    StateToolTip,
 )
 from qfluentwidgets import FluentIcon as FIF
 from .bars import LibraryToolBar
 
 from .bookcard import BookCard, BookCover
-from tinydb import Query, TinyDB, where
 
 from helpers.style_sheet import StyleSheet
 from helpers.threads import BackGroundBookAddition, BackGroundBookDeletion
 from pytrie import SortedStringTrie as Trie
 
-from config.config import DATABASE_DIR, Books
+from config.config import Books
 
 
 class LibraryScrollInterface(ScrollArea):
@@ -186,6 +187,7 @@ class LibraryCardView(QWidget):
         self.cards = []
         self.books = []
         self.trie_len = 0
+        self.currentIndex = 0
         self.flowLayout.takeAllWidgets()
 
         self.books_db = Books.all()
@@ -316,10 +318,14 @@ class LibraryInterface(LibraryScrollInterface):
             "Open EPUB",
             filter="EPUB Files (*.epub)",
         )
-
         self.thread_ = BackGroundBookAddition(files, self.parent(), self)
+        self.thread_.badBookAdded.connect(self.handleBadBook)
         self.thread_.bookAdded.connect(self.updateLibraryInterface)
         self.thread_.start()
+
+        self.stateTooltip = None
+        self.thread_.started.connect(self.onStateAddingBooks)
+        self.thread_.finished.connect(self.onStateAddingBooks)
 
     def deleteBook(self, book_data):
         self.thread_ = BackGroundBookDeletion(book_data)
@@ -338,6 +344,44 @@ class LibraryInterface(LibraryScrollInterface):
             # self.libraryView.infoPanel.deleteLater()
             # self.libraryView.makeInfopanel()
             self.libraryView.addLibraryItem(metadata)
+
+    def handleBadBook(self, error: str | tuple):
+        if isinstance(error, str):
+            title = "Generation Error"
+            content = f"Content Genration error for : {error}"
+
+            self.createWarningInfoBar(title, content)
+
+        if isinstance(error, tuple):
+            title = "Book Already exists"
+            content = f"File already exists: {error[0]}"
+
+            self.createWarningInfoBar(title, content)
+
+    def createWarningInfoBar(self, title, content):
+        InfoBar.warning(
+            title=title,
+            content=content,
+            orient=Qt.Horizontal,
+            isClosable=False,  # disable close button
+            position=InfoBarPosition.BOTTOM_RIGHT,
+            duration=2000,
+            parent=self,
+        )
+
+    def onStateAddingBooks(self):
+        if self.stateTooltip:
+            self.stateTooltip.setContent("Done Adding Book!" + " 😆")
+            self.stateTooltip.setState(True)
+            self.stateTooltip = None
+        else:
+            self.stateTooltip = StateToolTip(
+                "Adding Books",
+                self.tr("Please wait patiently"),
+                self.window(),
+            )
+            self.stateTooltip.move(self.stateTooltip.getSuitablePos())
+            self.stateTooltip.show()
 
 
 # TODO

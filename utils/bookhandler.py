@@ -55,7 +55,7 @@ class BookHandler:
         # CHECK IF BOOK IS IN DB
         book = self.db.get(Check.hash == self.md5_)
         if book:
-            return False
+            return (False, True)
 
         # BOOK DATA
         parsed_book = ParseEPUB(self.book_path, self.temp_dir, self.md5_)
@@ -68,9 +68,9 @@ class BookHandler:
             extract_dir = os.path.join(self.temp_dir, self.md5_)
             if os.path.exists(extract_dir):
                 shutil.rmtree(extract_dir)
-            this_error = f"Content generation error: {self.book_path}"
+            this_error = f"Metadata generation error: {self.book_path}"
             print(this_error + f" {type(e).__name__} Arguments: {e.args}")
-            return False
+            return (False, False)
 
         try:
             (
@@ -83,7 +83,7 @@ class BookHandler:
             shutil.rmtree(os.path.join(self.temp_dir, self.md5_))
             this_error = f"Content generation error: {self.book_path}"
             print(this_error + f" {type(e).__name__} Arguments: {e.args}")
-            return False
+            return (False, False)
 
         this_book = {}
 

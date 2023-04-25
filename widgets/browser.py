@@ -1,7 +1,7 @@
 from queue import Queue
 
 
-from PyQt5.QtCore import QEvent, QObject
+from PyQt5.QtCore import QEvent, QObject, QFile, QIODevice, QTextStream
 from PyQt5.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
 from PyQt5.QtWebEngineCore import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
@@ -20,14 +20,14 @@ class Page(QWebEnginePage):
         s = self.settings()
         a = s.setAttribute
 
-        a(QWebEngineSettings.WebAttribute.PluginsEnabled, False)
-        a(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, False)
-        a(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, False)
-        # a(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, False)
-        a(QWebEngineSettings.WebAttribute.AllowWindowActivationFromJavaScript, False)
+        # a(QWebEngineSettings.WebAttribute.PluginsEnabled, False)
+        # a(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, False)
+        # a(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, False)
+        # # a(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, False)
+        # a(QWebEngineSettings.WebAttribute.AllowWindowActivationFromJavaScript, False)
 
     def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
-        print(f"{source_id}:{linenumber}: {msg}")
+        print("javaScriptConsoleMessage: ", level, msg, linenumber, source_id)
 
     def acceptNavigationRequest(self, url, _type, isMainFrame):
         """
@@ -59,12 +59,18 @@ class BookWebView(QWebEngineView):
         self.loading = False
 
         self._child_widget = None
+
+        fd = QFile(":/reader/js/reader.js")
+        if fd.open(QIODevice.ReadOnly | QFile.Text):
+            self.js = QTextStream(fd).readAll()
+            fd.close()
+
         # self.installEventFilter(self)
 
-        self.web_width, self.web_height = self.size().width(), self.size().height()
+        # self.web_width, self.web_height = self.size().width(), self.size().height()
 
     def load_finished(self, ok):
-        self.web_width, self.web_height = self.size().width(), self.size().height()
+        # self.web_width, self.web_height = self.size().width(), self.size().height()
         if ok:
             self.loading = False
 
@@ -73,7 +79,7 @@ class BookWebView(QWebEngineView):
 
     def load_started(self):
         self.loading = True
-        self.web_width, self.web_height = self.size().width(), self.size().height()
+        # self.web_width, self.web_height = self.size().width(), self.size().height()
 
     def queue_func(self, funciton):
         self.queue.put(funciton)
@@ -83,11 +89,11 @@ class BookWebView(QWebEngineView):
             function()
 
     def setHtml(self, html: str, baseUrl) -> None:
-        # try:
-        #     self.focusProxy().installEventFilter(self)
-        # except AttributeError as e:
-        #     print(e)
-        #     pass
+        try:
+            self.installEventFilter(self)
+        except AttributeError as e:
+            print(e)
+            pass
         return super().setHtml(html, baseUrl)
 
     def eventFilter(self, source: QObject, event: QEvent):
@@ -96,14 +102,14 @@ class BookWebView(QWebEngineView):
             and source is self
             and event.child().isWidgetType()
         ):
-            self._childWidget = event.child()
-            self._childWidget.installEventFilter(self)
+            self._child_widget = event.child()
+            self._child_widget.installEventFilter(self)
         # MOUSE SCROLL
-        elif isinstance(event, QWheelEvent) and source is self._childWidget:
+        elif isinstance(event, QWheelEvent) and source is self._child_widget:
             self.wheelEvent(event)
 
         # MOUSE PRESS
-        elif isinstance(event, QMouseEvent) and source is self._childWidget:
+        elif isinstance(event, QMouseEvent) and source is self._child_widget:
             if event.type() == QEvent.Type.MouseButtonPress:
                 # print(event.pos())
                 self.mousePressEvent(event)
@@ -111,7 +117,7 @@ class BookWebView(QWebEngineView):
                 self.mouseReleaseEvent(event)
 
         # KEY PRESS
-        elif isinstance(event, QKeyEvent) and source is self._childWidget:
+        elif isinstance(event, QKeyEvent) and source is self._child_widget:
             if event.type() == QEvent.Type.KeyPress:
                 self.keyPressEvent(event)
 

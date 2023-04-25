@@ -33,10 +33,12 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-img_css = """max-width: 100%;
+img_css = """
+max-width: 100%;
 max-height: 100vh;
 width: auto;
-margin: auto;"""
+margin: auto;
+"""
 
 
 class EPUB:
@@ -62,6 +64,7 @@ class EPUB:
             )
         except zipfile.BadZipFile:
             return
+
         self.file_list = self.zip_file.namelist()
 
         # Book structure relies on parsing the .opf file
@@ -70,26 +73,42 @@ class EPUB:
         # eldritch abomination. The point is we have to check
         # the container.xml
         container = self.find_file("container.xml")
+
         if container:
             container_xml = self.zip_file.read(container)
             container_dict = xmltodict.parse(container_xml)
+            # print(container_dict)
             packagefile = container_dict["container"]["rootfiles"]["rootfile"][
                 "@full-path"
             ]
+
         else:
             presumptive_names = ("content.opf", "package.opf", "volume.opf")
             for i in presumptive_names:
+                # print(f"persumtive_name: {i}")
                 packagefile = self.find_file(i)
                 if packagefile:
                     logger.info("Using presumptive package file: " + self.book_filename)
                     break
 
-        packagefile_data = self.zip_file.read(packagefile)
+        try:
+            packagefile_data = self.zip_file.read(packagefile)
+        except KeyError:
+            presumptive_names = ("content.opf", "package.opf", "volume.opf")
+            for i in presumptive_names:
+                # print(f"persumtive_name: {i}")
+                packagefile = self.find_file(i)
+                if packagefile:
+                    logger.info("Using presumptive package file: " + self.book_filename)
+                    packagefile_data = self.zip_file.read(packagefile)
+                    break
+
         self.opf_dict = xmltodict.parse(packagefile_data)
 
     def find_file(self, filename):
         # Get rid of special characters
         filename = unquote(filename)
+        # print(f"find_file : ", filename)
 
         # First, look for the file in the root of the book
         if filename in self.file_list:
@@ -97,8 +116,11 @@ class EPUB:
 
         # Then search for it elsewhere
         else:
+            # print(filename)
             file_basename = os.path.basename(filename)
+            # print(file_basename)
             for i in self.file_list:
+                # print(f"file_list_i: {i} == {file_basename}")
                 if os.path.basename(i) == file_basename:
                     return i
 

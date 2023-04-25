@@ -1,3 +1,4 @@
+from re import S
 from config.config import cfg
 from helpers.style_sheet import StyleSheet
 from PyQt5.QtCore import *
@@ -88,6 +89,7 @@ class SettingInterface(ScrollArea):
 # BOOK WINDOW SETTINGS
 class SettingsCard(MaskDialogBase):
     settingsChanged = pyqtSignal(dict)
+    fontSizeChanged = pyqtSignal(int)
 
     def __init__(self, settings, parent=None):
         super().__init__(parent)
@@ -99,11 +101,13 @@ class SettingsCard(MaskDialogBase):
         self.scrollWidget = QWidget(self.scrollArea)
 
         self.buttonGroup = QFrame(self.widget)
-        self.yesButton = PrimaryPushButton(self.tr("OK"), self.buttonGroup)
-        self.cancelButton = QPushButton(self.tr("Cancel"), self.buttonGroup)
+        self.yesButton = PrimaryPushButton("OK", self.buttonGroup)
+        self.cancelButton = QPushButton("Cancel", self.buttonGroup)
 
-        self.titleLabel = QLabel("Book Setttings", self.scrollWidget)
+        self.titleLabel = QLabel("Book Settings", self.scrollWidget)
 
+        self.editLabel = QLabel("Edit Font", self.scrollWidget)
+        self.fontSizeLabel = QLabel("Font Size", self.scrollWidget)
         self.fontSizeBox = SpinBox(self.scrollWidget)
 
         self.vBoxLayout = QVBoxLayout(self.widget)
@@ -138,10 +142,15 @@ class SettingsCard(MaskDialogBase):
         self.vBoxLayout.addWidget(self.scrollArea, 1)
         self.vBoxLayout.addWidget(self.buttonGroup, 0, Qt.AlignBottom)
 
+        self.editLabel.move(0, 381)
+        self.fontSizeLabel.move(133, 434)
+        self.fontSizeBox.move(0, 426)
+
         self.yesButton.move(24, 25)
         self.cancelButton.move(250, 25)
 
     def __setQss(self):
+        self.editLabel.setObjectName("editLabel")
         self.titleLabel.setObjectName("titleLabel")
         self.yesButton.setObjectName("yesButton")
         self.cancelButton.setObjectName("cancelButton")
@@ -149,7 +158,8 @@ class SettingsCard(MaskDialogBase):
         self.fontSizeBox.setObjectName("fontSizeSpinBox")
         FluentStyleSheet.COLOR_DIALOG.apply(self)
         self.titleLabel.adjustSize()
-        self.fontSizeBox.adjustSize()
+        # self.fontSizeBox.adjustSize()
+        # self.editLabel.adjustSize()
 
     def updateStyle(self):
         """update style sheet"""
@@ -162,18 +172,21 @@ class SettingsCard(MaskDialogBase):
 
         self.settingsChanged.emit(self.bookSettings)
 
+    def onFontSizeChanged(self, size):
+        self.fontSizeChanged.emit(size)
+
     def __connectSignalToSlot(self):
         self.cancelButton.clicked.connect(self.reject)
         self.yesButton.clicked.connect(self.__onYesButtonClicked)
 
-        self.fontSizeBox.valueChanged.connect(lambda v: print(v))
+        self.fontSizeBox.valueChanged.connect(self.onFontSizeChanged)
 
 
 class SettingsOpenButton(NavigationPushButton):
     def __init__(self, icon, text: str, isSelectable: bool, parent=None):
         super().__init__(icon, text, isSelectable, parent)
         self.icon = icon
-        self._text = "WHaT"
+        self._text = ""
 
         self.setStyleSheet(
             "NavigationPushButton{font: 14px 'Segoe UI', 'Microsoft YaHei'}"
@@ -185,6 +198,7 @@ class SettingsOpenButton(NavigationPushButton):
     def mousePressEvent(self, e):
         w = SettingsCard({}, self.window())
         w.updateStyle()
+        w.fontSizeChanged.connect(lambda size: self.parent().fontSizeChanged(size))
         w.exec()
         return super().mousePressEvent(e)
 

@@ -1,3 +1,4 @@
+from ast import Tuple
 from PyQt5.QtCore import QThread, pyqtSignal
 import os
 import re
@@ -9,6 +10,7 @@ from config.config import EXTRACTED_EPUB_DIR, Books
 
 class BackGroundBookAddition(QThread):
     bookAdded = pyqtSignal(dict)
+    badBookAdded = pyqtSignal(object)
 
     def __init__(self, files, main_window, parent=None):
         super().__init__(parent)
@@ -22,10 +24,18 @@ class BackGroundBookAddition(QThread):
         for file in self.files:
             handle = BookHandler(file, EXTRACTED_EPUB_DIR, Books)
             read_ = handle.read_book()
-            if not read_:
-                continue
-            metadata = handle.save_book()
 
+            if isinstance(read_, tuple):
+                # ALREADY IN LIBRARY
+                if read_[1]:
+                    self.badBookAdded.emit((file, 303))
+
+                # PARSE ERROR
+                if not read_[0]:
+                    self.badBookAdded.emit(file)
+                    continue
+
+            metadata = handle.save_book()
             self.bookAdded.emit(metadata)
 
 

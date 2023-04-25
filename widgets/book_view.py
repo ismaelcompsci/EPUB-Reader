@@ -1,8 +1,5 @@
 import base64
 import copy
-import logging
-from operator import pos
-from re import S
 
 from tinydb import Query, TinyDB
 
@@ -23,6 +20,8 @@ from utils.bookhandler import BookHandler
 # TODO
 # Resize IMAGE to view height and set width
 #
+
+TEST_FUNC = "function what(words) {" "console.log(words);" "}"
 
 
 class BookViewer(BookWebView):
@@ -53,6 +52,14 @@ class BookViewer(BookWebView):
         self.settings().setAttribute(
             QWebEngineSettings.WebAttribute.ShowScrollBars, False
         )
+        # self.settings().setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+        # self.settings().setAttribute(
+        #     QWebEngineSettings.LocalContentCanAccessRemoteUrls, True
+        # )
+        # self.settings().setAttribute(QWebEngineSettings.ErrorPageEnabled, True)
+        # self.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+
+        # self.insert_script(self.js, "functions")
 
     def load_book(self) -> None:
         """
@@ -72,6 +79,7 @@ class BookViewer(BookWebView):
     def set_content(self, position: int) -> None:
         """
         Sets html in webengine
+
         """
         try:
             content = self.this_book["content"][position]  # update positon in content
@@ -88,6 +96,8 @@ class BookViewer(BookWebView):
                 self.base_url
             ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
         )
+
+        # print(self.page().scripts().findScript("functions"))
 
         self.scroll_to(0)
         self.setFocus()
@@ -136,6 +146,8 @@ class BookViewer(BookWebView):
         script_.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
 
         self.page().scripts().insert(script_)
+
+        # print(self.page().scripts().findScript("style").sourceCode())
 
     def scroll_to(self, pos):
         """
