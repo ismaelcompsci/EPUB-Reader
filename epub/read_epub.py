@@ -28,7 +28,7 @@ from urllib.parse import unquote
 import xmltodict
 
 # from PyQt5 import QtGui
-from PyQt5.QtGui import QTextDocument
+# from PyQt5.QtGui import QTextDocument
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -208,12 +208,12 @@ class EPUB:
         this_file = self.find_file(chapter_file)
         if this_file:
             chapter_content = self.zip_file.read(this_file).decode()
-
             # Generate a None return for a blank chapter
             # These will be removed from the contents later
-            contentDocument = QTextDocument(None)
-            contentDocument.setHtml(chapter_content)
-            contentText = contentDocument.toPlainText().replace("\n", "")
+            # contentDocument = QTextDocument(None)
+            # contentDocument.setHtml(chapter_content)
+            # contentText = contentDocument.toPlainText().replace("\n", "")
+            contentText = chapter_content
             if contentText == "":
                 chapter_content = None
 
