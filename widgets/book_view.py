@@ -118,8 +118,6 @@ class BookViewer(BookWebView):
         self.web_channel.registerObject("content", self.document_js)
         self.page().setWebChannel(self.web_channel)
 
-        self.insert_script(script, "script", QWebEngineScript.ScriptWorldId.MainWorld)
-
     def load_book(self) -> None:
         """
         Initialize epub file
@@ -157,6 +155,7 @@ class BookViewer(BookWebView):
 
         self.scroll_to(0)
         self.setFocus()
+        self.insert_script(script, "script", QWebEngineScript.ScriptWorldId.MainWorld)
 
         self.queue_func(
             lambda: self.document_js.fontSizeChanged.emit(self.document_js.fontSize_)

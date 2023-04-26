@@ -159,8 +159,8 @@ class Window(FramelessWindow):
 
     def openBook(self, metadata):
         # Create Book View
-        self.bookInterface = ReaderInterfaceWindow(metadata)
-        self.bookInterface.show()
+        bookInterface = ReaderInterfaceWindow(metadata)
+        bookInterface.show()
 
     def addSubInterface(
         self,
