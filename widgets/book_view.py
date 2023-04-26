@@ -1,5 +1,6 @@
 import base64
 import copy
+import os
 from bs4 import BeautifulSoup
 
 from tinydb import Query, TinyDB
@@ -28,6 +29,32 @@ from utils.bookhandler import BookHandler
 # TRY ONLY HAVING ONE WEBPAGE WE INSERT HTML INTO and using javascript we change pages not sethtml
 
 
+# SIMULATE PAGES WITH JAVASCRIPT INSTEAD OF SETTING HTML
+
+dir = os.getcwd()
+
+js_path = os.path.join(dir, "resource", "js") + os.path.sep
+
+
+def add_script_src(html):
+    soup = BeautifulSoup(html, "html.parser")
+
+    head_tag = soup.find("head")
+    script_tag = soup.new_tag(
+        "script",
+        src=js_path + "qwebchannel_new.js",
+    )
+    script_tag2 = soup.new_tag(
+        "script",
+        src=js_path + "reader.js",
+    )
+
+    head_tag.append(script_tag)
+    head_tag.append(script_tag2)
+
+    return str(soup)
+
+
 def append_script(html_, api):
     soup = BeautifulSoup(html_, "html.parser")
 
@@ -43,14 +70,20 @@ def append_script(html_, api):
 
 
 script = """
+
+
 new QWebChannel(qt.webChannelTransport, function (channel) {
   var content = channel.objects.content;
+
+  // set contents font size and margin to page
   setFontSize(content.fontSize_);
   setLeftAndRightMargin(content.margin_);
 
+  // connect event listeners
   content.fontSizeChanged.connect(setFontSize);
   content.marginSizeChanged.connect(setLeftAndRightMargin);
 });
+
 
 function setFontSize(n) {
   document.body.style.fontSize = n + "px";
@@ -73,6 +106,7 @@ function fitImages() {
   }
 }
 fitImages();
+
 """
 
 
@@ -118,6 +152,7 @@ class BookViewer(BookWebView):
         self.settings().setAttribute(
             QWebEngineSettings.WebAttribute.ShowScrollBars, False
         )
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
     def load_book(self) -> None:
         """
@@ -150,17 +185,8 @@ class BookViewer(BookWebView):
 
         self.this_book["position"]["current_chapter"] = position
 
-        self.run_func(
-            lambda: self.setHtml(
-                content,
-                baseUrl=QUrl.fromLocalFile(
-                    self.base_url
-                ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
-            )
-        )
-
         self.setHtml(
-            content,
+            add_script_src(content),
             baseUrl=QUrl.fromLocalFile(
                 self.base_url
             ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
@@ -169,10 +195,10 @@ class BookViewer(BookWebView):
         self.scroll_to(0)
         self.setFocus()
 
-        self.insert_script(
-            self.api_file, "api", QWebEngineScript.ScriptWorldId.MainWorld
-        )
-        self.insert_script(script, "script", QWebEngineScript.ScriptWorldId.MainWorld)
+        # self.insert_script(
+        #     self.api_file, "api", QWebEngineScript.ScriptWorldId.MainWorld
+        # )
+        # self.insert_script(script, "script", QWebEngineScript.ScriptWorldId.MainWorld)
 
         self.queue_func(
             lambda: self.document_js.fontSizeChanged.emit(self.document_js.fontSize_)
@@ -213,7 +239,7 @@ class BookViewer(BookWebView):
         self,
         script,
         name,
-        applicationid: QWebEngineScript.ScriptWorldId.ApplicationWorld,
+        applicationid=QWebEngineScript.ScriptWorldId.ApplicationWorld,
     ):
         """
         insert javascript into world
@@ -250,9 +276,6 @@ class BookViewer(BookWebView):
 
         Save = Query()
         self.database.upsert(new_metadata, Save.hash == self.file_md5)
-
-    def contextMenuEvent(self, a0) -> None:
-        pass
 
 
 # NOT USED FOR NOW CLEANING THINGS

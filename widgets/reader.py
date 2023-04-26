@@ -25,7 +25,7 @@ class ReaderInterfaceWindow(FramelessWindow):
         self.button = SettingsOpenButton(FIF.MENU, "", True, self)
 
         # COMMENT FOR WEB DEBUG
-        self.vBoxLayout = QVBoxLayout(self)
+        # self.vBoxLayout = QVBoxLayout(self)
 
         # WEB ENGINE
         self.book_view = BookViewer(
@@ -38,13 +38,13 @@ class ReaderInterfaceWindow(FramelessWindow):
         )
 
         # DEBUGGING WEB
-        # self.mainLayout = QVBoxLayout(self)
-        # self.mainLayout.addWidget(self.book_view, 100)
+        self.mainLayout = QVBoxLayout(self)
+        self.mainLayout.addWidget(self.book_view, 100)
 
-        # dev_view = QWebEngineView()
-        # self.mainLayout.addWidget(dev_view, 100)
+        dev_view = QWebEngineView()
+        self.mainLayout.addWidget(dev_view, 100)
 
-        # self.book_view.page().setDevToolsPage(dev_view.page())
+        self.book_view.page().setDevToolsPage(dev_view.page())
 
         self.__initWidget()
 
@@ -52,7 +52,7 @@ class ReaderInterfaceWindow(FramelessWindow):
         self.resize(800, 720)
         self.setContentsMargins(0, 32, 0, 0)
 
-        self.vBoxLayout.addWidget(self.book_view)
+        # self.vBoxLayout.addWidget(self.book_view)
 
         self.button.raise_()
 
