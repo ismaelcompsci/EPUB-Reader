@@ -40,6 +40,7 @@ def add_script_src(html):
     soup = BeautifulSoup(html, "html.parser")
 
     head_tag = soup.find("head")
+
     script_tag = soup.new_tag(
         "script",
         src=js_path + "qwebchannel_new.js",
@@ -49,65 +50,12 @@ def add_script_src(html):
         src=js_path + "reader.js",
     )
 
-    head_tag.append(script_tag)
-    head_tag.append(script_tag2)
-
-    return str(soup)
-
-
-def append_script(html_, api):
-    soup = BeautifulSoup(html_, "html.parser")
-
-    script_tag = soup.new_tag("script")
-    script_tag.string = api + script
-
-    body_tag = soup.find("body")
-    if not body_tag:
-        return html_
-    body_tag.append(script_tag)
-
-    return str(soup)
-
-
-script = """
-
-
-new QWebChannel(qt.webChannelTransport, function (channel) {
-  var content = channel.objects.content;
-
-  // set contents font size and margin to page
-  setFontSize(content.fontSize_);
-  setLeftAndRightMargin(content.margin_);
-
-  // connect event listeners
-  content.fontSizeChanged.connect(setFontSize);
-  content.marginSizeChanged.connect(setLeftAndRightMargin);
-});
-
-
-function setFontSize(n) {
-  document.body.style.fontSize = n + "px";
-};
-
-function setLeftAndRightMargin(margin) {
-  // Sets l and r margin to "margin"
-  document.body.style.marginLeft = 10 * margin + "px";
-  document.body.style.marginRight = 10 * margin + "px";
-};
-
-function fitImages() {
-  // fits images into page
-  var images = document.getElementsByTagName("img");
-  for (var i = 0; i < images.length; i++) {
-    images[i].style.maxWidth = "100%";
-    images[i].style.maxHeight = "100vh";
-    images[i].style.width = "auto";
-    images[i].style.height = "auto";
-  }
-}
-fitImages();
-
-"""
+    if head_tag:
+        head_tag.append(script_tag)
+        head_tag.append(script_tag2)
+        return str(soup)
+    
+    return html
 
 
 class BookViewer(BookWebView):
@@ -192,8 +140,6 @@ class BookViewer(BookWebView):
             ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
         )
 
-        self.scroll_to(0)
-        self.setFocus()
 
         # self.insert_script(
         #     self.api_file, "api", QWebEngineScript.ScriptWorldId.MainWorld
@@ -206,6 +152,9 @@ class BookViewer(BookWebView):
         self.queue_func(
             lambda: self.document_js.marginSizeChanged.emit(self.document_js.margin_)
         )
+
+        self.scroll_to(0)
+        self.setFocus()
 
     def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
         """
