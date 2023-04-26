@@ -109,6 +109,7 @@ class SettingsCard(MaskDialogBase):
         self.editLabel = QLabel("Edit Font", self.scrollWidget)
         self.fontSizeLabel = QLabel("Font Size", self.scrollWidget)
         self.fontSizeBox = SpinBox(self.scrollWidget)
+        self.fontSizeBox.setValue(cfg.fontSize.value)
 
         self.vBoxLayout = QVBoxLayout(self.widget)
 
@@ -173,6 +174,7 @@ class SettingsCard(MaskDialogBase):
         self.settingsChanged.emit(self.bookSettings)
 
     def onFontSizeChanged(self, size):
+        cfg.fontSize.value = size
         self.fontSizeChanged.emit(size)
 
     def __connectSignalToSlot(self):

@@ -50,6 +50,8 @@ create_or_check(
 class Config(QConfig):
     tempFolder = ConfigItem("Folders", "temp", GUI_CONFIG_DIR, FolderValidator())
 
+    fontSize = ConfigItem("Reader", "fontsize", 24)
+
 
 cfg = Config()
 

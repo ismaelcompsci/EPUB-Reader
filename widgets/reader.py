@@ -71,7 +71,7 @@ class ReaderInterfaceWindow(FramelessWindow):
         )
 
     def fontSizeChanged(self, size):
-        self.book_view.insert_script(f"incrementFontSize({size})", "fontSize")
+        self.book_view.document_js.setFontSize(size)
 
     def keyPressEvent(self, ev: QKeyEvent) -> None:
         """

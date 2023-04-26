@@ -1,11 +1,45 @@
 from queue import Queue
 
 
-from PyQt5.QtCore import QEvent, QObject, QFile, QIODevice, QTextStream
+from PyQt5.QtCore import QEvent, QObject, QFile, QIODevice, QTextStream, pyqtSignal
 from PyQt5.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
 from PyQt5.QtWebEngineCore import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
 from PyQt5.QtWidgets import QWidget
+from config.config import cfg
+
+
+class Document(QObject):
+    fontSizeChanged = pyqtSignal(int)
+    marginSizeChanged = pyqtSignal(int)
+
+    def __init__(self):
+        super().__init__()
+        self.fontSize_ = cfg.fontSize.value
+        self.margin_ = 0
+
+    def marginSize(self):
+        return self.margin_
+
+    def setMargin(self, size):
+        self.margin_ = size
+        self.marginSizeChanged.emit(size)
+
+    def fontSize(self):
+        print(self.fontSize_)
+        return self.fontSize_
+
+    def setFontSize(self, size):
+        self.fontSize_ = size
+        self.fontSizeChanged.emit(size)
+
+    # def text(self):
+    #     return self._text
+
+    # def setText(self, text):
+    #     self._text = text
+    #     self.textChanged.emit(text)
+    #     print("emit")
 
 
 class Page(QWebEnginePage):
@@ -60,10 +94,10 @@ class BookWebView(QWebEngineView):
 
         self._child_widget = None
 
-        fd = QFile(":/reader/js/reader.js")
-        if fd.open(QIODevice.ReadOnly | QFile.Text):
-            self.js = QTextStream(fd).readAll()
-            fd.close()
+        # fd = QFile(":/reader/js/reader.js")
+        # if fd.open(QIODevice.ReadOnly | QFile.Text):
+        #     self.js = QTextStream(fd).readAll()
+        #     fd.close()
 
         # self.installEventFilter(self)
 

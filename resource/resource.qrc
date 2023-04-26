@@ -18,6 +18,7 @@
 
 
         <file>js/reader.js</file>
+        <file>js/qwebchannel_new.js</file>
 
     </qresource>
 </RCC>

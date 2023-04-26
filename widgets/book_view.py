@@ -1,5 +1,6 @@
 import base64
 import copy
+from bs4 import BeautifulSoup
 
 from tinydb import Query, TinyDB
 
@@ -8,12 +9,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtWebEngineCore import *
+from PyQt5.QtWebChannel import QWebChannel
 
 
 from PyQt5.QtWidgets import *
 from qframelesswindow import *
 
-from .browser import BookWebView
+from .browser import BookWebView, Document
 from utils.bookhandler import BookHandler
 
 
@@ -21,7 +23,55 @@ from utils.bookhandler import BookHandler
 # Resize IMAGE to view height and set width
 #
 
-TEST_FUNC = "function what(words) {" "console.log(words);" "}"
+
+def append_script(html_, api):
+    soup = BeautifulSoup(html_, "html.parser")
+
+    script_tag = soup.new_tag("script")
+    script_tag.string = api + script
+
+    body_tag = soup.find("body")
+    if not body_tag:
+        return html_
+    body_tag.append(script_tag)
+
+    return str(soup)
+
+
+script = """
+
+
+new QWebChannel(qt.webChannelTransport, function (channel) {
+  var content = channel.objects.content;
+  setFontSize(content.fontSize_);
+  setLeftAndRightMargin(content.margin_);
+
+  content.fontSizeChanged.connect(setFontSize);
+  content.marginSizeChanged.connect(setLeftAndRightMargin);
+});
+
+function setFontSize(n) {
+  document.body.style.fontSize = n + "px";
+}
+
+function setLeftAndRightMargin(margin) {
+  // Sets l and r margin to "margin"
+  document.body.style.marginLeft = margin + "px";
+  document.body.style.marginRight = margin + "px";
+}
+
+function fitImages() {
+  // fits images into page
+  var images = document.getElementsByTagName("img");
+  for (var i = 0; i < images.length; i++) {
+    images[i].style.maxWidth = "100%";
+    images[i].style.maxHeight = "100vh";
+    images[i].style.width = "auto";
+    images[i].style.height = "auto";
+  }
+}
+fitImages();
+"""
 
 
 class BookViewer(BookWebView):
@@ -52,14 +102,23 @@ class BookViewer(BookWebView):
         self.settings().setAttribute(
             QWebEngineSettings.WebAttribute.ShowScrollBars, False
         )
-        # self.settings().setAttribute(QWebEngineSettings.JavascriptEnabled, True)
-        # self.settings().setAttribute(
-        #     QWebEngineSettings.LocalContentCanAccessRemoteUrls, True
-        # )
-        # self.settings().setAttribute(QWebEngineSettings.ErrorPageEnabled, True)
-        # self.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
 
-        # self.insert_script(self.js, "functions")
+        file = QFile(":/reader/js/qwebchannel_new.js")
+        if file.open(QIODevice.ReadOnly | QFile.Text):
+            self.api_file = QTextStream(file).readAll()
+            file.close()
+
+        self.insert_script(
+            self.api_file, "api", QWebEngineScript.ScriptWorldId.MainWorld
+        )
+
+        self.document_js = Document()
+
+        self.web_channel = QWebChannel(self.page())
+        self.web_channel.registerObject("content", self.document_js)
+        self.page().setWebChannel(self.web_channel)
+
+        self.insert_script(script, "script", QWebEngineScript.ScriptWorldId.MainWorld)
 
     def load_book(self) -> None:
         """
@@ -88,7 +147,6 @@ class BookViewer(BookWebView):
             return
 
         self.this_book["position"]["current_chapter"] = position
-        # self.this_book["position"]["is_read"] = False
 
         self.setHtml(
             content,
@@ -97,10 +155,12 @@ class BookViewer(BookWebView):
             ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
         )
 
-        # print(self.page().scripts().findScript("functions"))
-
         self.scroll_to(0)
         self.setFocus()
+
+        self.queue_func(
+            lambda: self.document_js.fontSizeChanged.emit(self.document_js.fontSize_)
+        )
 
     def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
         """
@@ -128,26 +188,27 @@ class BookViewer(BookWebView):
         add css
         """
         script = f'(function() {{ css = document.createElement("style"); css.type = "text/css"; document.head.appendChild(css); css.innerText = "{css}";}})()'
-        self.insert_script(script, "style")
+        self.insert_script(script, "style", QWebEngineScript.ScriptWorldId.MainWorld)
 
-    def insert_script(self, script, name):
+    def insert_script(
+        self,
+        script,
+        name,
+        applicationid: QWebEngineScript.ScriptWorldId.ApplicationWorld,
+    ):
         """
         insert javascript into world
         """
         script_ = QWebEngineScript()
 
-        self.page().runJavaScript(
-            script, QWebEngineScript.ScriptWorldId.ApplicationWorld
-        )
+        self.page().runJavaScript(script, applicationid)
         script_.setName(name)
         script_.setSourceCode(script)
         script_.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
         script_.setRunsOnSubFrames(True)
-        script_.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
+        script_.setWorldId(applicationid)
 
         self.page().scripts().insert(script_)
-
-        # print(self.page().scripts().findScript("style").sourceCode())
 
     def scroll_to(self, pos):
         """
