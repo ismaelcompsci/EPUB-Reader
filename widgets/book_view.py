@@ -21,7 +21,11 @@ from utils.bookhandler import BookHandler
 
 # TODO
 # Resize IMAGE to view height and set width
-#
+
+# TRY ADDING SCRIPT TAG TO HTML LIKE THIS <script src="c:/acutal file location"</script>
+
+
+# TRY ONLY HAVING ONE WEBPAGE WE INSERT HTML INTO and using javascript we change pages not sethtml
 
 
 def append_script(html_, api):
@@ -39,8 +43,6 @@ def append_script(html_, api):
 
 
 script = """
-
-
 new QWebChannel(qt.webChannelTransport, function (channel) {
   var content = channel.objects.content;
   setFontSize(content.fontSize_);
@@ -52,13 +54,13 @@ new QWebChannel(qt.webChannelTransport, function (channel) {
 
 function setFontSize(n) {
   document.body.style.fontSize = n + "px";
-}
+};
 
 function setLeftAndRightMargin(margin) {
   // Sets l and r margin to "margin"
-  document.body.style.marginLeft = margin + "px";
-  document.body.style.marginRight = margin + "px";
-}
+  document.body.style.marginLeft = 10 * margin + "px";
+  document.body.style.marginRight = 10 * margin + "px";
+};
 
 function fitImages() {
   // fits images into page
@@ -98,19 +100,13 @@ class BookViewer(BookWebView):
 
         self.base_url = find_html_dir(self.temp_dir, self.file_md5)
 
-        self.setMouseTracking(True)
-        self.settings().setAttribute(
-            QWebEngineSettings.WebAttribute.ShowScrollBars, False
-        )
+        self.__initWeb()
 
+    def __initWeb(self):
         file = QFile(":/reader/js/qwebchannel_new.js")
         if file.open(QIODevice.ReadOnly | QFile.Text):
             self.api_file = QTextStream(file).readAll()
             file.close()
-
-        self.insert_script(
-            self.api_file, "api", QWebEngineScript.ScriptWorldId.MainWorld
-        )
 
         self.document_js = Document()
 
@@ -118,20 +114,28 @@ class BookViewer(BookWebView):
         self.web_channel.registerObject("content", self.document_js)
         self.page().setWebChannel(self.web_channel)
 
+        self.setMouseTracking(True)
+        self.settings().setAttribute(
+            QWebEngineSettings.WebAttribute.ShowScrollBars, False
+        )
+
     def load_book(self) -> None:
         """
         Initialize epub file
         """
 
         handle = BookHandler(self.book_path, self.temp_dir, self.database)
-        book_found, toc, content = handle.read_saved_book()
+        book_found, _, content = handle.read_saved_book()
 
         self.this_book = book_found
 
         self.this_book["content"] = content
         self.this_book["cover"] = base64.b64decode(book_found["cover"])
 
-        self.set_content(0)
+        if self.this_book.get("position"):
+            self.set_content(self.this_book["position"]["current_chapter"])
+        else:
+            self.set_content(0)
 
     def set_content(self, position: int) -> None:
         """
@@ -146,6 +150,15 @@ class BookViewer(BookWebView):
 
         self.this_book["position"]["current_chapter"] = position
 
+        self.run_func(
+            lambda: self.setHtml(
+                content,
+                baseUrl=QUrl.fromLocalFile(
+                    self.base_url
+                ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
+            )
+        )
+
         self.setHtml(
             content,
             baseUrl=QUrl.fromLocalFile(
@@ -155,10 +168,17 @@ class BookViewer(BookWebView):
 
         self.scroll_to(0)
         self.setFocus()
+
+        self.insert_script(
+            self.api_file, "api", QWebEngineScript.ScriptWorldId.MainWorld
+        )
         self.insert_script(script, "script", QWebEngineScript.ScriptWorldId.MainWorld)
 
         self.queue_func(
             lambda: self.document_js.fontSizeChanged.emit(self.document_js.fontSize_)
+        )
+        self.queue_func(
+            lambda: self.document_js.marginSizeChanged.emit(self.document_js.margin_)
         )
 
     def change_chapter(self, direction: int, scroll_botom: bool = False) -> None:
@@ -230,6 +250,9 @@ class BookViewer(BookWebView):
 
         Save = Query()
         self.database.upsert(new_metadata, Save.hash == self.file_md5)
+
+    def contextMenuEvent(self, a0) -> None:
+        pass
 
 
 # NOT USED FOR NOW CLEANING THINGS

@@ -90,6 +90,7 @@ class SettingInterface(ScrollArea):
 class SettingsCard(MaskDialogBase):
     settingsChanged = pyqtSignal(dict)
     fontSizeChanged = pyqtSignal(int)
+    marginSizeChanged = pyqtSignal(int)
 
     def __init__(self, settings, parent=None):
         super().__init__(parent)
@@ -106,10 +107,16 @@ class SettingsCard(MaskDialogBase):
 
         self.titleLabel = QLabel("Book Settings", self.scrollWidget)
 
-        self.editLabel = QLabel("Edit Font", self.scrollWidget)
+        self.editLabel = QLabel("Edit Page", self.scrollWidget)
+
         self.fontSizeLabel = QLabel("Font Size", self.scrollWidget)
+        self.marginSizeLabel = QLabel("Margin Size", self.scrollWidget)
+
         self.fontSizeBox = SpinBox(self.scrollWidget)
         self.fontSizeBox.setValue(cfg.fontSize.value)
+
+        self.marginSizeBox = SpinBox(self.scrollWidget)
+        self.marginSizeBox.setValue(cfg.marginSize.value)
 
         self.vBoxLayout = QVBoxLayout(self.widget)
 
@@ -144,8 +151,12 @@ class SettingsCard(MaskDialogBase):
         self.vBoxLayout.addWidget(self.buttonGroup, 0, Qt.AlignBottom)
 
         self.editLabel.move(0, 381)
-        self.fontSizeLabel.move(133, 434)
+
+        self.fontSizeLabel.move(144, 434)
+        self.marginSizeLabel.move(144, 478)
+
         self.fontSizeBox.move(0, 426)
+        self.marginSizeBox.move(0, 470)
 
         self.yesButton.move(24, 25)
         self.cancelButton.move(250, 25)
@@ -170,18 +181,22 @@ class SettingsCard(MaskDialogBase):
 
     def __onYesButtonClicked(self):
         self.accept()
-
         self.settingsChanged.emit(self.bookSettings)
 
     def onFontSizeChanged(self, size):
         cfg.fontSize.value = size
         self.fontSizeChanged.emit(size)
 
+    def onMarginSizeChanged(self, size):
+        cfg.marginSize.value = size
+        self.marginSizeChanged.emit(size)
+
     def __connectSignalToSlot(self):
         self.cancelButton.clicked.connect(self.reject)
         self.yesButton.clicked.connect(self.__onYesButtonClicked)
 
         self.fontSizeBox.valueChanged.connect(self.onFontSizeChanged)
+        self.marginSizeBox.valueChanged.connect(self.onMarginSizeChanged)
 
 
 class SettingsOpenButton(NavigationPushButton):
@@ -201,6 +216,7 @@ class SettingsOpenButton(NavigationPushButton):
         w = SettingsCard({}, self.window())
         w.updateStyle()
         w.fontSizeChanged.connect(lambda size: self.parent().fontSizeChanged(size))
+        w.marginSizeChanged.connect(lambda size: self.parent().marginSizeChanged(size))
         w.exec()
         return super().mousePressEvent(e)
 

@@ -1,30 +1,22 @@
 # coding:utf-8
-import sys
 import resource.resource_rc
+import sys
 
 from helpers.style_sheet import StyleSheet
 from PyQt5.QtCore import QEasingCurve, Qt, pyqtSignal
-from PyQt5.QtWidgets import (
-    QApplication,
-    QFrame,
-    QAction,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt5.QtWidgets import QAction, QApplication, QFrame, QHBoxLayout, QWidget
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     NavigationInterface,
     NavigationItemPosition,
-    RoundMenu,
     PopUpAniStackedWidget,
-    NavigationToolButton,
+    RoundMenu,
 )
 from qframelesswindow import FramelessWindow
+from widgets.bars import CustomTitleBar
 from widgets.libraryinterface import LibraryInterface
 from widgets.reader import ReaderInterfaceWindow
 from widgets.settingsinterface import SettingInterface
-from widgets.bars import CustomTitleBar
 
 # MOST OF THIS CODE IS BOILERPLATE FORM QLUENTWIDGETS
 

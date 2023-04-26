@@ -51,6 +51,7 @@ class Config(QConfig):
     tempFolder = ConfigItem("Folders", "temp", GUI_CONFIG_DIR, FolderValidator())
 
     fontSize = ConfigItem("Reader", "fontsize", 24)
+    marginSize = ConfigItem("Reader", "marginsize", 1)
 
 
 cfg = Config()

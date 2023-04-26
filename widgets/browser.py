@@ -1,10 +1,10 @@
 from queue import Queue
 
 
-from PyQt5.QtCore import QEvent, QObject, QFile, QIODevice, QTextStream, pyqtSignal
+from PyQt5.QtCore import QEvent, QObject, pyqtSignal
 from PyQt5.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
 from PyQt5.QtWebEngineCore import *
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5.QtWidgets import QWidget
 from config.config import cfg
 
@@ -16,7 +16,7 @@ class Document(QObject):
     def __init__(self):
         super().__init__()
         self.fontSize_ = cfg.fontSize.value
-        self.margin_ = 0
+        self.margin_ = cfg.marginSize.value
 
     def marginSize(self):
         return self.margin_
@@ -26,7 +26,6 @@ class Document(QObject):
         self.marginSizeChanged.emit(size)
 
     def fontSize(self):
-        print(self.fontSize_)
         return self.fontSize_
 
     def setFontSize(self, size):

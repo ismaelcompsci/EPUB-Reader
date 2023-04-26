@@ -35,17 +35,14 @@ class LibraryScrollInterface(ScrollArea):
         super().__init__(parent=parent)
 
         self.view = QWidget(self)
-        # self.toolbar = ToolBar
         self.vBoxLayout = QVBoxLayout(self.view)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        # self.setViewportMargins(0, 32, 0, 0)
         self.setWidget(self.view)
         self.setWidgetResizable(True)
 
         self.vBoxLayout.setSpacing(30)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        # self.vBoxLayout.setContentsMargins(36, 20, 36, 36)
         self.view.setObjectName("view")
 
         StyleSheet.LIBRARY_INTERFACE.apply(self)
@@ -117,9 +114,18 @@ class LibraryCardView(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
         self.trie = Trie()
         self.emptyLibrary = True
         self.trie_len = 0
+        self.cards = []
+        self.books = []
+        self.currentIndex = -1
+
+        if len(Books):
+            self.emptyLibrary = False
+        else:
+            self.emptyLibrary = True
 
         self.hBoxLayoutSearchAdd = QHBoxLayout()
 
@@ -133,16 +139,6 @@ class LibraryCardView(QWidget):
         self.vBoxLayout = QVBoxLayout(self)
         self.hBoxLayout = QHBoxLayout(self.view)
         self.flowLayout = FlowLayout(self.scrollWidget, isTight=False)
-
-        self.cards = []
-        self.books = []
-
-        self.currentIndex = -1
-
-        if len(Books):
-            self.emptyLibrary = False
-        else:
-            self.emptyLibrary = True
 
         self.__initWidget()
 
@@ -212,8 +208,9 @@ class LibraryCardView(QWidget):
     def delLibraryItem(self, book_data):
         index = self.currentIndex
 
-        card = self.cards.pop(index)
-        book = self.books.pop(index)
+        _ = self.cards.pop(index)
+        __ = self.books.pop(index)
+        del _, __
         w = self.flowLayout.takeAt(index)
 
         if w:
@@ -382,8 +379,3 @@ class LibraryInterface(LibraryScrollInterface):
             )
             self.stateTooltip.move(self.stateTooltip.getSuitablePos())
             self.stateTooltip.show()
-
-
-# TODO
-# MAKE NEW WINDOW POP UP FOR BOOK VIEW
-# JUST BETTER

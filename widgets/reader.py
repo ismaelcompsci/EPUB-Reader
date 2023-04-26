@@ -20,9 +20,14 @@ class ReaderInterfaceWindow(FramelessWindow):
         self.setTitleBar(StandardTitleBar(self))
         self.titleBar.raise_()
 
+        self.metadata = metadata
+
         self.button = SettingsOpenButton(FIF.MENU, "", True, self)
 
-        self.metadata = metadata
+        # COMMENT FOR WEB DEBUG
+        self.vBoxLayout = QVBoxLayout(self)
+
+        # WEB ENGINE
         self.book_view = BookViewer(
             self,
             self.metadata["path"],
@@ -31,7 +36,6 @@ class ReaderInterfaceWindow(FramelessWindow):
             Books,
             self.metadata,
         )
-        self.book_view.load_book()
 
         # DEBUGGING WEB
         # self.mainLayout = QVBoxLayout(self)
@@ -48,14 +52,16 @@ class ReaderInterfaceWindow(FramelessWindow):
         self.resize(800, 720)
         self.setContentsMargins(0, 32, 0, 0)
 
-        self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.addWidget(self.book_view)
+
         self.button.raise_()
 
+        # PARSE BOOK FOR MISSING CONTENT
+        self.book_view.load_book()
+
+        # STYLE
         StyleSheet.BOOK_WINDOW_INTERFACE.apply(self)
-
         cfg.themeChanged.connect(self.__themeColorChanged)
-
         self.__themeColorChanged(Theme.DARK if isDarkTheme() else Theme.LIGHT)
 
     def __themeColorChanged(self, theme):
@@ -73,6 +79,9 @@ class ReaderInterfaceWindow(FramelessWindow):
     def fontSizeChanged(self, size):
         self.book_view.document_js.setFontSize(size)
 
+    def marginSizeChanged(self, size):
+        self.book_view.document_js.setMargin(size)
+
     def keyPressEvent(self, ev: QKeyEvent) -> None:
         """
         Keyboard arrows to change page
@@ -89,30 +98,7 @@ class ReaderInterfaceWindow(FramelessWindow):
         self.button.move(self.width() - 50, 38)
         return super().resizeEvent(e)
 
+    def closeEvent(self, event) -> None:
+        self.book_view.save_book_data()
 
-# class BookTitleBar(TitleBar):
-#     def __init__(self, parent):
-#         super().__init__(parent)
-
-#         self.iconLabel = QLabel(self)
-#         self.iconLabel.setFixedSize(18, 18)
-#         self.hBoxLayout.insertSpacing(0, 10)
-#         self.hBoxLayout.insertWidget(
-#             1, self.iconLabel, 0, Qt.AlignLeft | Qt.AlignBottom
-#         )
-#         self.window().windowIconChanged.connect(self.setIcon)
-
-#         # add title label
-#         self.titleLabel = QLabel(self)
-#         self.hBoxLayout.insertWidget(
-#             2, self.titleLabel, 0, Qt.AlignLeft | Qt.AlignBottom
-#         )
-#         self.titleLabel.setObjectName("titleLabel")
-#         self.window().windowTitleChanged.connect(self.setTitle)
-
-#     def setTitle(self, title):
-#         self.titleLabel.setText(title)
-#         self.titleLabel.adjustSize()
-
-#     def setIcon(self, icon):
-#         self.iconLabel.setPixmap(QIcon(icon).pixmap(18, 18))
+        return super().closeEvent(event)
