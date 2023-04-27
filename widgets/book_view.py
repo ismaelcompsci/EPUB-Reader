@@ -54,8 +54,23 @@ def add_script_src(html):
         head_tag.append(script_tag)
         head_tag.append(script_tag2)
         return str(soup)
-    
+
     return html
+
+
+IMAGE_SCRIPT = """
+function fitImages() {
+  // fits images into page
+  var images = document.getElementsByTagName("img");
+  for (var i = 0; i < images.length; i++) {
+    images[i].style.maxWidth = "100%";
+    images[i].style.maxHeight = "100vh";
+    images[i].style.width = "auto";
+    images[i].style.height = "auto";
+  }
+}
+fitImages();
+"""
 
 
 class BookViewer(BookWebView):
@@ -102,6 +117,10 @@ class BookViewer(BookWebView):
         )
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
+        self.insert_script(
+            IMAGE_SCRIPT, "images", QWebEngineScript.ScriptWorldId.MainWorld
+        )
+
     def load_book(self) -> None:
         """
         Initialize epub file
@@ -139,7 +158,6 @@ class BookViewer(BookWebView):
                 self.base_url
             ),  # SET HTML PATH FOR LOCAL CSS AND IMAGES
         )
-
 
         # self.insert_script(
         #     self.api_file, "api", QWebEngineScript.ScriptWorldId.MainWorld

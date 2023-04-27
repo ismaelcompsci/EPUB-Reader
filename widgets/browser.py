@@ -15,8 +15,8 @@ class Document(QObject):
 
     def __init__(self):
         super().__init__()
-        self.fontSize_ = cfg.fontSize.value
-        self.margin_ = cfg.marginSize.value
+        self.fontSize_ = cfg.get(cfg.fontSize)
+        self.margin_ = cfg.get(cfg.marginSize)
 
     def marginSize(self):
         return self.margin_
@@ -24,6 +24,7 @@ class Document(QObject):
     def setMargin(self, size):
         self.margin_ = size
         self.marginSizeChanged.emit(size)
+        cfg.set(cfg.marginSize, size)
 
     def fontSize(self):
         return self.fontSize_
@@ -31,6 +32,7 @@ class Document(QObject):
     def setFontSize(self, size):
         self.fontSize_ = size
         self.fontSizeChanged.emit(size)
+        cfg.set(cfg.fontSize, size)
 
     # def text(self):
     #     return self._text

@@ -88,15 +88,11 @@ class SettingInterface(ScrollArea):
 
 # BOOK WINDOW SETTINGS
 class SettingsCard(MaskDialogBase):
-    settingsChanged = pyqtSignal(dict)
     fontSizeChanged = pyqtSignal(int)
     marginSizeChanged = pyqtSignal(int)
 
-    def __init__(self, settings, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.oldBookSettings = settings
-        self.bookSettings = settings
 
         self.scrollArea = ScrollArea(self.widget)
         self.scrollWidget = QWidget(self.scrollArea)
@@ -181,7 +177,7 @@ class SettingsCard(MaskDialogBase):
 
     def __onYesButtonClicked(self):
         self.accept()
-        self.settingsChanged.emit(self.bookSettings)
+        cfg.save()
 
     def onFontSizeChanged(self, size):
         cfg.fontSize.value = size
@@ -213,7 +209,7 @@ class SettingsOpenButton(NavigationPushButton):
         return self._text
 
     def mousePressEvent(self, e):
-        w = SettingsCard({}, self.window())
+        w = SettingsCard(self.window())
         w.updateStyle()
         w.fontSizeChanged.connect(lambda size: self.parent().fontSizeChanged(size))
         w.marginSizeChanged.connect(lambda size: self.parent().marginSizeChanged(size))
