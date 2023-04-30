@@ -14,5 +14,5 @@ class StyleSheet(StyleSheetBase, Enum):
 
     def path(self, theme=Theme.AUTO):
         theme = qconfig.theme if theme == Theme.AUTO else theme
-        print(f":/reader/{theme.value.lower()}/{self.value}.qss")
+        # print(f":/reader/{theme.value.lower()}/{self.value}.qss")
         return f":/reader/{theme.value.lower()}/{self.value}.qss"

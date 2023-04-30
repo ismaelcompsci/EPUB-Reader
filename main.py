@@ -18,7 +18,6 @@ from widgets.libraryinterface import LibraryInterface
 from widgets.reader import ReaderInterfaceWindow
 from widgets.settingsinterface import SettingInterface
 
-from PyQt5.QtWebEngineCore import QWebEngineUrlScheme
 
 # MOST OF THIS CODE IS BOILERPLATE FORM QLUENTWIDGETS
 
@@ -153,9 +152,9 @@ class Window(FramelessWindow):
 
     def openBook(self, metadata):
         # Create Book View
-        print(metadata["hash"])
-        bookInterface = ReaderInterfaceWindow(metadata)
-        bookInterface.show()
+        self.bookInterface = ReaderInterfaceWindow(metadata)
+        self.bookInterface.show()
+        self.libraryInterface.libraryView.searchLineEdit.themeButton.clicked.connect(self.bookInterface.themeChanged)
 
     def addSubInterface(
         self,

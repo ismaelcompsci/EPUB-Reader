@@ -4,13 +4,13 @@ import typing
 from PyQt5 import QtWebEngineCore
 
 
-from PyQt5.QtCore import QUrl, QObject, pyqtSlot
-from PyQt5.QtGui import QKeyEvent, QMouseEvent, QWheelEvent
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWebEngineCore import *
-from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
 from PyQt5.QtWidgets import QWidget
 from config.config import cfg, PROJECT_DIR
+
+from qfluentwidgets.common import themeColor, isDarkTheme
 
 
 def get_index_html():
@@ -42,17 +42,36 @@ class Page(QWebEnginePage):
 
 
 class BookWebCommunication(QObject):
+    themeChanged = pyqtSignal(str)
+
     def __init__(self) -> None:
         super().__init__()
-
         self.file_name = None
+        self.theme_ = "dark" if isDarkTheme() else "light"
 
     @pyqtSlot(result=str)
     def getFile(self):
-        file = self.file_name
+        # SOME FILE PATHS HAVE SPACES AND EPUBJS CANT OPEN THEM 
+        # FIGURE A WAY TO FIX IT BEFORE SENDING TO JAVASCRIPT
+        # OR A WAY IN JAVASCRIPT
 
+        # FILE PATHS THAT DONT WORK 
+        # length ?
+        # C:\Users\Ismael\AppData\Local\EPUB-Reader\EPUB-Reader\Books\Barren_The_Complete_Trilogy_Box_Set_by__(Zach_Bohannon)__(J._Thorn)_(#1-3).epub
+        # 
+        file = self.file_name
         file = file.replace(" ", "%20")
         return file
+    
+    @pyqtSlot(result=str)
+    def getTheme(self):
+        return self.theme_
+
+    @pyqtSlot(str, result=str)
+    def setTheme(self, theme):
+        self.theme = theme
+        print("THEME CHANGED: ", theme)
+        self.themeChanged.emit(theme)
 
     
 
