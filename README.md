@@ -4,7 +4,8 @@ https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py
 
 Using https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master
 
-app is buggy 
+app is buggy  
+things may not work
 
 # Library
 
