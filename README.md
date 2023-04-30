@@ -13,7 +13,7 @@ things may not work
 
 # Reader
 
-![image info](static/screenshotL.png "reader")
+![image info](static\screenshotL.png "reader")
 
 ## Compatibility
 
@@ -30,6 +30,9 @@ python main.py
 
 ### Todo
 - [ ] Add a ToC view
-- [ ] Better Web View 
-- [ ] fix qwebchannel
+- [X] Better Web View 
+- [X] fix qwebchannel
 - [ ] pages?
+- [X] using epubjs library
+- [ ] read where last read
+- [ ] add annotations
