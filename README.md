@@ -17,7 +17,7 @@ ___
 
 # Reader
 
-![image info](static/screenshotL.png "reader")
+![image info](static/library.png "reader1")
 
 ## Compatibility
 
