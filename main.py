@@ -194,7 +194,7 @@ if __name__ == "__main__":
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
-    app = QApplication(sys.argv + ["", "--no-sandbox"])
+    app = QApplication(sys.argv + ["--disable-web-security", "--no-sandbox"])
     w = Window()
     w.show()
     app.exec()

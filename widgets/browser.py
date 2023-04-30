@@ -14,7 +14,7 @@ from config.config import cfg, PROJECT_DIR
 
 
 def get_index_html():
-    return os.path.join(PROJECT_DIR, "resource", "html") + "\index.html"
+    return os.path.join(PROJECT_DIR, "resource", "html") +os.path.sep +"index.html"
 
 
 class Page(QWebEnginePage):

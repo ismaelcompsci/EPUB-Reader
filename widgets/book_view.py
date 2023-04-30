@@ -56,7 +56,6 @@ class BookViewer(BookWebView):
         self.page().setWebChannel(self.web_channel)
 
 
-        # CONVERT FILE PATH TO BASE54 THEN DECODE IT IN JAVASCRIPT
         self.load(QUrl.fromLocalFile(get_index_html()))
 
         
