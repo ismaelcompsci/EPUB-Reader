@@ -16,9 +16,8 @@
         <file>light/setting_interface.qss</file>
         <file>light/book_window_interface.qss</file>
 
-
-        <file>js/reader.js</file>
-        <file>js/qwebchannel_new.js</file>
+        <file>js/epub.min.js</file>
+        <file>js/jszip.min.js</file>
 
     </qresource>
 </RCC>

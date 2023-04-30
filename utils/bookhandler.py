@@ -8,7 +8,7 @@ from tinydb import Query, TinyDB, where
 
 from utils.utils import get_file_md5_hash, resize_image
 from epub.epub import ParseEPUB
-
+from config.config import BOOK_COPIES_DIR
 logger = logging.getLogger(__name__)
 
 
@@ -34,7 +34,9 @@ class BookHandler:
 
         # REMOVE FROM TEMP
         book_dir = os.path.join(self.temp_dir, md5_)
-        shutil.rmtree(book_dir)
+
+        if os.path.isdir(book_dir):
+            shutil.rmtree(book_dir)
 
         # REMOVE COVER
         cover_path = (
@@ -72,13 +74,6 @@ class BookHandler:
             print(this_error + f" {type(e).__name__} Arguments: {e.args}")
             return (False, False)
 
-        try:
-            (
-                toc,
-                content,
-                images_only,
-            ) = parsed_book.generate_content()  # FOR READING
-
         except Exception as e:
             shutil.rmtree(os.path.join(self.temp_dir, self.md5_))
             this_error = f"Content generation error: {self.book_path}"
@@ -94,8 +89,6 @@ class BookHandler:
             "path": self.book_path,
             "position": {},
             "bookmarks": None,
-            "toc": toc,
-            "content": content,
             "cover": cover_image,
             "title": metadata.title,
             "author": metadata[1],
@@ -140,7 +133,6 @@ class BookHandler:
             return
 
         new_metadata = copy.deepcopy(self.this_book)
-        new_metadata.pop("content")
 
         # ENCODED IMAGE
         image = base64.b64encode(new_metadata["cover"]).decode("utf-8")

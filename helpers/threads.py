@@ -1,11 +1,12 @@
 from ast import Tuple
+import shutil
 from PyQt5.QtCore import QThread, pyqtSignal
 import os
 import re
 
 
 from utils.bookhandler import BookHandler
-from config.config import EXTRACTED_EPUB_DIR, Books
+from config.config import EXTRACTED_EPUB_DIR, Books, BOOK_COPIES_DIR
 
 
 class BackGroundBookAddition(QThread):
@@ -22,7 +23,19 @@ class BackGroundBookAddition(QThread):
 
     def run(self):
         for file in self.files:
-            handle = BookHandler(file, EXTRACTED_EPUB_DIR, Books)
+            # FIRST COPY FILE TO BOOKS
+
+            # GETS RID OF WHITESPACE IN BASENAME
+            filename = os.path.basename(file).replace(" ", "_").replace(",", "_")
+
+            # NEW FULL PATH TO COPY DIRECTORY
+            new_path = os.path.join(BOOK_COPIES_DIR, filename)
+
+            # COPY THE FILE TO NEW LOCATION
+            new_file_path = shutil.copy(file, new_path)
+
+            # SAVE THE BOOK
+            handle = BookHandler(new_file_path, EXTRACTED_EPUB_DIR, Books)
             read_ = handle.read_book()
 
             if isinstance(read_, tuple):

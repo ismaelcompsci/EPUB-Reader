@@ -36,7 +36,11 @@ class ParseEPUB:
         self.extract_path = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
-        self.book = EPUB(self.filename, self.temp_dir)
+        self.book = EPUB(
+            self.filename,
+            self.temp_dir,
+            self.extract_path,
+        )
 
     def generate_metadata(self):
         self.book.generate_metadata()
@@ -50,9 +54,13 @@ class ParseEPUB:
 
         toc = []
         content = []
+
         for count, i in enumerate(self.book.content):
             toc.append((i[0], i[1], count + 1))
             content.append(i[2])
 
         # Return toc, content, images_only
         return toc, content, False
+
+
+# os.path.join(self.extract_path, self.find_file(self.content[change][2]))

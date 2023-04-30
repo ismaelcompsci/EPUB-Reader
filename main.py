@@ -18,6 +18,8 @@ from widgets.libraryinterface import LibraryInterface
 from widgets.reader import ReaderInterfaceWindow
 from widgets.settingsinterface import SettingInterface
 
+from PyQt5.QtWebEngineCore import QWebEngineUrlScheme
+
 # MOST OF THIS CODE IS BOILERPLATE FORM QLUENTWIDGETS
 
 
@@ -151,6 +153,7 @@ class Window(FramelessWindow):
 
     def openBook(self, metadata):
         # Create Book View
+        print(metadata["hash"])
         bookInterface = ReaderInterfaceWindow(metadata)
         bookInterface.show()
 
@@ -190,6 +193,7 @@ if __name__ == "__main__":
     )
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
     app = QApplication(sys.argv + ["", "--no-sandbox"])
     w = Window()
     w.show()

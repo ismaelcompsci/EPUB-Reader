@@ -40,11 +40,15 @@ width: auto;
 margin: auto;
 """
 
+# ADD FILE LIST TO TOC TOO
+#
+
 
 class EPUB:
-    def __init__(self, book_filename, temp_dir):
+    def __init__(self, book_filename, temp_dir, extract_path):
         self.book_filename = book_filename
         self.temp_dir = temp_dir
+        self.extract_path = extract_path
 
         self.zip_file = None
         self.file_list = None
@@ -119,8 +123,8 @@ class EPUB:
             # print(filename)
             file_basename = os.path.basename(filename)
             # print(file_basename)
+            # print(self.file_list)
             for i in self.file_list:
-                # print(f"file_list_i: {i} == {file_basename}")
                 if os.path.basename(i) == file_basename:
                     return i
 
@@ -159,6 +163,7 @@ class EPUB:
         # for the vast majority of books
         toc_filename = "toc.ncx"
         does_toc_exist = self.find_file(toc_filename)
+
         if not does_toc_exist:
             toc_filename = find_alternative_toc()
 

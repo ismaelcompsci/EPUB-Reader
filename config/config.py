@@ -12,6 +12,9 @@ from tinydb import TinyDB
 appname = "EPUB-Reader"
 appautor = "Ismael Olvera"
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.abspath(os.path.join(script_dir, ".."))
+
 
 def create_or_check(path: str | list) -> str | list:
     if isinstance(path, str):
