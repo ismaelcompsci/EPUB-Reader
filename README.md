@@ -9,6 +9,7 @@ Also Using [epubjs](https://github.com/futurepress/epub.js/tree/master) library
 ----
 app is buggy  
 things may not work
+
 ___
 
 # Library
