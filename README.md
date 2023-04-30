@@ -5,13 +5,13 @@ Using [Lectors](https://github.com/BasioMeusPuga/Lector/blob/master/lector/parse
 Also Using [epubjs](https://github.com/futurepress/epub.js/tree/master) library
 
 
-[PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master)
-
+#[PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master)
+----
 app is buggy  
 things may not work
+___
 
 # Library
-
 ![image info](static/screenshot1.png "library")
 
 # Reader
@@ -23,7 +23,6 @@ things may not work
 Only tested on Windows 10, Fedora 37 VM
 
 # Usage
-
 clone repo  
 pip install -r requirements.txt  
 python main.py 
