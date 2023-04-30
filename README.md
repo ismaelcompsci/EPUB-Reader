@@ -1,8 +1,11 @@
 # Work in Progress
-Using Lectors EPUB Parser\
-https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py
+Using [Lectors](https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py) EPUB Parser
 
-Using https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master
+
+Also Using [epubjs](https://github.com/futurepress/epub.js/tree/master) library
+
+
+[PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master)
 
 app is buggy  
 things may not work
