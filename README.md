@@ -13,7 +13,7 @@ things may not work
 
 # Reader
 
-![image info](static\screenshotL.png "reader")
+![image info](static/screenshotL.png "reader")
 
 ## Compatibility
 
