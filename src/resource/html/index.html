@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EPUB.js</title>
+    <script src="qrc:///reader/js/epub.min.js"></script>
+    <script src="qrc:///reader/js/jszip.min.js"></script>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+
+    <style type="text/css">
+      .epub-container .epub-view > iframe {
+        background: white;
+        box-shadow: 0 0 4px #ccc;
+        /*margin: 10px;
+          padding: 20px;*/
+      }
+
+      #viewer {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="qrc:///reader/js/epub.min.js"></script>
+    <script src="qrc:///reader/js/jszip.min.js"></script>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+
+    <div id="viewer"></div>
+    <script>
+      // epubcfi(/6/30!/4/2/18/1:1039) -> location  in book
+
+      // CHANGE POS IN BOOK
+      // rendition.on("relocated", function (location) {   -> location of book
+      // console.log(location);
+
+      // THEMES
+      // rendition.themes.register("dark", "themes.css");
+      // rendition.themes.register("light", "themes.css");
+      // rendition.themes.register("tan", "themes.css");
+      // rendition.themes.select("tan");
+      // FONT SIZE
+      // rendition.themes.fontSize("140%");
+
+      // GLOBAL VARIABLE
+      globalThis.book = null;
+      globalThis.rendition = null;
+      globalThis.backend = null;
+
+      window.addEventListener("load", function () {
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+          backend = channel.objects.backend;
+
+          // Value from python backend
+          backend.getFile(function (path) {
+            // shoud do everything else invlolving the book after load book is done
+            //
+            loadBook(path);
+
+            // sets book theme and adds eventlistener
+            setBookTheme(backend.getTheme);
+            backend.themeChanged.connect(setBookTheme);
+          });
+        });
+      });
+
+      // Load the opf or book
+      const loadBook = (bookPath) => {
+        book = ePub(bookPath);
+
+        rendition = book.renderTo("viewer", {
+          manager: "continuous",
+          flow: "paginated",
+          height: "100%",
+        });
+
+        var displayed = rendition.display();
+
+        // // Navigation loaded
+        // book.loaded.navigation.then(function (toc) {
+        //   // console.log(toc);
+        // });
+
+        // THIS BREAKS WHEN WINDOW IS RESIZED
+        // TRY TO USE QWEBCHANNEL TO CHANGE CHAPTER INSTEAD?
+        var keyListener = function (e) {
+          // Left Key
+          if ((e.keyCode || e.which) === 37) {
+            console.log("prev");
+            rendition.prev();
+          }
+
+          // Right Key
+          if ((e.keyCode || e.which) === 39) {
+            console.log("next");
+            rendition.next();
+          }
+        };
+
+        rendition.on("keyup", keyListener);
+        document.addEventListener("keyup", keyListener, false);
+
+        // add themes
+        rendition.themes.register("dark", "./themes.css");
+        rendition.themes.register("light", "./themes.css");
+        rendition.themes.register("tan", "./themes.css");
+
+        rendition.themes.default({
+          h2: {
+            "font-size": "32px",
+          },
+          p: {
+            margin: "10px",
+          },
+        });
+
+        // GET MAINWINDOW THEME
+        backend.getTheme(function (theme) {
+          rendition.themes.select(theme);
+        });
+        rendition.themes.select();
+        rendition.themes.fontSize("110%");
+      };
+
+      // SET BOOK THEME light, dark, tan
+      const setBookTheme = (theme) => {
+        rendition.themes.select(theme);
+      };
+
+      const setFontSize = (size) => {
+        rendition.themes.fontSize(size);
+      };
+    </script>
+  </body>
+</html>
