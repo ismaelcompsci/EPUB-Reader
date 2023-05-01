@@ -4,7 +4,7 @@ import typing
 from PyQt5 import QtWebEngineCore
 
 
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QEvent, QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWebEngineCore import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
 from PyQt5.QtWidgets import QWidget
@@ -29,13 +29,13 @@ class Page(QWebEnginePage):
         s = self.settings()
         a = s.setAttribute
 
-        # a(QWebEngineSettings.WebAttribute.PluginsEnabled, True)
-        # a(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, True)
-        # a(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
-        # a(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
-        # a(QWebEngineSettings.WebAttribute.AllowWindowActivationFromJavaScript, True)
-        # a(QWebEngineSettings.WebAttribute.AllowRunningInsecureContent, True)
-        # a(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
+        a(QWebEngineSettings.WebAttribute.PluginsEnabled, True)
+        a(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, True)
+        a(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
+        a(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
+        a(QWebEngineSettings.WebAttribute.AllowWindowActivationFromJavaScript, True)
+        a(QWebEngineSettings.WebAttribute.AllowRunningInsecureContent, True)
+        a(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
 
     def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
         print("javaScriptConsoleMessage: ", level, msg, linenumber, source_id)
@@ -43,13 +43,14 @@ class Page(QWebEnginePage):
 
 class BookWebCommunication(QObject):
     themeChanged = pyqtSignal(str)
+    chapterChanged = pyqtSignal(str)
 
     def __init__(self) -> None:
         super().__init__()
         self.file_name = None
         self.theme_ = "dark" if isDarkTheme() else "light"
         self.book_storage = {}
-    
+
     @pyqtSlot(result=dict)
     def getBookStorage(self):
         return self.book_storage
@@ -81,10 +82,12 @@ class BookWebCommunication(QObject):
     @pyqtSlot(str, result=str)
     def setTheme(self, theme):
         self.theme = theme
-        print("THEME CHANGED: ", theme)
         self.themeChanged.emit(theme)
 
-    
+
+    # def chapterChangedEvent(self, direction):
+    #     self.chapterChanged.emit(direction)
+
 
 
 class BookWebView(QWebEngineView):

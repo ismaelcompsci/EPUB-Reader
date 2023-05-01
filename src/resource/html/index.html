@@ -34,6 +34,7 @@
 
     <div id="viewer"></div>
     <script>
+      // LEARN MORE JS
       // epubcfi(/6/30!/4/2/18/1:1039) -> location  in book
 
       // CHANGE POS IN BOOK
@@ -60,11 +61,9 @@
           // Value from python backend
           backend.getFile(function (path) {
             // shoud do everything else invlolving the book after load book is done
-            //
             loadBook(path);
 
             // sets book theme and adds eventlistener
-            setBookTheme(backend.getTheme);
             backend.themeChanged.connect(setBookTheme);
           });
         });
@@ -75,41 +74,44 @@
         book = ePub(bookPath);
 
         rendition = book.renderTo("viewer", {
-          manager: "continuous",
-          flow: "paginated",
+          width: window.width,
           height: "100%",
         });
 
-        var displayed = rendition.display();
+        // RESIZE BREAKS KEYLISTENER SO WE REINSTALL IT
+        rendition.on("resized", (w, h) => {
+          // document.removeEventListener("keyup", keyListener, false);
 
-        // // Navigation loaded
-        // book.loaded.navigation.then(function (toc) {
-        //   // console.log(toc);
-        // });
+          // rendition.on("keyup", keyListener);
+          // document.addEventListener("keyup", keyListener, false);
+          console.log(w, h);
+        });
 
-        // THIS BREAKS WHEN WINDOW IS RESIZED
-        // TRY TO USE QWEBCHANNEL TO CHANGE CHAPTER INSTEAD?
-        var keyListener = function (e) {
-          // Left Key
-          if ((e.keyCode || e.which) === 37) {
-            console.log("prev");
-            rendition.prev();
-          }
+        // position changed
+        rendition.on("relocated", (location) => {
+          // console.log(location.start.cfi);
+        });
 
-          // Right Key
-          if ((e.keyCode || e.which) === 39) {
-            console.log("next");
-            rendition.next();
-          }
-        };
+        book.ready
+          .then(() => {
+            rendition.display();
+            // add themes
+            rendition.themes.register("dark", "./themes.css");
+            rendition.themes.register("light", "./themes.css");
+            rendition.themes.register("tan", "./themes.css");
+            rendition.ready = true;
 
-        rendition.on("keyup", keyListener);
-        document.addEventListener("keyup", keyListener, false);
+            rendition.on("keyup", keyListener);
+            document.addEventListener("keyup", keyListener, false);
 
-        // add themes
-        rendition.themes.register("dark", "./themes.css");
-        rendition.themes.register("light", "./themes.css");
-        rendition.themes.register("tan", "./themes.css");
+            // setBookTheme(backend.getTheme);
+          })
+          .then(() => {});
+
+        // var displayed = rendition.display();
+
+        // rendition.on("keyup", keyListener);
+        // document.addEventListener("keyup", keyListener, false);
 
         rendition.themes.default({
           h2: {
@@ -130,11 +132,54 @@
 
       // SET BOOK THEME light, dark, tan
       const setBookTheme = (theme) => {
-        rendition.themes.select(theme);
+        rendition.themes.select(theme.toLowerCase());
+        // refresh();
+      };
+
+      const refresh = () => {
+        // rendition.flow("scrolled");
+        rendition.start();
       };
 
       const setFontSize = (size) => {
         rendition.themes.fontSize(size);
+      };
+
+      // THIS BREAKS WHEN WINDOW IS RESIZED
+      // TRY TO USE QWEBCHANNEL TO CHANGE CHAPTER INSTEAD?
+      var keyListener = function (e) {
+        if (e.keyCode === 39) {
+          nextPage();
+        }
+
+        if (e.keyCode === 37) {
+          prevPage();
+        }
+      };
+
+      function prevPage() {
+        if (rendition) {
+          rendition.prev();
+        }
+      }
+
+      function nextPage() {
+        if (rendition) {
+          rendition.next();
+        }
+      }
+      const debounce = (f, wait, immediate) => {
+        let timeout;
+        return (...args) => {
+          const later = () => {
+            timeout = null;
+            if (!immediate) f(...args);
+          };
+          const callNow = immediate && !timeout;
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+          if (callNow) f(...args);
+        };
       };
     </script>
   </body>

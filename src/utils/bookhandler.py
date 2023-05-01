@@ -74,12 +74,6 @@ class BookHandler:
             print(this_error + f" {type(e).__name__} Arguments: {e.args}")
             return (False, False)
 
-        except Exception as e:
-            shutil.rmtree(os.path.join(self.temp_dir, self.md5_))
-            this_error = f"Content generation error: {self.book_path}"
-            print(this_error + f" {type(e).__name__} Arguments: {e.args}")
-            return (False, False)
-
         this_book = {}
 
         cover_image = resize_image(metadata.cover)
@@ -89,13 +83,13 @@ class BookHandler:
             "path": self.book_path,
             "position": {},
             "bookmarks": None,
-            "cover": cover_image,
             "title": metadata.title,
             "author": metadata[1],
             "year": metadata[2],
             "isbn": metadata[3],
             "tags": metadata[4],
             "date_added": datetime.datetime.now().timestamp() * 1000,
+            "cover": cover_image,
         }
 
         # logger.info(f" DONE READDING BOOK: {metadata.title}")
@@ -104,23 +98,23 @@ class BookHandler:
 
         return True
 
-    def read_saved_book(self) -> tuple:
-        """
-        Reads book in database
-        """
+    # def read_saved_book(self) -> tuple:
+    #     """
+    #     Reads book in database
+    #     """
 
-        logger.info("Reading book from database")
+    #     logger.info("Reading book from database")
 
-        Book = Query()
-        self.file_md5 = self.hash_book()
+    #     Book = Query()
+    #     self.file_md5 = self.hash_book()
 
-        book_found = self.db.get(Book.hash == self.file_md5)
+    #     book_found = self.db.get(Book.hash == self.file_md5)
 
-        book = ParseEPUB(self.book_path, self.temp_dir, self.file_md5)
-        book.read_book()
-        toc, content, images_only = book.generate_content()
+    #     book = ParseEPUB(self.book_path, self.temp_dir, self.file_md5)
+    #     book.read_book()
+    #     toc, content, images_only = book.generate_content()
 
-        return (book_found, toc, content)
+    #     return (book_found, toc, content)
 
     def save_book(self) -> None:
         """

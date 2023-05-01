@@ -1,3 +1,4 @@
+from PyQt5 import QtGui
 from config.config import EXTRACTED_EPUB_DIR, Books, cfg
 from helpers.style_sheet import StyleSheet
 from PyQt5.QtCore import *
@@ -42,9 +43,9 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         # DEBUGGING WEB
         # UNCOMMENT FOR WEB DEBBUGING
-        self.dev_view = QWebEngineView()
-        self.book_view.page().setDevToolsPage(self.dev_view.page())
-        self.dev_view.show()
+        # self.dev_view = QWebEngineView()
+        # self.book_view.page().setDevToolsPage(self.dev_view.page())
+        # self.dev_view.show()
 
     def __initWidget(self):
         self.resize(550, 700)
@@ -59,6 +60,15 @@ class ReaderInterfaceWindow(FramelessWindow):
 
     
     def themeChanged(self):
-        theme = Theme.LIGHT if isDarkTheme() else Theme.DARK
+        theme = Theme.DARK if isDarkTheme() else Theme.LIGHT
         self.book_view.web_communicator.setTheme(theme.value)
+
+
+    # def keyPressEvent(self, a0: QKeyEvent) -> None:
+    #     key = a0.key()
+
+    #     if key == Qt.Key.Key_Right:
+    #         self.book_view.web_communicator.chapterChangedEvent("next")
+    #     elif key == Qt.Key.Key_Left:
+    #         self.book_view.web_communicator.chapterChangedEvent("prev")
 
