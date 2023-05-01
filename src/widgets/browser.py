@@ -1,16 +1,16 @@
 import base64
+import json
 import os
 import typing
+
+from config.config import PROJECT_DIR, cfg
 from PyQt5 import QtWebEngineCore
-
-
-from PyQt5.QtCore import QEvent, QObject, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QEvent, QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWebEngineCore import *
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
+from PyQt5.QtWebEngineWidgets import (QWebEnginePage, QWebEngineSettings,
+                                      QWebEngineView)
 from PyQt5.QtWidgets import QWidget
-from config.config import cfg, PROJECT_DIR
-
-from qfluentwidgets.common import themeColor, isDarkTheme
+from qfluentwidgets.common import isDarkTheme, themeColor
 
 
 def get_index_html():
@@ -38,7 +38,7 @@ class Page(QWebEnginePage):
         a(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
 
     def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
-        print("javaScriptConsoleMessage: ", level, msg, linenumber, source_id)
+        print("javaScriptConsoleMessage: ", level, msg, linenumber)
 
 
 class BookWebCommunication(QObject):
@@ -48,18 +48,19 @@ class BookWebCommunication(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.file_name = None
-        self.theme_ = "dark" if isDarkTheme() else "light"
         self.book_storage = {}
 
-    @pyqtSlot(result=dict)
+
+        
+    @pyqtSlot(result=str)
     def getBookStorage(self):
-        return self.book_storage
+        return  json.dumps(self.book_storage)
     
 
-    @pyqtSlot(dict, result=dict)
+    @pyqtSlot(str)
     def setBookStorage(self, new_book_data):
-        self.book_storage = new_book_data
-        return self.book_storage
+        self.book_storage =json.loads(new_book_data)
+
 
     @pyqtSlot(result=str)
     def getFile(self):
@@ -72,17 +73,17 @@ class BookWebCommunication(QObject):
         # C:\Users\Ismael\AppData\Local\EPUB-Reader\EPUB-Reader\Books\Barren_The_Complete_Trilogy_Box_Set_by__(Zach_Bohannon)__(J._Thorn)_(#1-3).epub
         # 
         file = self.file_name
-        file = file.replace(" ", "%20")
+        # file = file.replace(" ", "%20")
         return file
     
-    @pyqtSlot(result=str)
-    def getTheme(self):
-        return self.theme_
+    # @pyqtSlot(result=str)
+    # def getTheme(self):
+    #     return self.theme_
 
-    @pyqtSlot(str, result=str)
-    def setTheme(self, theme):
-        self.theme = theme
-        self.themeChanged.emit(theme)
+    # @pyqtSlot(str, result=str)
+    # def setTheme(self, theme):
+    #     self.theme = theme
+    #     self.themeChanged.emit(theme)
 
 
     # def chapterChangedEvent(self, direction):

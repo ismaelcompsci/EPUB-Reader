@@ -50,70 +50,69 @@
       // rendition.themes.fontSize("140%");
 
       // GLOBAL VARIABLE
-      globalThis.book = null;
-      globalThis.rendition = null;
-      globalThis.backend = null;
+      var book = null;
+      var rendition = null;
+      var backend = null;
+      var currentPosition = null;
+
+      var bookData = {
+        hash: "",
+        currentCFI: null,
+        progress: 0,
+        sliderValue: 0,
+        settings: {},
+      };
 
       window.addEventListener("load", function () {
         new QWebChannel(qt.webChannelTransport, function (channel) {
-          backend = channel.objects.backend;
+          window.backend = channel.objects.backend;
 
           // Value from python backend
-          backend.getFile(function (path) {
+          window.backend.getFile(function (path) {
+            console.log(path);
+            window.backend.getBookStorage(function (data) {
+              js_obj = JSON.parse(data);
+              window.bookData = js_obj;
+            });
+
             // shoud do everything else invlolving the book after load book is done
             loadBook(path);
-
-            // sets book theme and adds eventlistener
-            backend.themeChanged.connect(setBookTheme);
           });
         });
       });
 
       // Load the opf or book
       const loadBook = (bookPath) => {
-        book = ePub(bookPath);
+        window.book = ePub(bookPath);
 
-        rendition = book.renderTo("viewer", {
+        window.rendition = window.book.renderTo("viewer", {
           width: window.width,
           height: "100%",
         });
 
-        // RESIZE BREAKS KEYLISTENER SO WE REINSTALL IT
-        rendition.on("resized", (w, h) => {
-          // document.removeEventListener("keyup", keyListener, false);
-
-          // rendition.on("keyup", keyListener);
-          // document.addEventListener("keyup", keyListener, false);
-          console.log(w, h);
-        });
-
         // position changed
-        rendition.on("relocated", (location) => {
-          // console.log(location.start.cfi);
+        window.rendition.on("relocated", (location) => {
+          window.bookData.currentCFI = location.start.cfi;
+
+          window.backend.setBookStorage(JSON.stringify(window.bookData));
         });
 
-        book.ready
-          .then(() => {
-            rendition.display();
-            // add themes
-            rendition.themes.register("dark", "./themes.css");
-            rendition.themes.register("light", "./themes.css");
-            rendition.themes.register("tan", "./themes.css");
-            rendition.ready = true;
+        window.book.ready.then(() => {
+          rendition.display(window.bookData.currentCFI || 0);
+          // add themes
+          window.rendition.themes.register("dark", "./themes.css");
+          window.rendition.themes.register("light", "./themes.css");
+          window.rendition.themes.register("tan", "./themes.css");
+          window.rendition.ready = true;
 
-            rendition.on("keyup", keyListener);
-            document.addEventListener("keyup", keyListener, false);
+          setBookTheme(window.bookData.settings.theme);
+          window.rendition.themes.fontSize(window.bookData.settings.fontSize);
 
-            // setBookTheme(backend.getTheme);
-          })
-          .then(() => {});
+          window.rendition.on("keyup", keyListener);
+          document.addEventListener("keyup", keyListener, false);
+        });
 
-        // var displayed = rendition.display();
-
-        // rendition.on("keyup", keyListener);
-        // document.addEventListener("keyup", keyListener, false);
-
-        rendition.themes.default({
+        window.rendition.themes.default({
           h2: {
             "font-size": "32px",
           },
@@ -123,30 +122,20 @@
         });
 
         // GET MAINWINDOW THEME
-        backend.getTheme(function (theme) {
-          rendition.themes.select(theme);
-        });
-        rendition.themes.select();
-        rendition.themes.fontSize("110%");
+        // window.backend.getTheme(function (theme) {
+        //   rendition.themes.select(theme);
+        // });
       };
 
       // SET BOOK THEME light, dark, tan
       const setBookTheme = (theme) => {
-        rendition.themes.select(theme.toLowerCase());
-        // refresh();
-      };
-
-      const refresh = () => {
-        // rendition.flow("scrolled");
-        rendition.start();
+        window.rendition.themes.select(theme);
       };
 
       const setFontSize = (size) => {
-        rendition.themes.fontSize(size);
+        window.rendition.themes.fontSize(size + "%");
       };
 
-      // THIS BREAKS WHEN WINDOW IS RESIZED
-      // TRY TO USE QWEBCHANNEL TO CHANGE CHAPTER INSTEAD?
       var keyListener = function (e) {
         if (e.keyCode === 39) {
           nextPage();
@@ -158,29 +147,16 @@
       };
 
       function prevPage() {
-        if (rendition) {
-          rendition.prev();
+        if (window.rendition) {
+          window.rendition.prev();
         }
       }
 
       function nextPage() {
-        if (rendition) {
-          rendition.next();
+        if (window.rendition) {
+          window.rendition.next();
         }
       }
-      const debounce = (f, wait, immediate) => {
-        let timeout;
-        return (...args) => {
-          const later = () => {
-            timeout = null;
-            if (!immediate) f(...args);
-          };
-          const callNow = immediate && !timeout;
-          clearTimeout(timeout);
-          timeout = setTimeout(later, wait);
-          if (callNow) f(...args);
-        };
-      };
     </script>
   </body>
 </html>

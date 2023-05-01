@@ -51,6 +51,14 @@ class BookViewer(BookWebView):
         self.web_communicator = BookWebCommunication()
         self.web_communicator.file_name = self.book_path
 
+        self.web_communicator.book_storage = {
+            "hash": self.file_md5,
+            "currentCFI": self.metadata["currentCFI"],
+            "sliderValue": self.metadata["sliderValue"],
+            "settings": self.metadata["settings"],
+            "progress": self.metadata["progress"],
+        }
+
         self.web_channel = QWebChannel(self.page())
         self.web_channel.registerObject("backend", self.web_communicator)
         self.page().setWebChannel(self.web_channel)
@@ -59,9 +67,6 @@ class BookViewer(BookWebView):
         self.load(QUrl.fromLocalFile(get_index_html()))
 
         
-
-
-
         self.__initWeb()
         self.setContentsMargins(0, 0, 0, 0)
 

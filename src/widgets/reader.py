@@ -1,3 +1,4 @@
+from calendar import SATURDAY
 from PyQt5 import QtGui
 from config.config import EXTRACTED_EPUB_DIR, Books, cfg
 from helpers.style_sheet import StyleSheet
@@ -7,9 +8,8 @@ from PyQt5.QtWidgets import *
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import Theme, isDarkTheme
 from qframelesswindow import FramelessWindow, StandardTitleBar
-from tinydb import TinyDB
+from tinydb import Query
 
-from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from .book_view import BookViewer
 from .settingsinterface import SettingsOpenButton
@@ -60,15 +60,21 @@ class ReaderInterfaceWindow(FramelessWindow):
 
     
     def themeChanged(self):
-        theme = Theme.DARK if isDarkTheme() else Theme.LIGHT
-        self.book_view.web_communicator.setTheme(theme.value)
+        # theme = Theme.DARK if isDarkTheme() else Theme.LIGHT
+        # self.book_view.web_communicator.setTheme(theme.value)
+        pass
 
 
-    # def keyPressEvent(self, a0: QKeyEvent) -> None:
-    #     key = a0.key()
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        # SAVE TO DATA BASE WHEN WINDOW IS CLOSING
 
-    #     if key == Qt.Key.Key_Right:
-    #         self.book_view.web_communicator.chapterChangedEvent("next")
-    #     elif key == Qt.Key.Key_Left:
-    #         self.book_view.web_communicator.chapterChangedEvent("prev")
+        book_storage = self.book_view.web_communicator.book_storage
 
+        self.metadata["currentCFI"] = book_storage["currentCFI"]
+        self.metadata["sliderValue"]= book_storage["sliderValue"]
+        self.metadata["settings"]= book_storage["settings"]
+        self.metadata["progress"]= book_storage["progress"]
+
+        SaveBook = Query()
+        Books.update(book_storage, SaveBook.hash == self.metadata["hash"])
+        return super().closeEvent(a0)

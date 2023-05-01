@@ -78,11 +78,18 @@ class BookHandler:
 
         cover_image = resize_image(metadata.cover)
 
+        web_books_settings = {
+            "fontSize": "110",
+            "theme": "dark",
+        }
+
         this_book = {
             "hash": self.md5_,
             "path": self.book_path,
-            "position": {},
-            "bookmarks": None,
+            "currentCFI": None,
+            "progress": 0,
+            "sliderValue": 0,
+            "settings": web_books_settings,
             "title": metadata.title,
             "author": metadata[1],
             "year": metadata[2],
@@ -90,6 +97,7 @@ class BookHandler:
             "tags": metadata[4],
             "date_added": datetime.datetime.now().timestamp() * 1000,
             "cover": cover_image,
+
         }
 
         # logger.info(f" DONE READDING BOOK: {metadata.title}")
@@ -98,25 +106,7 @@ class BookHandler:
 
         return True
 
-    # def read_saved_book(self) -> tuple:
-    #     """
-    #     Reads book in database
-    #     """
-
-    #     logger.info("Reading book from database")
-
-    #     Book = Query()
-    #     self.file_md5 = self.hash_book()
-
-    #     book_found = self.db.get(Book.hash == self.file_md5)
-
-    #     book = ParseEPUB(self.book_path, self.temp_dir, self.file_md5)
-    #     book.read_book()
-    #     toc, content, images_only = book.generate_content()
-
-    #     return (book_found, toc, content)
-
-    def save_book(self) -> None:
+    def save_book(self, new_path) -> None:
         """
         Save to database
         """
@@ -133,6 +123,7 @@ class BookHandler:
         # DECODE -> base64.b64decode(encoded_image)
 
         new_metadata["cover"] = image
+        new_metadata["path"] = new_path
 
         self.db.insert(new_metadata)
 

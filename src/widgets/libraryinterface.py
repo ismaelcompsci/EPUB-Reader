@@ -186,6 +186,7 @@ class LibraryCardView(QWidget):
         self.currentIndex = 0
         self.flowLayout.takeAllWidgets()
 
+        # ALL BOOK METADATA
         self.books_db = Books.all()
         self.getLibraryBooks()
 
