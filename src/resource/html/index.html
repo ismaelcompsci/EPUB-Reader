@@ -9,13 +9,6 @@
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
 
     <style type="text/css">
-      .epub-container .epub-view > iframe {
-        background: white;
-        box-shadow: 0 0 4px #ccc;
-        /*margin: 10px;
-          padding: 20px;*/
-      }
-
       #viewer {
         position: absolute;
         width: 100vw;
@@ -24,6 +17,14 @@
         right: 0;
         bottom: 0;
         left: 0;
+      }
+
+      body.dark {
+        background: #000;
+      }
+
+      #viewer.dark {
+        background: #000;
       }
     </style>
   </head>
@@ -105,7 +106,7 @@
           window.rendition.themes.register("tan", "./themes.css");
           window.rendition.ready = true;
 
-          setBookTheme(window.bookData.settings.theme);
+          switchTheme(window.bookData.settings.theme);
           window.rendition.themes.fontSize(window.bookData.settings.fontSize);
 
           window.rendition.on("keyup", keyListener);
@@ -130,6 +131,24 @@
       // SET BOOK THEME light, dark, tan
       const setBookTheme = (theme) => {
         window.rendition.themes.select(theme);
+      };
+
+      const switchBasePage = (theme, element) => {
+        if (theme === "dark") {
+          element.classList.add("dark");
+        } else {
+          element.classList.remove("dark");
+        }
+      };
+
+      const switchTheme = (theme) => {
+        const elements_to_modify = ["body", "#viewer"];
+        setBookTheme(theme);
+
+        elements_to_modify.forEach((e) => {
+          var element = document.querySelector(e);
+          switchBasePage(theme, element);
+        });
       };
 
       const setFontSize = (size) => {
