@@ -4,13 +4,12 @@ import sys
 
 from helpers.style_sheet import StyleSheet
 from PyQt5.QtCore import QEasingCurve, Qt, pyqtSignal
-from PyQt5.QtWidgets import QAction, QApplication, QFrame, QHBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QFrame, QHBoxLayout, QWidget
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     NavigationInterface,
     NavigationItemPosition,
     PopUpAniStackedWidget,
-    RoundMenu,
 )
 from qframelesswindow import FramelessWindow
 from widgets.bars import CustomTitleBar
@@ -58,17 +57,6 @@ class StackedWidget(QFrame):
         self.setCurrentWidget(self.view.widget(index), popOut)
 
 
-class BookNavigationInterface(NavigationInterface):
-    def __init__(self, parent, showMenuButton, showReturnButton):
-        super().__init__(parent, showMenuButton, showReturnButton)
-
-    def contextMenuEvent(self, event) -> None:
-        menu = RoundMenu(parent=self)
-
-        deleteAction = QAction(FIF.DELETE.icon(), "Close")
-        menu.addAction(deleteAction)
-        menu.exec(event.globalPos(), ani=True)
-
 
 class Window(FramelessWindow):
     def __init__(self):
@@ -80,7 +68,7 @@ class Window(FramelessWindow):
         self.widgetLayout = QHBoxLayout()
 
         self.stackWidget = StackedWidget(self)
-        self.navigationInterface = BookNavigationInterface(self, True, True)
+        self.navigationInterface = NavigationInterface(self, True, True)
 
         # create sub interface
         self.libraryInterface = LibraryInterface("Library", "libraryInterface", self)

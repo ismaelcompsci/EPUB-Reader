@@ -1,33 +1,30 @@
-from PyQt5.QtCore import Qt, pyqtSignal
-
-from PyQt5.QtWidgets import (
-    QFrame,
-    QVBoxLayout,
-    QLabel,
-    QFileDialog,
-    QWidget,
-    QAction,
-    QHBoxLayout,
-)
-from qfluentwidgets import (
-    FlowLayout,
-    SmoothScrollArea,
-    ScrollArea,
-    RoundMenu,
-    InfoBarPosition,
-    InfoBar,
-    StateToolTip,
-)
-from qfluentwidgets import FluentIcon as FIF
-from .bars import LibraryToolBar
-
-from .bookcard import BookCard, BookCover
-
+from config.config import Books
 from helpers.style_sheet import StyleSheet
 from helpers.threads import BackGroundBookAddition, BackGroundBookDeletion
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import (
+    QAction,
+    QFileDialog,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QVBoxLayout,
+    QWidget,
+)
 from pytrie import SortedStringTrie as Trie
+from qfluentwidgets import FlowLayout
+from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import (
+    InfoBar,
+    InfoBarPosition,
+    RoundMenu,
+    ScrollArea,
+    SmoothScrollArea,
+    StateToolTip,
+)
 
-from config.config import Books
+from .bars import LibraryToolBar
+from .bookcard import BookCard, BookCover
 
 
 class LibraryScrollInterface(ScrollArea):

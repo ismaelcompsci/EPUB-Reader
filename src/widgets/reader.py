@@ -1,22 +1,16 @@
-from calendar import SATURDAY
-from PyQt5 import QtGui
-from config.config import EXTRACTED_EPUB_DIR, Books, cfg
+from config.config import EXTRACTED_EPUB_DIR, Books
 from helpers.style_sheet import StyleSheet
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QCloseEvent
+from PyQt5.QtWidgets import QVBoxLayout
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import Theme, isDarkTheme
 from qframelesswindow import FramelessWindow, StandardTitleBar
 from tinydb import Query
 
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 from .book_view import BookViewer
 from .settingsinterface import SettingsOpenButton
- 
+
 
 class ReaderInterfaceWindow(FramelessWindow):
-
     def __init__(self, metadata):
         super().__init__()
         # COMMENT FOR WEB DEBUG
@@ -58,7 +52,6 @@ class ReaderInterfaceWindow(FramelessWindow):
         StyleSheet.BOOK_WINDOW_INTERFACE.apply(self)
         self.book_view.setFocus()
 
-    
     def themeChanged(self):
         # theme = Theme.DARK if isDarkTheme() else Theme.LIGHT
         # self.book_view.web_communicator.setTheme(theme.value)
@@ -66,13 +59,12 @@ class ReaderInterfaceWindow(FramelessWindow):
 
     def fontSizeChanged(self, size):
         self.book_view.web_communicator.setFontSize_(size)
-    
+
     def marginSizeChanged(self, size):
         ...
 
     def bookThemeChanged(self, theme):
         self.book_view.web_communicator.setBookTheme_(theme)
-
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         # SAVE TO DATA BASE WHEN WINDOW IS CLOSING
@@ -80,9 +72,9 @@ class ReaderInterfaceWindow(FramelessWindow):
         book_storage = self.book_view.web_communicator.book_storage
 
         self.metadata["currentCFI"] = book_storage["currentCFI"]
-        self.metadata["sliderValue"]= book_storage["sliderValue"]
-        self.metadata["settings"]= book_storage["settings"]
-        self.metadata["progress"]= book_storage["progress"]
+        self.metadata["sliderValue"] = book_storage["sliderValue"]
+        self.metadata["settings"] = book_storage["settings"]
+        self.metadata["progress"] = book_storage["progress"]
 
         SaveBook = Query()
         Books.update(book_storage, SaveBook.hash == self.metadata["hash"])

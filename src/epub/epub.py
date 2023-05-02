@@ -45,22 +45,3 @@ class ParseEPUB:
     def generate_metadata(self):
         self.book.generate_metadata()
         return self.book.metadata
-
-    def generate_content(self):
-        zipfile.ZipFile(self.filename).extractall(self.extract_path)
-
-        self.book.generate_toc()
-        self.book.generate_content()
-
-        toc = []
-        content = []
-
-        for count, i in enumerate(self.book.content):
-            toc.append((i[0], i[1], count + 1))
-            content.append(i[2])
-
-        # Return toc, content, images_only
-        return toc, content, False
-
-
-# os.path.join(self.extract_path, self.find_file(self.content[change][2]))

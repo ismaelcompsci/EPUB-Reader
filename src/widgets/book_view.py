@@ -1,25 +1,10 @@
-
-
-from tinydb import Query, TinyDB
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWebEngineWidgets import *
-from PyQt5.QtWebEngineCore import *
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtWebChannel import QWebChannel
+from PyQt5.QtWebEngineWidgets import QWebEngineSettings
+from PyQt5.QtWidgets import QWidget
+from tinydb import TinyDB
 
-
-from PyQt5.QtWidgets import *
-from qframelesswindow import *
-
-from .browser import BookWebView, BookWebCommunication, get_index_html
-
-
-# CURRENTLY WORK SITH TWO HTML TAGS??? 
-# SET FILEPATH WITH QWEBCHANNEL 
-# IF THAT DOES NOT WORK
-# USE BS4 TO INPUT THE FILE
-# OR MAKE A SCRIPT AND AADDD TO SCRIPT TAG
+from .browser import BookWebCommunication, BookWebView, get_index_html
 
 
 class BookViewer(BookWebView):
@@ -59,10 +44,8 @@ class BookViewer(BookWebView):
         self.web_channel.registerObject("backend", self.web_communicator)
         self.page().setWebChannel(self.web_channel)
 
-
         self.load(QUrl.fromLocalFile(get_index_html()))
 
-        
         self.__initWeb()
         self.setContentsMargins(0, 0, 0, 0)
 

@@ -1,13 +1,8 @@
 import base64
+
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QColor, QPixmap
-from PyQt5.QtWidgets import (
-    QApplication,
-    QFrame,
-    QVBoxLayout,
-    QLabel,
-    QGraphicsDropShadowEffect,
-)
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QFrame, QLabel, QVBoxLayout
 
 
 class BookCover(QLabel):
@@ -17,7 +12,6 @@ class BookCover(QLabel):
         self.setContentsMargins(0, 0, 0, 0)
 
         self.set_pixmap(cover)
-        
 
     def set_pixmap(self, cover):
         self.makeCover(cover)

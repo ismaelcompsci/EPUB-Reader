@@ -1,27 +1,19 @@
 # coding:utf-8
 
+from config.config import cfg
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QLabel, QVBoxLayout
-
-from qframelesswindow import TitleBar
-
-from PyQt5.QtWidgets import QHBoxLayout, QLabel, QWidget, QFileDialog
-from qfluentwidgets import FluentIcon as FIF
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 from qfluentwidgets import (
-    PushButton,
-    ToolButton,
     FluentIcon,
-    Theme,
+    PushButton,
     SearchLineEdit,
-    isDarkTheme,
+    Theme,
+    ToolButton,
     ToolTipFilter,
-    NavigationItemPosition,
-    NavigationToolButton,
-    NavigationPanel,
+    isDarkTheme,
 )
-
-from config.config import cfg
+from qframelesswindow import TitleBar
 
 
 class LineEdit(SearchLineEdit):
@@ -29,7 +21,7 @@ class LineEdit(SearchLineEdit):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setPlaceholderText(self.tr("Search Books"))
+        self.setPlaceholderText("Search Books")
         self.setFixedWidth(304)
         self.textChanged.connect(self.search)
 

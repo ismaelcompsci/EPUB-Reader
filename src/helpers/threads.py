@@ -1,12 +1,9 @@
-from ast import Tuple
-import shutil
-from PyQt5.QtCore import QThread, pyqtSignal
 import os
-import re
+import shutil
 
-
+from config.config import BOOK_COPIES_DIR, EXTRACTED_EPUB_DIR, Books
+from PyQt5.QtCore import QThread, pyqtSignal
 from utils.bookhandler import BookHandler
-from config.config import EXTRACTED_EPUB_DIR, Books, BOOK_COPIES_DIR
 
 FILENAME_INVALID_CHARACTERS = '<>:"|?*'
 
@@ -25,11 +22,9 @@ class BackGroundBookAddition(QThread):
 
     def run(self):
         for file in self.files:
-
             # SAVE THE BOOK
             handle = BookHandler(file, EXTRACTED_EPUB_DIR, Books)
             read_ = handle.read_book()
-
 
             if isinstance(read_, tuple):
                 # ALREADY IN LIBRARY
@@ -43,14 +38,15 @@ class BackGroundBookAddition(QThread):
                     continue
 
             title = handle.this_book["title"].replace(FILENAME_INVALID_CHARACTERS, "_")
-            author = handle.this_book["author"].replace(FILENAME_INVALID_CHARACTERS, "_")
+            author = handle.this_book["author"].replace(
+                FILENAME_INVALID_CHARACTERS, "_"
+            )
 
-            new_basename =f"{title}-{author}"
+            new_basename = f"{title}-{author}"
 
             # NEW FULL PATH TO COPY DIRECTORY
             new_path = os.path.join(BOOK_COPIES_DIR, new_basename) + ".epub"
 
-            
             # ONLY COPY IF GOOD READ_
             # COPY THE FILE TO NEW LOCATION
             try:

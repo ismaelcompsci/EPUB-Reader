@@ -4,11 +4,11 @@ import datetime
 import logging
 import os
 import shutil
-from tinydb import Query, TinyDB, where
 
-from utils.utils import get_file_md5_hash, resize_image
 from epub.epub import ParseEPUB
-from config.config import BOOK_COPIES_DIR
+from tinydb import Query, TinyDB, where
+from utils.utils import get_file_md5_hash, resize_image
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +63,6 @@ class BookHandler:
         parsed_book = ParseEPUB(self.book_path, self.temp_dir, self.md5_)
         parsed_book.read_book()
 
-
         try:
             metadata = parsed_book.generate_metadata()
         except KeyError as e:
@@ -99,7 +98,6 @@ class BookHandler:
             "tags": metadata[4],
             "date_added": datetime.datetime.now().timestamp() * 1000,
             "cover": cover_image,
-
         }
 
         # logger.info(f" DONE READDING BOOK: {metadata.title}")

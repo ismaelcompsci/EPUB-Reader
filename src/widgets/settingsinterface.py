@@ -1,14 +1,16 @@
-from re import S
-import typing
-
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QWidget
 from config.config import cfg
 from helpers.style_sheet import StyleSheet
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from qfluentwidgets import ExpandLayout
+from PyQt5.QtCore import QRectF, Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QPainter
+from PyQt5.QtWidgets import (
+    QApplication,
+    QFrame,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+from qfluentwidgets import ComboBox, ExpandLayout
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
     FluentStyleSheet,
@@ -23,7 +25,6 @@ from qfluentwidgets import (
     isDarkTheme,
     setTheme,
     themeColor,
-    ComboBox
 )
 from qfluentwidgets.components.dialog_box.mask_dialog_base import MaskDialogBase
 
@@ -122,7 +123,6 @@ class SettingsCard(MaskDialogBase):
         self.marginSizeBox = SpinBox(self.scrollWidget)
         self.marginSizeBox.setValue(int(self.mainwindow.metadata["settings"]["margin"]))
 
-
         self.themepicker.addItems(["dark", "light", "hacker", "tan", "owl"])
         self.themepicker.setCurrentText(self.mainwindow.metadata["settings"]["theme"])
         self.themepicker.currentTextChanged.connect(self.onBookThemeChanged)
@@ -198,11 +198,11 @@ class SettingsCard(MaskDialogBase):
         self.fontSizeChanged.emit(size)
 
     def onMarginSizeChanged(self, size):
-        self.mainwindow.metadata["settings"]["margin"]= size
+        self.mainwindow.metadata["settings"]["margin"] = size
         self.marginSizeChanged.emit(size)
 
     def onBookThemeChanged(self, text):
-        self.mainwindow.metadata["settings"]["theme"]= text
+        self.mainwindow.metadata["settings"]["theme"] = text
         self.bookThemeChanged.emit(text)
 
     def __connectSignalToSlot(self):
