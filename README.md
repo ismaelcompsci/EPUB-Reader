@@ -1,5 +1,5 @@
 # Work in Progress
-Using [Lectors](https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py) EPUB Parser
+Using [Lectors](https://github.com/BasioMeusPuga/Lector/blob/master/lector/parsers/epub.py) EPUB Parser for metadata and library covers
 
 
 Also Using [epubjs](https://github.com/futurepress/epub.js/tree/master) library
