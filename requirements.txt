@@ -1,7 +1,7 @@
 beautifulsoup4
 pyqt5
 PyQt5-Frameless-Window
-PyQt-Fluent-Widgets[full]
+PyQt-Fluent-Widgets==0.8.2
 xmltodict
 tinydb
 lxml
