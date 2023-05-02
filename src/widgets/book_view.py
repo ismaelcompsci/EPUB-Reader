@@ -1,11 +1,7 @@
-import base64
-import copy
-import os
-from bs4 import BeautifulSoup
+
 
 from tinydb import Query, TinyDB
 
-from utils.utils import find_html_dir
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import *

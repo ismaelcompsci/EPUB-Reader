@@ -13,7 +13,7 @@ from tinydb import Query
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from .book_view import BookViewer
 from .settingsinterface import SettingsOpenButton
-
+ 
 
 class ReaderInterfaceWindow(FramelessWindow):
 
@@ -27,7 +27,7 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         self.metadata = metadata
 
-        # self.button = SettingsOpenButton(FIF.MENU, "", True, self)
+        self.button = SettingsOpenButton(FIF.MENU, "", True, self)
 
         # WEB ENGINE
         self.book_view = BookViewer(
@@ -43,12 +43,12 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         # DEBUGGING WEB
         # UNCOMMENT FOR WEB DEBBUGING
-        # self.dev_view = QWebEngineView()
-        # self.book_view.page().setDevToolsPage(self.dev_view.page())
-        # self.dev_view.show()
+        self.dev_view = QWebEngineView()
+        self.book_view.page().setDevToolsPage(self.dev_view.page())
+        self.dev_view.show()
 
     def __initWidget(self):
-        self.resize(550, 700)
+        self.resize(640, 740)
         self.vBoxLayout.setContentsMargins(0, self.titleBar.height(), 0, 0)
 
         self.vBoxLayout.addWidget(self.book_view)
@@ -63,6 +63,15 @@ class ReaderInterfaceWindow(FramelessWindow):
         # theme = Theme.DARK if isDarkTheme() else Theme.LIGHT
         # self.book_view.web_communicator.setTheme(theme.value)
         pass
+
+    def fontSizeChanged(self, size):
+        self.book_view.web_communicator.setFontSize_(size)
+    
+    def marginSizeChanged(self, size):
+        ...
+
+    def bookThemeChanged(self, theme):
+        self.book_view.web_communicator.setBookTheme_(theme)
 
 
     def closeEvent(self, a0: QCloseEvent) -> None:

@@ -19,12 +19,22 @@
         left: 0;
       }
 
-      body.dark {
-        background: #000;
-      }
-
       #viewer.dark {
         background: #000;
+        color: #fff;
+      }
+
+      body.dark {
+        background: #000;
+        color: #fff;
+      }
+
+      #viewer.hacker {
+        background: #282433ff;
+      }
+
+      #viewer.owl {
+        background: #011627;
       }
     </style>
   </head>
@@ -42,11 +52,6 @@
       // rendition.on("relocated", function (location) {   -> location of book
       // console.log(location);
 
-      // THEMES
-      // rendition.themes.register("dark", "themes.css");
-      // rendition.themes.register("light", "themes.css");
-      // rendition.themes.register("tan", "themes.css");
-      // rendition.themes.select("tan");
       // FONT SIZE
       // rendition.themes.fontSize("140%");
 
@@ -94,8 +99,7 @@
         // position changed
         window.rendition.on("relocated", (location) => {
           window.bookData.currentCFI = location.start.cfi;
-
-          window.backend.setBookStorage(JSON.stringify(window.bookData));
+          saveBookData();
         });
 
         window.book.ready.then(() => {
@@ -104,10 +108,17 @@
           window.rendition.themes.register("dark", "./themes.css");
           window.rendition.themes.register("light", "./themes.css");
           window.rendition.themes.register("tan", "./themes.css");
+          window.rendition.themes.register("hacker", "./themes.css");
+          window.rendition.themes.register("owl", "./themes.css");
+          // window.rendition.themes.default("dark");
+
           window.rendition.ready = true;
 
           switchTheme(window.bookData.settings.theme);
-          window.rendition.themes.fontSize(window.bookData.settings.fontSize);
+          window.backend.bookThemeChanged_.connect(switchTheme);
+
+          setFontSize(window.bookData.settings.fontSize);
+          window.backend.fontSizeChanged.connect(setFontSize);
 
           window.rendition.on("keyup", keyListener);
           document.addEventListener("keyup", keyListener, false);
@@ -121,11 +132,6 @@
             margin: "10px",
           },
         });
-
-        // GET MAINWINDOW THEME
-        // window.backend.getTheme(function (theme) {
-        //   rendition.themes.select(theme);
-        // });
       };
 
       // SET BOOK THEME light, dark, tan
@@ -139,6 +145,18 @@
         } else {
           element.classList.remove("dark");
         }
+
+        if (theme === "hacker") {
+          element.classList.add("hacker");
+        } else {
+          element.classList.remove("hacker");
+        }
+
+        if (theme === "owl") {
+          element.classList.add("owl");
+        } else {
+          element.classList.remove("owl");
+        }
       };
 
       const switchTheme = (theme) => {
@@ -149,10 +167,15 @@
           var element = document.querySelector(e);
           switchBasePage(theme, element);
         });
+        window.bookData.settings.theme = theme;
+        saveBookData();
       };
 
       const setFontSize = (size) => {
-        window.rendition.themes.fontSize(size + "%");
+        size_ = 100 + size;
+        window.rendition.themes.fontSize(size_ + "%");
+        window.bookData.settings.fontSize = size;
+        saveBookData();
       };
 
       var keyListener = function (e) {
@@ -176,6 +199,10 @@
           window.rendition.next();
         }
       }
+
+      const saveBookData = () => {
+        window.backend.setBookStorage(JSON.stringify(window.bookData));
+      };
     </script>
   </body>
 </html>

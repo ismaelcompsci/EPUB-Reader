@@ -40,10 +40,16 @@ class Page(QWebEnginePage):
     def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
         print("javaScriptConsoleMessage: ", level, msg, linenumber)
 
+# SORTED BY NAME
+# SORTED BY DATE ADDED
+# SORTED BY AUTHOR
+# SORTED BY 
 
 class BookWebCommunication(QObject):
-    themeChanged = pyqtSignal(str)
+    fontSizeChanged = pyqtSignal(int)
     chapterChanged = pyqtSignal(str)
+    bookThemeChanged_ = pyqtSignal(str)
+
 
     def __init__(self) -> None:
         super().__init__()
@@ -76,19 +82,24 @@ class BookWebCommunication(QObject):
         # file = file.replace(" ", "%20")
         return file
     
-    # @pyqtSlot(result=str)
-    # def getTheme(self):
-    #     return self.theme_
+    @pyqtSlot(result=int)
+    def getFontSize_(self):
+        return self.book_storage["settings"]["fontSize"]
 
-    # @pyqtSlot(str, result=str)
-    # def setTheme(self, theme):
-    #     self.theme = theme
-    #     self.themeChanged.emit(theme)
+    @pyqtSlot(int, result=int)
+    def setFontSize_(self, size):
+        self.book_storage["settings"]["fontSize"] = size
+        self.fontSizeChanged.emit(size)
 
 
-    # def chapterChangedEvent(self, direction):
-    #     self.chapterChanged.emit(direction)
+    @pyqtSlot(result=int)
+    def getBookTheme(self):
+        return self.book_storage["settings"]["theme"]
 
+    @pyqtSlot(int, result=int)
+    def setBookTheme_(self, theme):
+        self.book_storage["settings"]["theme"] = theme
+        self.bookThemeChanged_.emit(theme)
 
 
 class BookWebView(QWebEngineView):

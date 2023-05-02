@@ -31,6 +31,17 @@ class BackGroundBookAddition(QThread):
             read_ = handle.read_book()
 
 
+            if isinstance(read_, tuple):
+                # ALREADY IN LIBRARY
+                if read_[1]:
+                    self.badBookAdded.emit((file, 303))
+                    continue
+
+                # PARSE ERROR
+                if read_[0]:
+                    self.badBookAdded.emit(file)
+                    continue
+
             title = handle.this_book["title"].replace(FILENAME_INVALID_CHARACTERS, "_")
             author = handle.this_book["author"].replace(FILENAME_INVALID_CHARACTERS, "_")
 
@@ -39,20 +50,13 @@ class BackGroundBookAddition(QThread):
             # NEW FULL PATH TO COPY DIRECTORY
             new_path = os.path.join(BOOK_COPIES_DIR, new_basename) + ".epub"
 
-
-            if isinstance(read_, tuple):
-                # ALREADY IN LIBRARY
-                if read_[1]:
-                    self.badBookAdded.emit((file, 303))
-
-                # PARSE ERROR
-                if not read_[0]:
-                    self.badBookAdded.emit(file)
-                    continue
             
             # ONLY COPY IF GOOD READ_
             # COPY THE FILE TO NEW LOCATION
-            new_file_path = shutil.copy(file, new_path)
+            try:
+                new_file_path = shutil.copy(file, new_path)
+            except shutil.SameFileError:
+                new_file_path = new_path
 
             metadata = handle.save_book(new_file_path)
             self.bookAdded.emit(metadata)

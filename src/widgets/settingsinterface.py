@@ -1,4 +1,8 @@
 from re import S
+import typing
+
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QWidget
 from config.config import cfg
 from helpers.style_sheet import StyleSheet
 from PyQt5.QtCore import *
@@ -19,6 +23,7 @@ from qfluentwidgets import (
     isDarkTheme,
     setTheme,
     themeColor,
+    ComboBox
 )
 from qfluentwidgets.components.dialog_box.mask_dialog_base import MaskDialogBase
 
@@ -90,9 +95,11 @@ class SettingInterface(ScrollArea):
 class SettingsCard(MaskDialogBase):
     fontSizeChanged = pyqtSignal(int)
     marginSizeChanged = pyqtSignal(int)
+    bookThemeChanged = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.mainwindow = parent
 
         self.scrollArea = ScrollArea(self.widget)
         self.scrollWidget = QWidget(self.scrollArea)
@@ -102,6 +109,7 @@ class SettingsCard(MaskDialogBase):
         self.cancelButton = QPushButton("Cancel", self.buttonGroup)
 
         self.titleLabel = QLabel("Book Settings", self.scrollWidget)
+        self.themepicker = ComboBox(self.scrollWidget)
 
         self.editLabel = QLabel("Edit Page", self.scrollWidget)
 
@@ -109,10 +117,15 @@ class SettingsCard(MaskDialogBase):
         self.marginSizeLabel = QLabel("Margin Size", self.scrollWidget)
 
         self.fontSizeBox = SpinBox(self.scrollWidget)
-        self.fontSizeBox.setValue(cfg.fontSize.value)
+        self.fontSizeBox.setValue(int(self.mainwindow.metadata["settings"]["fontSize"]))
 
         self.marginSizeBox = SpinBox(self.scrollWidget)
-        self.marginSizeBox.setValue(cfg.marginSize.value)
+        self.marginSizeBox.setValue(int(self.mainwindow.metadata["settings"]["margin"]))
+
+
+        self.themepicker.addItems(["dark", "light", "hacker", "tan", "owl"])
+        self.themepicker.setCurrentText(self.mainwindow.metadata["settings"]["theme"])
+        self.themepicker.currentTextChanged.connect(self.onBookThemeChanged)
 
         self.vBoxLayout = QVBoxLayout(self.widget)
 
@@ -139,6 +152,7 @@ class SettingsCard(MaskDialogBase):
 
     def __initLayout(self):
         self.fontSizeBox.move(0, 324)
+        self.themepicker.move(0, 46)
 
         self.vBoxLayout.setSpacing(0)
         self.vBoxLayout.setAlignment(Qt.AlignTop)
@@ -180,12 +194,16 @@ class SettingsCard(MaskDialogBase):
         cfg.save()
 
     def onFontSizeChanged(self, size):
-        cfg.fontSize.value = size
+        self.mainwindow.metadata["settings"]["fontSize"] = size
         self.fontSizeChanged.emit(size)
 
     def onMarginSizeChanged(self, size):
-        cfg.marginSize.value = size
+        self.mainwindow.metadata["settings"]["margin"]= size
         self.marginSizeChanged.emit(size)
+
+    def onBookThemeChanged(self, text):
+        self.mainwindow.metadata["settings"]["theme"]= text
+        self.bookThemeChanged.emit(text)
 
     def __connectSignalToSlot(self):
         self.cancelButton.clicked.connect(self.reject)
@@ -213,6 +231,7 @@ class SettingsOpenButton(NavigationPushButton):
         w.updateStyle()
         w.fontSizeChanged.connect(lambda size: self.parent().fontSizeChanged(size))
         w.marginSizeChanged.connect(lambda size: self.parent().marginSizeChanged(size))
+        w.bookThemeChanged.connect(lambda theme: self.parent().bookThemeChanged(theme))
         w.exec()
         return super().mousePressEvent(e)
 

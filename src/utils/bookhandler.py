@@ -63,6 +63,7 @@ class BookHandler:
         parsed_book = ParseEPUB(self.book_path, self.temp_dir, self.md5_)
         parsed_book.read_book()
 
+
         try:
             metadata = parsed_book.generate_metadata()
         except KeyError as e:
@@ -72,15 +73,16 @@ class BookHandler:
                 shutil.rmtree(extract_dir)
             this_error = f"Metadata generation error: {self.book_path}"
             print(this_error + f" {type(e).__name__} Arguments: {e.args}")
-            return (False, False)
+            return (None, False)
 
         this_book = {}
 
         cover_image = resize_image(metadata.cover)
 
         web_books_settings = {
-            "fontSize": "110",
+            "fontSize": 15,
             "theme": "dark",
+            "margin": 0,
         }
 
         this_book = {

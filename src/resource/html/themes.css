@@ -3,12 +3,55 @@
     color: #fff;
 }
 
+.dark a {
+    color: lightblue;
+}
+
+.dark h1 {
+    color: rgb(79, 124, 141);
+}
+
+/* light */
+
 .light {
     background: #fff;
     color: #000;
 }
 
+/* light */
+
 .tan {
     background: tan;
     color: #ccc;
 }
+
+
+/* HACKER */
+.hacker {
+    background: #282433;
+    color: #eee9fcff;
+}
+
+
+.hacker a {
+    color: #e192efff;
+}
+
+.hacker h1 {
+    color: rgb(158, 88, 170);
+}
+
+/* HACKER */
+
+/* OWL */
+.owl {
+    color: #d6deeb;
+    background: #011627;
+
+}
+
+.owl a {
+    color: #80CBC4;
+}
+
+/* OWL */
