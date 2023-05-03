@@ -56,6 +56,8 @@ class Config(QConfig):
     fontSize = ConfigItem("Reader", "fontsize", 24)
     marginSize = ConfigItem("Reader", "marginsize", 1)
 
+    lastOpened = ConfigItem("Reader", "lastOpen", "")
+
 
 cfg = Config()
 
@@ -64,4 +66,7 @@ qconfig.load(GUI_CONFIG_DIR + "\\config.json", cfg)
 
 db_ = TinyDB(DATABASE_DIR + "\\Books.json")
 Books = db_.table("Books")
-Settings = db_.table("Settings")
+
+# LAST OPENED
+# SORTED_DATA?
+library = db_.table("Library")

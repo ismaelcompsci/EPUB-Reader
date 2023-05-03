@@ -31,10 +31,17 @@
 
       #viewer.hacker {
         background: #282433ff;
+        color: #eee9fcff;
       }
 
       #viewer.owl {
         background: #011627;
+        color: #d6deeb;
+      }
+
+      #viewer.tan {
+        background: tan;
+        color: #ccc;
       }
     </style>
   </head>
@@ -139,7 +146,10 @@
         window.rendition.themes.select(theme);
       };
 
+      // FIXES PAGE FROM FLASHING WHITE WHEN CHANGEING CHAPTER
       const switchBasePage = (theme, element) => {
+        // find a way to make this better
+        // copy paste !!!!
         if (theme === "dark") {
           element.classList.add("dark");
         } else {
@@ -156,6 +166,11 @@
           element.classList.add("owl");
         } else {
           element.classList.remove("owl");
+        }
+        if (theme === "tan") {
+          element.classList.add("tan");
+        } else {
+          element.classList.remove("tan");
         }
       };
 
