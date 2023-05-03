@@ -82,6 +82,7 @@ class BookHandler:
             "fontSize": 15,
             "theme": "dark",
             "margin": 0,
+            "fontfamily": None,
         }
 
         this_book = {
@@ -96,7 +97,8 @@ class BookHandler:
             "year": metadata[2],
             "isbn": metadata[3],
             "tags": metadata[4],
-            "date_added": datetime.datetime.now().timestamp() * 1000,
+            "date_added": datetime.datetime.now().timestamp(),
+            "descripton": None,
             "cover": cover_image,
         }
 
