@@ -13,11 +13,11 @@ things may not work
 ___
 
 # Library
-![image info](static/screenshot1.png "library")
+![image info](static/lib.png "library")
 
 # Reader
 
-![image info](static/library.png "reader1")
+![image info](static/reader.png "reader1")
 
 ## Compatibility
 
