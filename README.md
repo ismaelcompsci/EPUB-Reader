@@ -37,5 +37,5 @@ python main.py
 - [X] fix qwebchannel
 - [ ] pages?
 - [X] using epubjs library
-- [ ] read where last read
+- [X] read where last read
 - [ ] add annotations
