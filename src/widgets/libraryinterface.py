@@ -27,6 +27,16 @@ from .bars import LibraryToolBar
 from .bookcard import BookCard, BookCover
 
 
+"""
+USE QStandardItemModel
+QStandardItem
+USE QABSTRACTLISTMODEL ----- no
+USE QSORTFILTERPROXYMODEL
+LOOK AT LECTORS LIBRARY MODEL
+
+"""
+
+
 class LibraryScrollInterface(ScrollArea):
     def __init__(self, title: str, subtitle: str, parent=None):
         super().__init__(parent=parent)
@@ -59,7 +69,7 @@ class LibraryInfoPanel(QFrame):
     def __init__(self, metadata=None, parent=None):
         super().__init__(parent=parent)
 
-        self.nameLabel = QLabel(self)
+        self.nameLabel = QLabel("", self)
 
         self.iconWidget = BookCover(":reader/images/placeholder.png")
         self.iconNameTitleLabel = QLabel("", self)
@@ -73,7 +83,7 @@ class LibraryInfoPanel(QFrame):
         self.vBoxLayout.addWidget(self.nameLabel)
         self.vBoxLayout.addSpacing(16)
         self.vBoxLayout.addWidget(self.iconWidget)
-        self.vBoxLayout.addSpacing(45)
+        self.vBoxLayout.addSpacing(100)
         self.vBoxLayout.addWidget(self.iconNameTitleLabel)
         self.vBoxLayout.addSpacing(5)
         self.vBoxLayout.addWidget(self.iconNameLabel)
@@ -84,6 +94,7 @@ class LibraryInfoPanel(QFrame):
 
         self.nameLabel.setWordWrap(True)
         self.iconNameTitleLabel.setWordWrap(True)
+        # self.nameLabel.
         self.setFixedWidth(216)
 
         self.nameLabel.setObjectName("nameLabel")
@@ -98,7 +109,12 @@ class LibraryInfoPanel(QFrame):
         self.iconNameTitleLabel.setText(metadata["title"])
 
 
-# class
+def sort_by_title(books):
+    return sorted(books, key=lambda x: x["title"])
+
+
+def sort_by_author(books):
+    return sorted(books, key=lambda x: x["author"])
 
 
 class LibraryCardView(QWidget):
@@ -156,8 +172,8 @@ class LibraryCardView(QWidget):
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.hBoxLayout.addWidget(self.scrollArea)
 
-        self.flowLayout.setVerticalSpacing(8)
-        self.flowLayout.setHorizontalSpacing(8)
+        self.flowLayout.setVerticalSpacing(2)
+        self.flowLayout.setHorizontalSpacing(2)
         # self.flowLayout.setContentsMargins(8, 3, 8, 8)
 
         self.__setQss()
@@ -184,7 +200,7 @@ class LibraryCardView(QWidget):
         self.flowLayout.takeAllWidgets()
 
         # ALL BOOK METADATA
-        self.books_db = Books.all()
+        self.books_db = sort_by_title(Books.all())
         self.getLibraryBooks()
 
     def getLibraryBooks(self):
@@ -256,10 +272,12 @@ class LibraryCardView(QWidget):
         # ONLY SET VISIBLE IF i IN INDEXES
         for i in range(len(self.cards)):
             self.cards[i].setVisible(i in indexs)
+            self.cards[i].bookTitle.setVisible(True)
 
     def showAllIcons(self):
         for card in self.cards:
             card.show()
+            card.bookTitle.setVisible(False)
 
     def contextMenuEvent(self, event) -> None:
         if len(self.cards) == 0:
@@ -291,7 +309,6 @@ class LibraryCardView(QWidget):
 
             if widget:
                 self.openSignal.emit(bookSelectedData)
-
         return
 
 
@@ -320,7 +337,7 @@ class LibraryInterface(LibraryScrollInterface):
 
         self.stateTooltip = None
         self.thread_.started.connect(self.onStateAddingBooks)
-        self.thread_.finished.connect(self.onStateAddingBooks)
+        self.thread_.bookAdded.connect(self.onStateAddingBooks)
 
     def deleteBook(self, book_data):
         self.thread_ = BackGroundBookDeletion(book_data)
@@ -329,7 +346,7 @@ class LibraryInterface(LibraryScrollInterface):
         )
         self.thread_.start()
 
-    def updateLibraryInterface(self, metadata, delete=False):
+    def updateLibraryInterface(self, metadata=None, delete=False):
         if delete:
             # DELETE BOOK FROM LIBRARY VIEW
             self.libraryView.delLibraryItem(metadata)
@@ -338,7 +355,8 @@ class LibraryInterface(LibraryScrollInterface):
             self.libraryView.emptyLibrary = False
             # self.libraryView.infoPanel.deleteLater()
             # self.libraryView.makeInfopanel()
-            self.libraryView.addLibraryItem(metadata)
+            # self.libraryView.addLibraryItem(metadata)
+            self.libraryView.genLibrary()
 
     def handleBadBook(self, error: str | tuple):
         if isinstance(error, str):

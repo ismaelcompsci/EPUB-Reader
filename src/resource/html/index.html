@@ -51,6 +51,8 @@
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
 
     <div id="viewer"></div>
+    <!-- <div id="prev" class="arrow">‹</div>
+    <div id="next" class="arrow">›</div> -->
     <script>
       // LEARN MORE JS
       // epubcfi(/6/30!/4/2/18/1:1039) -> location  in book
@@ -101,6 +103,8 @@
         window.rendition = window.book.renderTo("viewer", {
           width: window.width,
           height: "100%",
+          manager: "continuous",
+          flow: "paginated",
         });
 
         // position changed
@@ -110,7 +114,16 @@
         });
 
         window.book.ready.then(() => {
-          rendition.display(window.bookData.currentCFI || 0);
+          // POSSIBLE FIX FOR STUCK IN PAGE
+          // https://github.com/futurepress/epub.js/issues/1158
+          console.log(window.book.spine);
+
+          if (window.bookData.currentCFI >= 1) {
+            window.rendition.display(window.bookData.currentCFI);
+          } else {
+            window.rendition.display();
+          }
+
           // add themes
           window.rendition.themes.register("dark", "./themes.css");
           window.rendition.themes.register("light", "./themes.css");
@@ -204,15 +217,11 @@
       };
 
       function prevPage() {
-        if (window.rendition) {
-          window.rendition.prev();
-        }
+        window.rendition.prev();
       }
 
       function nextPage() {
-        if (window.rendition) {
-          window.rendition.next();
-        }
+        window.rendition.next();
       }
 
       const saveBookData = () => {

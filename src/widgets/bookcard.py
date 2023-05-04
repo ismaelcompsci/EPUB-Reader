@@ -50,13 +50,15 @@ class BookCard(QFrame):
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.vBoxLayout.addWidget(self.bookCover, 1, Qt.AlignmentFlag.AlignHCenter)
         self.vBoxLayout.addSpacing(0)
-        self.vBoxLayout.addWidget(self.bookTitle, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.vBoxLayout.addWidget(self.bookTitle, 0, Qt.AlignmentFlag.AlignLeft)
 
         self.bookTitle.setText(self.metadata["title"])
         self.bookCover.setScaledContents(True)
 
         self.setContentsMargins(0, 0, 0, 0)
         self.setCursor(Qt.PointingHandCursor)
+
+        self.bookTitle.setVisible(False)
 
     def mouseReleaseEvent(self, event) -> None:
         if self.isSelected:

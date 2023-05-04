@@ -9,7 +9,7 @@ FILENAME_INVALID_CHARACTERS = '<>:"|?*'
 
 
 class BackGroundBookAddition(QThread):
-    bookAdded = pyqtSignal(dict)
+    bookAdded = pyqtSignal()
     badBookAdded = pyqtSignal(object)
 
     def __init__(self, files, main_window, parent=None):
@@ -33,7 +33,7 @@ class BackGroundBookAddition(QThread):
                     continue
 
                 # PARSE ERROR
-                if read_[0]:
+                if read_[0] == None or False:
                     self.badBookAdded.emit(file)
                     continue
 
@@ -55,7 +55,8 @@ class BackGroundBookAddition(QThread):
                 new_file_path = new_path
 
             metadata = handle.save_book(new_file_path)
-            self.bookAdded.emit(metadata)
+
+        self.bookAdded.emit()
 
 
 class BackGroundBookDeletion(QThread):

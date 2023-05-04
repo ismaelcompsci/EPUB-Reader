@@ -88,7 +88,7 @@ class BookHandler:
         this_book = {
             "hash": self.md5_,
             "path": self.book_path,
-            "currentCFI": None,
+            "currentCFI": 0,
             "progress": 0,
             "sliderValue": 0,
             "settings": web_books_settings,
