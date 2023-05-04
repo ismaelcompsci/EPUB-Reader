@@ -5,7 +5,7 @@ Using [Lectors](https://github.com/BasioMeusPuga/Lector/blob/master/lector/parse
 Also Using [epubjs](https://github.com/futurepress/epub.js/tree/master) library
 
 
-#[PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master)
+###using [PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets/tree/master)
 ----
 app is buggy  
 things may not work
