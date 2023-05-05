@@ -70,13 +70,14 @@
       var backend = null;
       var currentPosition = null;
 
-      var bookData = {
-        hash: "",
-        currentCFI: null,
-        progress: 0,
-        sliderValue: 0,
-        settings: {},
-      };
+      // var bookData = {
+      //   hash: "",
+      //   currentCFI: null,
+      //   progress: 0,
+      //   sliderValue: 0,
+      //   settings: {},
+      // };
+      var bookData = {};
 
       window.addEventListener("load", function () {
         new QWebChannel(qt.webChannelTransport, function (channel) {
@@ -107,22 +108,13 @@
           flow: "paginated",
         });
 
-        // position changed
-        window.rendition.on("relocated", (location) => {
-          window.bookData.currentCFI = location.start.cfi;
-          saveBookData();
-        });
-
         window.book.ready.then(() => {
           // POSSIBLE FIX FOR STUCK IN PAGE
           // https://github.com/futurepress/epub.js/issues/1158
-          console.log(window.book.spine);
 
-          if (window.bookData.currentCFI >= 1) {
-            window.rendition.display(window.bookData.currentCFI);
-          } else {
-            window.rendition.display();
-          }
+          window.rendition.display(
+            window.bookData.currentCFI || window.book.locations.start
+          );
 
           // add themes
           window.rendition.themes.register("dark", "./themes.css");
@@ -132,8 +124,6 @@
           window.rendition.themes.register("owl", "./themes.css");
           // window.rendition.themes.default("dark");
 
-          window.rendition.ready = true;
-
           switchTheme(window.bookData.settings.theme);
           window.backend.bookThemeChanged_.connect(switchTheme);
 
@@ -142,6 +132,12 @@
 
           window.rendition.on("keyup", keyListener);
           document.addEventListener("keyup", keyListener, false);
+
+          // position changed
+          window.rendition.on("relocated", (location) => {
+            window.bookData.currentCFI = location.start.cfi;
+            saveBookData();
+          });
         });
 
         window.rendition.themes.default({

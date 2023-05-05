@@ -88,9 +88,9 @@ class BookHandler:
         this_book = {
             "hash": self.md5_,
             "path": self.book_path,
-            "currentCFI": 0,
-            "progress": 0,
-            "sliderValue": 0,
+            "currentCFI": None,
+            "progress": None,
+            "sliderValue": None,
             "settings": web_books_settings,
             "title": metadata.title,
             "author": metadata[1],
