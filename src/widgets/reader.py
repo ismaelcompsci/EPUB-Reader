@@ -38,9 +38,9 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         # DEBUGGING WEB
         # UNCOMMENT FOR WEB DEBBUGING
-        self.dev_view = QWebEngineView()
-        self.book_view.page().setDevToolsPage(self.dev_view.page())
-        self.dev_view.show()
+        # self.dev_view = QWebEngineView()
+        # self.book_view.page().setDevToolsPage(self.dev_view.page())
+        # self.dev_view.show()
 
     def __initWidget(self):
         self.resize(640, 740)
