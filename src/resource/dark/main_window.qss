@@ -1,5 +1,5 @@
 StackedWidget {
-    border: 1px solid rgb(29, 29, 29);
+    /* border: 1px solid rgb(29, 29, 29); */
     border-right: none;
     border-bottom: none;
     border-top-left-radius: 10px;

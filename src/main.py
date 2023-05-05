@@ -57,7 +57,6 @@ class StackedWidget(QFrame):
         self.setCurrentWidget(self.view.widget(index), popOut)
 
 
-
 class Window(FramelessWindow):
     def __init__(self):
         super().__init__()
@@ -142,7 +141,9 @@ class Window(FramelessWindow):
         # Create Book View
         self.bookInterface = ReaderInterfaceWindow(metadata)
         self.bookInterface.show()
-        self.libraryInterface.libraryView.searchLineEdit.themeButton.clicked.connect(self.bookInterface.themeChanged)
+        self.libraryInterface.libraryView.searchLineEdit.themeButton.clicked.connect(
+            self.bookInterface.themeChanged
+        )
 
     def addSubInterface(
         self,
