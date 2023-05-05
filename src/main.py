@@ -141,9 +141,6 @@ class Window(FramelessWindow):
         # Create Book View
         self.bookInterface = ReaderInterfaceWindow(metadata)
         self.bookInterface.show()
-        self.libraryInterface.libraryView.searchLineEdit.themeButton.clicked.connect(
-            self.bookInterface.themeChanged
-        )
 
     def addSubInterface(
         self,

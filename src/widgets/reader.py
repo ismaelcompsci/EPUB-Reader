@@ -22,7 +22,11 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         self.metadata = metadata
 
-        self.button = SettingsOpenButton(FIF.MENU, "", True, self)
+        self.button = SettingsOpenButton(
+            FIF.MENU, "", True, self, currentTheme=self.metadata["settings"]["theme"]
+        )
+        self.button.bookThemeChangedSignal.connect(self.bookThemeChanged)
+        self.button.bookMarginChangedSignal.connect(self.marginSizeChanged)
 
         # WEB ENGINE
         self.book_view = BookViewer(
@@ -33,7 +37,6 @@ class ReaderInterfaceWindow(FramelessWindow):
             Books,
             self.metadata,
         )
-
         self.__initWidget()
 
         # DEBUGGING WEB
@@ -45,18 +48,11 @@ class ReaderInterfaceWindow(FramelessWindow):
     def __initWidget(self):
         self.resize(640, 740)
         self.vBoxLayout.setContentsMargins(0, self.titleBar.height(), 0, 0)
-
         self.vBoxLayout.addWidget(self.book_view)
-        # self.button.raise_()
 
         # STYLE
         StyleSheet.BOOK_WINDOW_INTERFACE.apply(self)
         self.book_view.setFocus()
-
-    def themeChanged(self):
-        # theme = Theme.DARK if isDarkTheme() else Theme.LIGHT
-        # self.book_view.web_communicator.setTheme(theme.value)
-        pass
 
     def fontSizeChanged(self, size):
         self.book_view.web_communicator.setFontSize_(size)
