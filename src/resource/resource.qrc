@@ -9,12 +9,14 @@
         <file>dark/main_window.qss</file>
         <file>dark/setting_interface.qss</file>
         <file>dark/book_window_interface.qss</file>
+        <file>dark/dialog.qss</file>
 
         <file>light/book_interface.qss</file>
         <file>light/library_interface.qss</file>
         <file>light/main_window.qss</file>
         <file>light/setting_interface.qss</file>
         <file>light/book_window_interface.qss</file>
+        <file>light/dialog.qss</file>
 
         <file>js/epub.min.js</file>
         <file>js/jszip.min.js</file>

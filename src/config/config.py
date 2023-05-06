@@ -49,6 +49,14 @@ create_or_check(
     [DATA_DIR, DATABASE_DIR, BOOK_COPIES_DIR, EXTRACTED_EPUB_DIR, GUI_CONFIG_DIR]
 )
 
+BOOK_THEMES = [
+    "Light",
+    "Dark",
+    "Hacker",
+    "Owl",
+    "Tan",
+]
+
 
 class Config(QConfig):
     tempFolder = ConfigItem("Folders", "temp", GUI_CONFIG_DIR, FolderValidator())

@@ -16,7 +16,7 @@ QLabel#settingLabel {
 }
 
 
-/* 滚动条 */
+
 QScrollBar {
     background: transparent;
     width: 4px;
@@ -25,12 +25,11 @@ QScrollBar {
     padding-right: 2px;
 }
 
-/*隐藏上箭头*/
+
 QScrollBar::sub-line {
     background: transparent;
 }
 
-/*隐藏下箭头*/
 QScrollBar::add-line {
     background: transparent;
 }

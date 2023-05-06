@@ -10,6 +10,14 @@ from tinydb import Query
 from .book_view import BookViewer
 from .settingsinterface import SettingsOpenButton
 
+# SEPERATE GUI AND BUSINESS LOGIC
+# GUI objects shouldn’t send these requests directly
+# you should extract all of the request details, such as the object being called,
+# the name of the method and the list of arguments into a separate command class with a single method that triggers this request.
+# They’ll be linked to a command which gets executed when a user interacts with the GUI element
+# button clicked signal emit from gui
+# command connected to gui recives signal does what the button wants
+
 
 class ReaderInterfaceWindow(FramelessWindow):
     def __init__(self, metadata):
@@ -22,12 +30,7 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         self.metadata = metadata
 
-        self.button = SettingsOpenButton(
-            FIF.MENU, "", True, self, currentTheme=self.metadata["settings"]["theme"]
-        )
-        self.button.bookThemeChangedSignal.connect(self.bookThemeChanged)
-        self.button.bookMarginChangedSignal.connect(self.marginSizeChanged)
-
+        self.button = SettingsOpenButton(FIF.MENU, "", True, self, metadata=metadata)
         # WEB ENGINE
         self.book_view = BookViewer(
             self,
@@ -41,9 +44,9 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         # DEBUGGING WEB
         # UNCOMMENT FOR WEB DEBBUGING
-        # self.dev_view = QWebEngineView()
-        # self.book_view.page().setDevToolsPage(self.dev_view.page())
-        # self.dev_view.show()
+        self.dev_view = QWebEngineView()
+        self.book_view.page().setDevToolsPage(self.dev_view.page())
+        self.dev_view.show()
 
     def __initWidget(self):
         self.resize(640, 740)
@@ -58,7 +61,8 @@ class ReaderInterfaceWindow(FramelessWindow):
         self.book_view.web_communicator.setFontSize_(size)
 
     def marginSizeChanged(self, size):
-        ...
+        # self.book_view.web_communicator.
+        self.book_view.web_communicator.setMarginSize_(size)
 
     def bookThemeChanged(self, theme):
         self.book_view.web_communicator.setBookTheme_(theme)

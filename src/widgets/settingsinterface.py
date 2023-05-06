@@ -1,4 +1,4 @@
-from config.config import cfg
+from config.config import cfg, BOOK_THEMES
 from typing import Union
 from PyQt5.QtGui import QIcon
 from helpers.style_sheet import StyleSheet
@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
+    QSlider,
 )
 from qfluentwidgets import ComboBox, ExpandLayout
 from qfluentwidgets import FluentIcon as FIF
@@ -32,23 +33,10 @@ from qfluentwidgets import (
     ComboBox,
     SettingCard,
     FluentIconBase,
+    RangeSettingCard,
+    Slider,
 )
 from qfluentwidgets.components.dialog_box.mask_dialog_base import MaskDialogBase
-
-BOOK_THEMES = {
-    "0": "Light",
-    "1": "Dark",
-    "2": "Hacker",
-    "3": "Owl",
-    "4": "Tan",
-}
-BOOK_THEMES_R = {
-    "light": "0",
-    "dark": "1",
-    "hacker": "2",
-    "owl": "3",
-    "tan": "4",
-}
 
 
 class SettingInterface(ScrollArea):
@@ -185,6 +173,7 @@ class SettingPopUpDialog(MaskDialogBase):
         self.yesButton.clicked.connect(self.__onYesButtonClicked)
 
 
+# https://github.com/zhiyiYo/PyQt-Fluent-Widgets/blob/c8fb1eb1140ede339c7ab9091ca2b5eac4c43e7a/qfluentwidgets/components/settings/setting_card.py#L365
 class CustomComboBoxSettingCard(SettingCard):
     def __init__(
         self,
@@ -211,57 +200,114 @@ class CustomComboBoxSettingCard(SettingCard):
         self.comboBox.setCurrentText(value)
 
 
-class CustomSettingsDialog(SettingPopUpDialog):
-    bookThemeChanged = pyqtSignal(str)
-    bookFontSizeChanged = pyqtSignal(str)
-    bookMarginSizechaned = pyqtSignal(str)
+# https://github.com/zhiyiYo/PyQt-Fluent-Widgets/blob/c8fb1eb1140ede339c7ab9091ca2b5eac4c43e7a/qfluentwidgets/components/settings/setting_card.py#L144
+class CustomRangeSettingCard(SettingCard):
+    valueChanged = pyqtSignal(int)
 
+    def __init__(
+        self,
+        icon: Union[str, QIcon, FluentIconBase],
+        title,
+        content=None,
+        parent=None,
+    ):
+        super().__init__(icon, title, content, parent)
+        self.slider = QSlider(Qt.Horizontal, self)
+        self.valueLabel = QLabel(self)
+        self.slider.setFixedSize(150, 24)
+
+        self.slider.setSingleStep(1)
+        self.slider.setRange(0, 100)
+
+        self.hBoxLayout.addStretch(1)
+        self.hBoxLayout.addWidget(self.valueLabel, 0, Qt.AlignmentFlag.AlignRight)
+        self.hBoxLayout.addSpacing(6)
+        self.hBoxLayout.addWidget(self.slider, 0, Qt.AlignmentFlag.AlignRight)
+        self.hBoxLayout.addSpacing(16)
+
+        self.valueLabel.setObjectName("valueLabel")
+        self.slider.valueChanged.connect(self.__onValueChanged)
+
+    def __onValueChanged(self, value: int):
+        """slider value changed slot"""
+        self.setValue(value)
+        self.valueChanged.emit(value)
+
+    def setValue(self, value):
+        self.valueLabel.setNum(value)
+        self.valueLabel.adjustSize()
+
+
+class CustomSettingsDialog(SettingPopUpDialog):
     def __init__(self, parent=None, theme="dark"):
         super().__init__(parent, "Settings")
+        self.setStyleSheet(" ")
+        self.reader_window = parent
+        self._theme = theme
         # ADD EVERY THING TO SCROLL WIDGTE
         # self.huePanel = HuePanel(color, self.scrollWidget)
         self.expandLayout = ExpandLayout(self.scrollWidget)
 
         self.themesGroup = SettingCardGroup("Book Themes", self.scrollWidget)
+        self.textGroup = SettingCardGroup("Text", self.scrollWidget)
 
         self.themeCard = CustomComboBoxSettingCard(
             icon=FIF.PALETTE,
             title="Book Themes",
             content="Change the current book theme",
-            texts=[BOOK_THEMES[str(i)] for i in range(len(BOOK_THEMES))],
+            texts=[theme for theme in BOOK_THEMES],
             parent=self.themesGroup,
         )
-        self.themeCard.setValue(theme.capitalize())
+
+        self.fontSizeCard = CustomRangeSettingCard(
+            icon=FIF.ALIGNMENT,
+            title="Font Size",
+            content="Change font size",
+            parent=self.textGroup,
+        )
+
+        self.themeCard.comboBox.currentTextChanged.connect(self.handleBookThemeChanged)
+        self.fontSizeCard.valueChanged.connect(self.handleFontSizeChanged)
+
+        StyleSheet.DIALOG_INTERFACE.apply(self)
+
+        self.__initDialog()
+
+    def __initDialog(self):
+        self.themeCard.setValue(
+            self.reader_window.metadata["settings"]["theme"].capitalize()
+        )
+        self.fontSizeCard.setValue(self.reader_window.metadata["settings"]["margin"])
+        self.fontSizeCard.slider.setValue(
+            self.reader_window.metadata["settings"]["margin"]
+        )
 
         self.themesGroup.addSettingCard(self.themeCard)
+        self.textGroup.addSettingCard(self.fontSizeCard)
 
         self.expandLayout.setSpacing(28)
         self.expandLayout.setContentsMargins(36, 10, 0, 0)
         self.expandLayout.addWidget(self.themesGroup)
-
-        self.themeCard.comboBox.currentTextChanged.connect(self.handleBookThemeChanged)
+        self.expandLayout.addWidget(self.textGroup)
 
     def handleBookThemeChanged(self, theme):
-        self.bookThemeChanged.emit(theme.lower())
+        self.reader_window.bookThemeChanged(theme.lower())
 
     def handleFontSizeChanged(self, size):
-        ...
+        self.reader_window.fontSizeChanged(size)
 
-    def handleMarginSizeChanged(self, size):
-        ...
+    # def handleMarginSizeChanged(self, size):
+    #     self.reader_window.marginSizeChanged(size)
 
 
 class SettingsOpenButton(NavigationPushButton):
-    bookThemeChangedSignal = pyqtSignal(str)
-    bookMarginChangedSignal = pyqtSignal(str)
-
     def __init__(
-        self, icon, text: str, isSelectable: bool, parent=None, currentTheme=None
+        self, icon, text: str, isSelectable: bool, parent=None, metadata: dict = None
     ):
         super().__init__(icon, text, isSelectable, parent)
         self.icon = icon
         self._text = ""
-        self.currentTheme = currentTheme
+        self.metadata = metadata
 
         self.setStyleSheet(
             "NavigationPushButton{font: 14px 'Segoe UI', 'Microsoft YaHei'}"
@@ -271,20 +317,12 @@ class SettingsOpenButton(NavigationPushButton):
         return self._text
 
     def mousePressEvent(self, e):
-        w = CustomSettingsDialog(self.window(), self.currentTheme)
+        w = CustomSettingsDialog(self.window())
         w.themeCard.comboBox.currentTextChanged.connect(self._changeTheme_)
-        w.bookThemeChanged.connect(self.bookThemeChanged_)
-        w.bookMarginSizechaned.connect(self.marginSizeChanged_)
         w.exec()
 
     def _changeTheme_(self, theme):
         self.currentTheme = theme
-
-    def bookThemeChanged_(self, theme):
-        self.bookThemeChangedSignal.emit(theme)
-
-    def marginSizeChanged_(self, size):
-        self.bookMarginChangedSignal.emit(size)
 
     def paintEvent(self, e):
         painter = QPainter(self)

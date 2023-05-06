@@ -44,6 +44,7 @@ class Page(QWebEnginePage):
 
 class BookWebCommunication(QObject):
     fontSizeChanged = pyqtSignal(int)
+    marginSizeChanged = pyqtSignal(int)
     chapterChanged = pyqtSignal(str)
     bookThemeChanged_ = pyqtSignal(str)
 
@@ -73,6 +74,15 @@ class BookWebCommunication(QObject):
         file = self.file_name
         # file = file.replace(" ", "%20")
         return file
+
+    @pyqtSlot(result=int)
+    def getMarginSize(self):
+        return self.book_storage["settings"]["margin"]
+
+    @pyqtSlot(result=int)
+    def setMarginSize_(self, size):
+        self.book_storage["settings"]["margin"] = size
+        self.marginSizeChanged.emit(size)
 
     @pyqtSlot(result=int)
     def getFontSize_(self):

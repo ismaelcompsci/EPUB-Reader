@@ -11,6 +11,7 @@ class StyleSheet(StyleSheetBase, Enum):
     BOOK_INTERFACE = "book_interface"
     SETTING_INTERFACE = "setting_interface"
     BOOK_WINDOW_INTERFACE = "book_window_interface"
+    DIALOG_INTERFACE = "dialog"
 
     def path(self, theme=Theme.AUTO):
         theme = qconfig.theme if theme == Theme.AUTO else theme

@@ -106,6 +106,7 @@
           height: "100%",
           manager: "continuous",
           flow: "paginated",
+          gap: "25",
         });
 
         window.book.ready.then(() => {
@@ -200,6 +201,21 @@
         window.rendition.themes.fontSize(size_ + "%");
         window.bookData.settings.fontSize = size;
         saveBookData();
+      };
+
+      const setLeftAndRightMargin = (size) => {
+        // document.body.style.marginLeft = size + "px";
+        // document.body.style.marginRight = size + "px";
+        // saveBookData();
+        // window.rendition.theme();
+        window.rendition.getContents().forEach((content) => {
+          content.addStylesheetRules({
+            "*": {
+              "margin-left": `${size}px`,
+            },
+          });
+        });
+        window.rendition.start();
       };
 
       var keyListener = function (e) {
