@@ -1,9 +1,9 @@
 import os
 import shutil
 
-from config.config import BOOK_COPIES_DIR, EXTRACTED_EPUB_DIR, Books
+from epub_reader.config.config import BOOK_COPIES_DIR, EXTRACTED_EPUB_DIR, Books
 from PyQt5.QtCore import QThread, pyqtSignal
-from utils.bookhandler import BookHandler
+from epub_reader.app.utils.bookhandler import BookHandler
 
 FILENAME_INVALID_CHARACTERS = '<>:"|?*'
 

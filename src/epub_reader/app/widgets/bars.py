@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from config.config import cfg
+from epub_reader.config.config import cfg
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget

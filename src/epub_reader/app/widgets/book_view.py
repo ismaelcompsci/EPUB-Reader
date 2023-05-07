@@ -1,10 +1,13 @@
+from epub_reader.app.widgets.browser import (
+    BookWebCommunication,
+    BookWebView,
+    get_index_html,
+)
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtWidgets import QWidget
 from tinydb import TinyDB
-
-from .browser import BookWebCommunication, BookWebView, get_index_html
 
 
 class BookViewer(BookWebView):

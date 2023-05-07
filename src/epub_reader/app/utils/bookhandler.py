@@ -5,9 +5,9 @@ import logging
 import os
 import shutil
 
-from epub.epub import ParseEPUB
+from epub_reader.epub.epub import ParseEPUB
 from tinydb import Query, TinyDB, where
-from utils.utils import get_file_md5_hash, resize_image
+from epub_reader.app.utils.utils import get_file_md5_hash, resize_image
 
 logger = logging.getLogger(__name__)
 

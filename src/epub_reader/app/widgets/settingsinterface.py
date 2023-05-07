@@ -1,40 +1,35 @@
-from config.config import cfg, BOOK_THEMES
 from typing import Union
-from PyQt5.QtGui import QIcon
-from helpers.style_sheet import StyleSheet
+
+from epub_reader.app.utils.style_sheet import StyleSheet
+from epub_reader.config.config import BOOK_THEMES, cfg
 from PyQt5.QtCore import QRectF, Qt, pyqtSignal
-from PyQt5.QtGui import QColor, QPainter
+from PyQt5.QtGui import QColor, QIcon, QPainter
 from PyQt5.QtWidgets import (
     QApplication,
     QFrame,
     QLabel,
     QPushButton,
+    QSlider,
     QVBoxLayout,
     QWidget,
-    QSlider,
 )
 from qfluentwidgets import ComboBox, ExpandLayout
 from qfluentwidgets import FluentIcon as FIF
 from qfluentwidgets import (
+    FluentIconBase,
     FluentStyleSheet,
     InfoBar,
     NavigationPushButton,
     OptionsSettingCard,
     PrimaryPushButton,
     ScrollArea,
+    SettingCard,
     SettingCardGroup,
-    SpinBox,
+    SingleDirectionScrollArea,
     drawIcon,
     isDarkTheme,
     setTheme,
     themeColor,
-    SingleDirectionScrollArea,
-    ExpandLayout,
-    ComboBox,
-    SettingCard,
-    FluentIconBase,
-    RangeSettingCard,
-    Slider,
 )
 from qfluentwidgets.components.dialog_box.mask_dialog_base import MaskDialogBase
 

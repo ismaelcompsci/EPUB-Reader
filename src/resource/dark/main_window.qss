@@ -6,7 +6,7 @@ StackedWidget {
     background-color: rgb(39, 39, 39);
 }
 
-Window {
+MainWindow  {
     background-color: rgb(39, 39, 39);
 }
 

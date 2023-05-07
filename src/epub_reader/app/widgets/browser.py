@@ -1,7 +1,7 @@
 import json
 import os
 
-from config.config import PROJECT_DIR
+from epub_reader.config.config import PROJECT_DIR
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWebEngineCore import *
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineSettings, QWebEngineView
@@ -9,7 +9,8 @@ from PyQt5.QtWidgets import QWidget
 
 
 def get_index_html():
-    return os.path.join(PROJECT_DIR, "resource", "html") + os.path.sep + "index.html"
+    print(os.path.join(PROJECT_DIR, "app", "html") + os.path.sep + "index.html")
+    return os.path.join(PROJECT_DIR, "app", "html") + os.path.sep + "index.html"
 
 
 class Page(QWebEnginePage):
@@ -24,13 +25,13 @@ class Page(QWebEnginePage):
         s = self.settings()
         a = s.setAttribute
 
-        a(QWebEngineSettings.WebAttribute.PluginsEnabled, True)
-        a(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, True)
-        a(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
-        a(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
-        a(QWebEngineSettings.WebAttribute.AllowWindowActivationFromJavaScript, True)
-        a(QWebEngineSettings.WebAttribute.AllowRunningInsecureContent, True)
-        a(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
+        # a(QWebEngineSettings.WebAttribute.PluginsEnabled, True)
+        # a(QWebEngineSettings.WebAttribute.JavascriptCanOpenWindows, True)
+        # a(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
+        # a(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
+        # a(QWebEngineSettings.WebAttribute.AllowWindowActivationFromJavaScript, True)
+        # a(QWebEngineSettings.WebAttribute.AllowRunningInsecureContent, True)
+        # a(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
 
     def javaScriptConsoleMessage(self, level, msg, linenumber, source_id):
         print("javaScriptConsoleMessage: ", level, msg, linenumber)

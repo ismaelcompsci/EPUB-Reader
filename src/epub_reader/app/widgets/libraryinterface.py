@@ -1,6 +1,8 @@
-from config.config import Books
-from helpers.style_sheet import StyleSheet
-from helpers.threads import BackGroundBookAddition, BackGroundBookDeletion
+from epub_reader.app.utils.style_sheet import StyleSheet
+from epub_reader.app.utils.threads import BackGroundBookAddition, BackGroundBookDeletion
+from epub_reader.app.widgets.bars import LibraryToolBar
+from epub_reader.app.widgets.bookcard import BookCard, BookCover
+from epub_reader.config.config import Books
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     QAction,
@@ -22,10 +24,6 @@ from qfluentwidgets import (
     SmoothScrollArea,
     StateToolTip,
 )
-
-from .bars import LibraryToolBar
-from .bookcard import BookCard, BookCover
-
 
 """
 USE QStandardItemModel

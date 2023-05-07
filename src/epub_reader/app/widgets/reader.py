@@ -1,14 +1,13 @@
-from config.config import EXTRACTED_EPUB_DIR, Books
-from helpers.style_sheet import StyleSheet
+from epub_reader.app.utils.style_sheet import StyleSheet
+from epub_reader.app.widgets.book_view import BookViewer
+from epub_reader.app.widgets.settingsinterface import SettingsOpenButton
+from epub_reader.config.config import EXTRACTED_EPUB_DIR, Books
 from PyQt5.QtGui import QCloseEvent
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QVBoxLayout
 from qfluentwidgets import FluentIcon as FIF
 from qframelesswindow import FramelessWindow, StandardTitleBar
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 from tinydb import Query
-
-from .book_view import BookViewer
-from .settingsinterface import SettingsOpenButton
 
 # SEPERATE GUI AND BUSINESS LOGIC
 # GUI objects shouldn’t send these requests directly

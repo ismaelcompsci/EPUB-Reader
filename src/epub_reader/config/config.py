@@ -1,18 +1,14 @@
 import os
-from qfluentwidgets import (
-    QConfig,
-    ConfigItem,
-    FolderValidator,
-    qconfig,
-)
-from platformdirs import user_data_dir
-from tinydb import TinyDB
 
+from platformdirs import user_data_dir
+from qfluentwidgets import ConfigItem, FolderValidator, QConfig, qconfig
+from tinydb import TinyDB
 
 appname = "EPUB-Reader"
 appautor = "Ismael Olvera"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
+
 PROJECT_DIR = os.path.abspath(os.path.join(script_dir, ".."))
 
 
