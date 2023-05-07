@@ -9,14 +9,6 @@ from qfluentwidgets import FluentIcon as FIF
 from qframelesswindow import FramelessWindow, StandardTitleBar
 from tinydb import Query
 
-# SEPERATE GUI AND BUSINESS LOGIC
-# GUI objects shouldn’t send these requests directly
-# you should extract all of the request details, such as the object being called,
-# the name of the method and the list of arguments into a separate command class with a single method that triggers this request.
-# They’ll be linked to a command which gets executed when a user interacts with the GUI element
-# button clicked signal emit from gui
-# command connected to gui recives signal does what the button wants
-
 
 class ReaderInterfaceWindow(FramelessWindow):
     def __init__(self, metadata):
@@ -43,9 +35,9 @@ class ReaderInterfaceWindow(FramelessWindow):
 
         # DEBUGGING WEB
         # UNCOMMENT FOR WEB DEBBUGING
-        self.dev_view = QWebEngineView()
-        self.book_view.page().setDevToolsPage(self.dev_view.page())
-        self.dev_view.show()
+        # self.dev_view = QWebEngineView()
+        # self.book_view.page().setDevToolsPage(self.dev_view.page())
+        # self.dev_view.show()
 
     def __initWidget(self):
         self.resize(640, 740)
