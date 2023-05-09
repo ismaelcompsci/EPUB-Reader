@@ -2,7 +2,7 @@ from epub_reader.app.utils.style_sheet import StyleSheet
 from epub_reader.app.widgets.book_view import BookViewer
 from epub_reader.app.widgets.settingsinterface import SettingsOpenButton
 from epub_reader.config.config import EXTRACTED_EPUB_DIR, Books
-from PyQt5.QtGui import QCloseEvent
+from PyQt5.QtGui import QCloseEvent, QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QVBoxLayout
 from qfluentwidgets import FluentIcon as FIF
@@ -10,9 +10,21 @@ from qframelesswindow import FramelessWindow, StandardTitleBar
 from tinydb import Query
 
 
+import sys
+
+
 class ReaderInterfaceWindow(FramelessWindow):
     def __init__(self, metadata):
         super().__init__()
+
+        if sys.platform == "win32":
+            import ctypes
+
+            # Set Taskbar icon
+            self.setWindowIcon(QIcon(":/reader/images/book-open.svg"))
+            myappid = "epub-reader.reader.v1.0.0"  # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
         # COMMENT FOR WEB DEBUG
         self.vBoxLayout = QVBoxLayout(self)
 

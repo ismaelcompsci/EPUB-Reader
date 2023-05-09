@@ -2,6 +2,7 @@
 import resource.resource_rc
 
 from epub_reader.app.utils.style_sheet import StyleSheet
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QEasingCurve, Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QFrame, QHBoxLayout, QWidget
 from qfluentwidgets import FluentIcon as FIF

@@ -2,6 +2,8 @@
 <RCC>
     <qresource prefix="reader">
         <file>images/placeholder.jpg</file>
+        <file>images/book.svg</file>
+        <file>images/book-open.svg</file>
 
 
         <file>dark/book_interface.qss</file>
