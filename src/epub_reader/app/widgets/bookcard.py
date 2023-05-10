@@ -27,6 +27,7 @@ class BookCover(QLabel):
             pixmap.loadFromData(bytes_)
 
         # pix = pixmap.scaled(200, 225, Qt.AspectRatioMode.KeepAspectRatio)
+        pixmap = pixmap.scaled(420, 600, Qt.AspectRatioMode.IgnoreAspectRatio)
         self.setPixmap(pixmap)
         self.setCursor(Qt.PointingHandCursor)
 
@@ -44,7 +45,7 @@ class BookCard(QFrame):
 
         self.vBoxLayout = QVBoxLayout(self)
         # BOOK CARD STYLING
-        self.setFixedSize(150, 250)
+        self.setFixedSize(160, 250)
         self.vBoxLayout.setSpacing(0)
         self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)

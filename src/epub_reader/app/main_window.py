@@ -125,7 +125,7 @@ class MainWindow(FramelessWindow):
         self.libraryInterface.libraryView.openSignal.connect(self.openBook)
 
     def initWindow(self):
-        self.resize(1060, 680)
+        self.resize(1100, 680)
         self.setMinimumWidth(300)
         self.setWindowTitle("EPUB-Reader")
         self.titleBar.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
