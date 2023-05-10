@@ -85,7 +85,6 @@
 
           // Value from python backend
           window.backend.getFile(function (path) {
-            console.log(path);
             window.backend.getBookStorage(function (data) {
               js_obj = JSON.parse(data);
               window.bookData = js_obj;
@@ -93,6 +92,7 @@
 
             // shoud do everything else invlolving the book after load book is done
             loadBook(path);
+            window.backend.handleReloadWindowSig.connect(reloadPage);
           });
         });
       });
@@ -105,8 +105,9 @@
           width: window.width,
           height: "100%",
           manager: "continuous",
-          flow: "paginated",
-          gap: "25",
+          flow: "scrolled",
+          gap: 0,
+          minSpreadWidth: 9999,
         });
 
         window.book.ready.then(() => {
@@ -239,6 +240,11 @@
       const saveBookData = () => {
         window.backend.setBookStorage(JSON.stringify(window.bookData));
       };
+
+      function reloadPage() {
+        location.reload();
+        console.log("RESETTINGWINODW");
+      }
     </script>
   </body>
 </html>

@@ -49,6 +49,8 @@ class BookWebCommunication(QObject):
     chapterChanged = pyqtSignal(str)
     bookThemeChanged_ = pyqtSignal(str)
 
+    handleReloadWindowSig = pyqtSignal()
+
     def __init__(self) -> None:
         super().__init__()
         self.file_name = None
