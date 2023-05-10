@@ -92,8 +92,8 @@
 
             // shoud do everything else invlolving the book after load book is done
             loadBook(path);
-            window.backend.handleReloadWindowSig.connect(reloadPage);
           });
+          window.addEventListener("resize", reloadPage);
         });
       });
 
@@ -243,7 +243,6 @@
 
       function reloadPage() {
         location.reload();
-        console.log("RESETTINGWINODW");
       }
     </script>
   </body>

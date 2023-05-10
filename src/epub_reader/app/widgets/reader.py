@@ -9,8 +9,6 @@ from qfluentwidgets import FluentIcon as FIF
 from qframelesswindow import FramelessWindow, StandardTitleBar
 from tinydb import Query
 
-import ctypes
-import win32con
 import sys
 
 
@@ -85,26 +83,3 @@ class ReaderInterfaceWindow(FramelessWindow):
         SaveBook = Query()
         Books.update(book_storage, SaveBook.hash == self.metadata["hash"])
         return super().closeEvent(a0)
-
-    def nativeEvent(self, eventType, message):
-        """
-        CHECK WHEN WINDOW IS DONE RESIZING
-        """
-        msg = ctypes.wintypes.MSG.from_address(message.__int__())
-
-        if eventType == "windows_generic_MSG":
-            if msg.message == win32con.WM_MOVE:
-                self.WM_PREVMESSAGE == "MOVE"
-
-            if msg.message == win32con.WM_SIZING:
-                self.WM_PREVMESSAGE = "RESIZED"
-
-            if msg.message == win32con.WM_EXITSIZEMOVE:
-                if self.WM_PREVMESSAGE == "RESIZED":
-                    # RELOAD WEB PAGE WHEN RESIZE IS DONE
-                    # THIS FIXES BROKEN EVENTS
-                    # TODO : FIND A BETTER WAY TO HANLE THIS
-                    self.book_view.web_communicator.handleReloadWindowSig.emit()
-                self.WM_PREVMESSAGE = None
-
-        return super().nativeEvent(eventType, message)
